@@ -3,14 +3,6 @@ using UnityEngine;
 
 public abstract class DungeonGridGenerator2D : MonoBehaviour
 {
-  protected enum TileType
-  {
-    Empty,
-    Floor,
-    Wall,
-    Door
-  }
-
   [Header("Grid Size")]
   [SerializeField, Min(16)] int gridWidth = 64;
   [SerializeField, Min(16)] int gridHeight = 64;
@@ -34,6 +26,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   protected int GridHeight => gridHeight;
   protected int FixedSeed => fixedSeed;
   public int LastUsedSeed { get; private set; }
+  public TileMetadata[,] LastMetadata { get; private set; }
 
   protected virtual void Start()
   {
@@ -66,7 +59,8 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     hasGeneratedAtLeastOnce = true;
 
     TileType[,] tileMap = BuildMap(seed);
-    RenderTileMap(tileMap);
+    LastMetadata = DungeonMetadataBuilder.Build(tileMap);
+    RenderTileMap(LastMetadata);
 
     Debug.Log($"{GetType().Name} generated with seed {seed}.");
   }
@@ -172,7 +166,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     generatedRoot = root.transform;
   }
 
-  void RenderTileMap(TileType[,] tileMap)
+  void RenderTileMap(TileMetadata[,] tileMap)
   {
     EnsureGeneratedRoot();
 
@@ -183,7 +177,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     {
       for (int y = 0; y < gridHeight; y++)
       {
-        TileType tile = tileMap[x, y];
+        TileType tile = tileMap[x, y].Type;
         if (tile == TileType.Empty)
         {
           continue;
