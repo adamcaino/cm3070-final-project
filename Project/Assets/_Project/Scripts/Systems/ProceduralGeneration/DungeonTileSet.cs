@@ -12,8 +12,19 @@ public class DungeonTileSet : ScriptableObject
   public GameObject wallPrefab;
   public GameObject doorPrefab;
 
+  [Header("Corner Prefab (used for tiles the generator explicitly flags as room corners)")]
+  [Tooltip("Assumed default authoring: open/decorated corner faces North-East, wall arms extend North and East from the pivot.")]
+  public GameObject cornerPrefab;
+
+  [Header("Pivot Offsets (local space, corrects prefab authoring - applied along the tile's own rotation)")]
+  public Vector3 floorPivotOffset;
+  public Vector3 wallPivotOffset;
+  public Vector3 doorPivotOffset;
+  public Vector3 cornerPivotOffset;
+
   [Header("Placeholder Colors")]
   public Color floorColor = new Color(0.5f, 0.5f, 0.5f, 1f);
   public Color wallColor = new Color(0.2f, 0.2f, 0.2f, 1f);
   public Color doorColor = Color.red;
+  public Color cornerColor = Color.blue;
 }

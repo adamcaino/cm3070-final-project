@@ -12,8 +12,15 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   [SerializeField, Min(1)] int maxDepth = 4;
   [SerializeField, Min(8)] int minLeafSize = 12;
   [SerializeField, Min(3)] int minimumRoomSize = 5;
-  [SerializeField, Min(1)] int roomPadding = 1;
-  [SerializeField, Min(1)] int corridorWidth = 1;
+  [SerializeField, Min(0)] int minCorridorLength = 2;
+
+  int corridorWidth = 1;
+
+  // Two sibling rooms can each be placed as close as RoomPadding cells from their shared leaf
+  // boundary, so the worst-case gap between them is 2 * RoomPadding. Doors occupy the first and
+  // last cell of that gap, leaving (2 * RoomPadding) - 2 cells of pure corridor floor - deriving
+  // RoomPadding from minCorridorLength guarantees that stays >= minCorridorLength.
+  int RoomPadding => Mathf.Max(1, Mathf.CeilToInt((minCorridorLength + 2) / 2f));
 
   protected override void OnValidate()
   {
@@ -21,8 +28,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     maxDepth = Mathf.Max(1, maxDepth);
     minLeafSize = Mathf.Max(8, minLeafSize);
     minimumRoomSize = Mathf.Max(3, minimumRoomSize);
-    roomPadding = Mathf.Max(1, roomPadding);
-    corridorWidth = Mathf.Max(1, corridorWidth);
+    minCorridorLength = Mathf.Max(0, minCorridorLength);
   }
 
   protected override TileType[,] BuildMap(int seed)
@@ -120,16 +126,16 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
       return;
     }
 
-    int maxRoomWidth = Mathf.Max(minimumRoomSize, node.Area.width - (roomPadding * 2));
-    int maxRoomHeight = Mathf.Max(minimumRoomSize, node.Area.height - (roomPadding * 2));
+    int maxRoomWidth = Mathf.Max(minimumRoomSize, node.Area.width - (RoomPadding * 2));
+    int maxRoomHeight = Mathf.Max(minimumRoomSize, node.Area.height - (RoomPadding * 2));
 
     int roomWidth = random.Next(minimumRoomSize, maxRoomWidth + 1);
     int roomHeight = random.Next(minimumRoomSize, maxRoomHeight + 1);
 
-    int roomXMin = node.Area.xMin + roomPadding;
-    int roomYMin = node.Area.yMin + roomPadding;
-    int roomXMax = Mathf.Max(roomXMin, node.Area.xMax - roomPadding - roomWidth);
-    int roomYMax = Mathf.Max(roomYMin, node.Area.yMax - roomPadding - roomHeight);
+    int roomXMin = node.Area.xMin + RoomPadding;
+    int roomYMin = node.Area.yMin + RoomPadding;
+    int roomXMax = Mathf.Max(roomXMin, node.Area.xMax - RoomPadding - roomWidth);
+    int roomYMax = Mathf.Max(roomYMin, node.Area.yMax - RoomPadding - roomHeight);
 
     int roomX = random.Next(roomXMin, roomXMax + 1);
     int roomY = random.Next(roomYMin, roomYMax + 1);
@@ -143,6 +149,19 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
       {
         map[x, y] = TileType.Floor;
       }
+    }
+
+    MarkCorner(map, node.Room.xMin - 1, node.Room.yMin - 1);
+    MarkCorner(map, node.Room.xMax, node.Room.yMin - 1);
+    MarkCorner(map, node.Room.xMin - 1, node.Room.yMax);
+    MarkCorner(map, node.Room.xMax, node.Room.yMax);
+  }
+
+  void MarkCorner(TileType[,] map, int x, int y)
+  {
+    if (IsInsideMap(x, y) && GetTile(map, x, y) == TileType.Wall)
+    {
+      SetTile(map, x, y, TileType.Corner);
     }
   }
 
@@ -335,10 +354,10 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
       return;
     }
 
-    TileType corridorTile = map[corridorCell.x, corridorCell.y];
-    if (corridorTile == TileType.Floor || corridorTile == TileType.Door)
+    TileType roomTile = map[roomCell.x, roomCell.y];
+    if (roomTile == TileType.Floor || roomTile == TileType.Door)
     {
-      map[roomCell.x, roomCell.y] = TileType.Door;
+      map[corridorCell.x, corridorCell.y] = TileType.Door;
     }
   }
 

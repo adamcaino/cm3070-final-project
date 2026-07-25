@@ -1,9 +1,10 @@
 /// <summary>
 /// Per-tile data describing what a tile is and what surrounds it, derived from a TileType[,] grid.
 /// Walls/Doorways/Floors are flags rather than a single tag so combinations (e.g. two adjacent walls
-/// forming a corner) fall out of the data instead of needing their own enum case. For a Wall tile,
-/// Floors indicates which cardinal direction(s) it faces open floor, used to orient a decorated wall
-/// prefab's front face.
+/// forming a corner) fall out of the data instead of needing their own enum case. Floors carries both
+/// cardinal (North/East/South/West) and diagonal (NorthEast/etc.) bits: a Wall tile with a cardinal
+/// Floors bit is a straight wall facing that direction; a Wall tile with only a diagonal Floors bit is
+/// a corner (it only survived void-culling because of that diagonal floor tile).
 /// </summary>
 public struct TileMetadata
 {
@@ -11,4 +12,10 @@ public struct TileMetadata
   public Direction Walls;
   public Direction Doorways;
   public Direction Floors;
+
+  /// <summary>
+  /// For a Door tile only: which cardinal direction leads toward the wider (room) side rather than
+  /// the 1-tile-wide corridor side, used to orient an asymmetric door prefab consistently.
+  /// </summary>
+  public Direction DoorRoomSide;
 }
