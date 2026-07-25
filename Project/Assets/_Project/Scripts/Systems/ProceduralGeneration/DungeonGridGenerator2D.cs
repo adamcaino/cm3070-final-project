@@ -17,6 +17,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   [SerializeField] Color floorColor = new Color(0.5f, 0.5f, 0.5f, 1f);
   [SerializeField] Color wallColor = Color.black;
   [SerializeField] Color doorColor = Color.red;
+  [SerializeField] Color cornerColor = Color.blue;
   [SerializeField] Transform generatedRoot;
 
   static Sprite cachedTileSprite;
@@ -206,6 +207,8 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
         return wallColor;
       case TileType.Door:
         return doorColor;
+      case TileType.Corner:
+        return cornerColor;
       default:
         return Color.clear;
     }
@@ -218,6 +221,8 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
       case TileType.Wall:
         return 10;
       case TileType.Door:
+        return 20;
+      case TileType.Corner:
         return 20;
       default:
         return 0;

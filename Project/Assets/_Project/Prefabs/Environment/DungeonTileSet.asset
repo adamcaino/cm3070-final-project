@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc90be50df208624db725ef31204a318, type: 3}
+  m_Name: DungeonTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonTileSet
+  floorPrefab: {fileID: 198546, guid: c6827baba0df5c14193d711868220119, type: 3}
+  wallPrefab: {fileID: 6506846352870040151, guid: 335543caf68f77d47872176217d90f2c, type: 3}
+  doorPrefab: {fileID: 1305599269226356104, guid: 3952bad3b040cf7459692bf6183069e8, type: 3}
+  cornerPrefab: {fileID: 6506846352870040151, guid: cbe593bb3a86ec74b9bd60717cac6cc9, type: 3}
+  floorPivotOffset: {x: 0, y: 0, z: 0}
+  wallPivotOffset: {x: 0, y: 0, z: 0}
+  doorPivotOffset: {x: 0, y: 0, z: 0}
+  cornerPivotOffset: {x: 0, y: 0, z: 0}
+  floorColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  wallColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  doorColor: {r: 1, g: 0, b: 0, a: 1}
+  cornerColor: {r: 0, g: 0, b: 1, a: 1}

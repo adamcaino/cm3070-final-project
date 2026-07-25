@@ -9,10 +9,11 @@ using UnityEngine;
 /// Conventions assumed here (revisit once real prefabs exist and can dictate their own pivot/facing):
 /// - Grid North (+Y in the 2D grid) maps to world +Z, East (+X) maps to world +X.
 /// - A prefab's forward (+Z) is treated as its decorated/front face.
-/// - Wall tiles rotate to face their open (Floors) direction. Tiles with no single cardinal floor
-///   neighbor (e.g. diagonal-only room corners) are left unrotated - dedicated corner prefabs and
-///   their orientation logic are a later pass.
-/// - Door tiles rotate 90 degrees when their opening runs East/West instead of North/South.
+/// - Wall tiles rotate to face their open (Floors) direction.
+/// - Corner tiles (explicitly flagged by the generator at room corners) rotate based on which diagonal
+///   direction has floor (see GetCornerRotation).
+/// - Door tiles rotate to face their DoorRoomSide (the wide/room side, as opposed to the 1-tile-wide
+///   corridor side) so an asymmetric door prefab is oriented consistently on all four sides.
 /// </summary>
 public class DungeonTilePlacer3D : MonoBehaviour
 {
@@ -74,7 +75,25 @@ public class DungeonTilePlacer3D : MonoBehaviour
   GameObject InstantiateTile(TileType type, Vector3 position, Quaternion rotation)
   {
     GameObject prefab = GetPrefab(type);
-    return prefab != null ? Instantiate(prefab, position, rotation) : CreatePlaceholder(type, position, rotation);
+    Vector3 offsetPosition = position + (rotation * GetPivotOffset(type));
+    return prefab != null ? Instantiate(prefab, offsetPosition, rotation) : CreatePlaceholder(type, offsetPosition, rotation);
+  }
+
+  Vector3 GetPivotOffset(TileType type)
+  {
+    switch (type)
+    {
+      case TileType.Floor:
+        return tileSet.floorPivotOffset;
+      case TileType.Wall:
+        return tileSet.wallPivotOffset;
+      case TileType.Door:
+        return tileSet.doorPivotOffset;
+      case TileType.Corner:
+        return tileSet.cornerPivotOffset;
+      default:
+        return Vector3.zero;
+    }
   }
 
   GameObject GetPrefab(TileType type)
@@ -87,6 +106,8 @@ public class DungeonTilePlacer3D : MonoBehaviour
         return tileSet.wallPrefab;
       case TileType.Door:
         return tileSet.doorPrefab;
+      case TileType.Corner:
+        return tileSet.cornerPrefab;
       default:
         return null;
     }
@@ -111,6 +132,8 @@ public class DungeonTilePlacer3D : MonoBehaviour
         return new Vector3(tileSize, tileSize, 0.2f);
       case TileType.Door:
         return new Vector3(tileSize * 0.6f, tileSize * 0.8f, 0.2f);
+      case TileType.Corner:
+        return new Vector3(tileSize, tileSize, tileSize);
       default:
         return Vector3.one * tileSize;
     }
@@ -139,6 +162,8 @@ public class DungeonTilePlacer3D : MonoBehaviour
         return tileSet.wallColor;
       case TileType.Door:
         return tileSet.doorColor;
+      case TileType.Corner:
+        return tileSet.cornerColor;
       default:
         return Color.magenta;
     }
@@ -149,24 +174,45 @@ public class DungeonTilePlacer3D : MonoBehaviour
     switch (tile.Type)
     {
       case TileType.Wall:
-        return GetWallRotation(tile.Floors);
+        return GetFacingRotation(tile.Floors);
       case TileType.Door:
-        return GetDoorRotation(tile.Floors);
+        return GetFacingRotation(tile.DoorRoomSide);
+      case TileType.Corner:
+        return GetCornerRotation(tile.Floors);
       default:
         return Quaternion.identity;
     }
   }
 
-  Quaternion GetWallRotation(Direction floors)
+  Quaternion GetFacingRotation(Direction floors)
   {
     Vector3 facing = GetFacingDirection(floors);
     return facing == Vector3.zero ? Quaternion.identity : Quaternion.LookRotation(facing, Vector3.up);
   }
 
-  Quaternion GetDoorRotation(Direction floors)
+  Quaternion GetCornerRotation(Direction floors)
   {
-    bool opensEastWest = (floors & (Direction.East | Direction.West)) != Direction.None;
-    return opensEastWest ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity;
+    if ((floors & Direction.NorthEast) != Direction.None)
+    {
+      return Quaternion.identity;
+    }
+
+    if ((floors & Direction.SouthEast) != Direction.None)
+    {
+      return Quaternion.Euler(0f, 90f, 0f);
+    }
+
+    if ((floors & Direction.SouthWest) != Direction.None)
+    {
+      return Quaternion.Euler(0f, 180f, 0f);
+    }
+
+    if ((floors & Direction.NorthWest) != Direction.None)
+    {
+      return Quaternion.Euler(0f, 270f, 0f);
+    }
+
+    return Quaternion.identity;
   }
 
   Vector3 GetFacingDirection(Direction floors)
