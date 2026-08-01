@@ -17,9 +17,12 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   [SerializeField] Color floorColor = new Color(0.5f, 0.5f, 0.5f, 1f);
   [SerializeField] Color wallColor = Color.black;
   [SerializeField] Color doorColor = Color.red;
-  [SerializeField] Color cornerColor = Color.blue;
-  [SerializeField] Transform generatedRoot;
 
+  [Header("Placement")]
+  [Tooltip("Local offset the generated 2D map is parented at, away from wherever the 3D level ends up - keeps this generator's own output usable later as a standalone minimap without overlapping the 3D level.")]
+  [SerializeField] Vector3 mapOffset = new Vector3(0f, 0f, 500f);
+
+  Transform generatedRoot;
   static Sprite cachedTileSprite;
   bool hasGeneratedAtLeastOnce;
 
@@ -164,6 +167,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
 
     GameObject root = new GameObject("Generated Dungeon");
     root.transform.SetParent(transform, false);
+    root.transform.localPosition = mapOffset;
     generatedRoot = root.transform;
   }
 
@@ -207,8 +211,6 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
         return wallColor;
       case TileType.Door:
         return doorColor;
-      case TileType.Corner:
-        return cornerColor;
       default:
         return Color.clear;
     }
@@ -221,8 +223,6 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
       case TileType.Wall:
         return 10;
       case TileType.Door:
-        return 20;
-      case TileType.Corner:
         return 20;
       default:
         return 0;

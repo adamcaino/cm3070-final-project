@@ -12,9 +12,21 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   [SerializeField, Min(1)] int maxDepth = 4;
   [SerializeField, Min(8)] int minLeafSize = 12;
   [SerializeField, Min(3)] int minimumRoomSize = 5;
+  [SerializeField, Min(3)] int maximumRoomSize = 20;
   [SerializeField, Min(0)] int minCorridorLength = 2;
 
-  int corridorWidth = 1;
+  [Tooltip("How many floor tiles wide a corridor's open passage is. The doorway into a room stays a single tile regardless - SealRoomPerimeters trims the wider carve back down to just the one marked Door cell at the threshold, so widening this only affects the corridor's body, not room entrances.")]
+  [SerializeField, Min(1)] int corridorWidth = 3;
+
+  [Header("Points of Interest")]
+  [Tooltip("How many rooms (besides spawn and boss) get tagged as loot rooms.")]
+  [SerializeField, Min(0)] int lootRoomCount = 3;
+
+  public IReadOnlyList<DungeonRoomInfo> LastRooms { get; private set; }
+
+  readonly List<RectInt> roomBounds = new List<RectInt>();
+  readonly List<List<int>> roomAdjacency = new List<List<int>>();
+  readonly Dictionary<Vector2Int, List<int>> roomPerimeterOwners = new Dictionary<Vector2Int, List<int>>();
 
   // Two sibling rooms can each be placed as close as RoomPadding cells from their shared leaf
   // boundary, so the worst-case gap between them is 2 * RoomPadding. Doors occupy the first and
@@ -28,7 +40,9 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     maxDepth = Mathf.Max(1, maxDepth);
     minLeafSize = Mathf.Max(8, minLeafSize);
     minimumRoomSize = Mathf.Max(3, minimumRoomSize);
+    maximumRoomSize = Mathf.Max(minimumRoomSize, maximumRoomSize);
     minCorridorLength = Mathf.Max(0, minCorridorLength);
+    corridorWidth = Mathf.Max(1, corridorWidth);
   }
 
   protected override TileType[,] BuildMap(int seed)
@@ -36,11 +50,18 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     System.Random random = new System.Random(seed);
     TileType[,] map = CreateFilledMap(TileType.Wall);
 
+    roomBounds.Clear();
+    roomAdjacency.Clear();
+    roomPerimeterOwners.Clear();
+
     RectInt rootArea = new RectInt(1, 1, GridWidth - 2, GridHeight - 2);
     BspNode root = SplitRecursively(rootArea, 0, random);
 
     CreateRooms(root, random, map);
+    BuildRoomPerimeterOwners();
     ConnectSiblingRooms(root, random, map);
+    SealRoomPerimeters(map);
+    AssignRoomRoles(random);
 
     return map;
   }
@@ -126,8 +147,8 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
       return;
     }
 
-    int maxRoomWidth = Mathf.Max(minimumRoomSize, node.Area.width - (RoomPadding * 2));
-    int maxRoomHeight = Mathf.Max(minimumRoomSize, node.Area.height - (RoomPadding * 2));
+    int maxRoomWidth = Mathf.Min(maximumRoomSize, Mathf.Max(minimumRoomSize, node.Area.width - (RoomPadding * 2)));
+    int maxRoomHeight = Mathf.Min(maximumRoomSize, Mathf.Max(minimumRoomSize, node.Area.height - (RoomPadding * 2)));
 
     int roomWidth = random.Next(minimumRoomSize, maxRoomWidth + 1);
     int roomHeight = random.Next(minimumRoomSize, maxRoomHeight + 1);
@@ -142,6 +163,9 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
 
     node.Room = new RectInt(roomX, roomY, roomWidth, roomHeight);
     node.HasRoom = true;
+    node.RoomIndex = roomBounds.Count;
+    roomBounds.Add(node.Room);
+    roomAdjacency.Add(new List<int>());
 
     for (int x = node.Room.xMin; x < node.Room.xMax; x++)
     {
@@ -150,18 +174,71 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
         map[x, y] = TileType.Floor;
       }
     }
-
-    MarkCorner(map, node.Room.xMin - 1, node.Room.yMin - 1);
-    MarkCorner(map, node.Room.xMax, node.Room.yMin - 1);
-    MarkCorner(map, node.Room.xMin - 1, node.Room.yMax);
-    MarkCorner(map, node.Room.xMax, node.Room.yMax);
   }
 
-  void MarkCorner(TileType[,] map, int x, int y)
+  // Every room's own wall ring is recorded up front, before any corridor gets carved, so corridor
+  // carving can tell "this room's own wall, safe to breach for its own doorway" apart from "some other
+  // room's wall that this corridor is merely passing near" and protect the latter.
+  void BuildRoomPerimeterOwners()
   {
-    if (IsInsideMap(x, y) && GetTile(map, x, y) == TileType.Wall)
+    for (int i = 0; i < roomBounds.Count; i++)
     {
-      SetTile(map, x, y, TileType.Corner);
+      foreach (Vector2Int cell in GetRoomPerimeterCells(roomBounds[i]))
+      {
+        if (!roomPerimeterOwners.TryGetValue(cell, out List<int> owners))
+        {
+          owners = new List<int>();
+          roomPerimeterOwners[cell] = owners;
+        }
+
+        owners.Add(i);
+      }
+    }
+  }
+
+  static List<Vector2Int> GetRoomPerimeterCells(RectInt bounds)
+  {
+    List<Vector2Int> cells = new List<Vector2Int>();
+
+    for (int x = bounds.xMin; x < bounds.xMax; x++)
+    {
+      cells.Add(new Vector2Int(x, bounds.yMin - 1));
+      cells.Add(new Vector2Int(x, bounds.yMax));
+    }
+
+    for (int y = bounds.yMin; y < bounds.yMax; y++)
+    {
+      cells.Add(new Vector2Int(bounds.xMin - 1, y));
+      cells.Add(new Vector2Int(bounds.xMax, y));
+    }
+
+    // The 4 diagonal corners just outside the rectangle aren't covered by either loop above (both
+    // stop at the room's own x/y range) - without these, a corridor leg running along another room's
+    // wall row can still punch through right at the far end of that row, at the corner.
+    cells.Add(new Vector2Int(bounds.xMin - 1, bounds.yMin - 1));
+    cells.Add(new Vector2Int(bounds.xMax, bounds.yMin - 1));
+    cells.Add(new Vector2Int(bounds.xMin - 1, bounds.yMax));
+    cells.Add(new Vector2Int(bounds.xMax, bounds.yMax));
+
+    return cells;
+  }
+
+  // Final safety net, run once after every corridor for the whole dungeon has been carved and every
+  // legitimate crossing has been marked as a Door: any ring cell that ended up Floor instead of Wall or
+  // Door is - by construction - an accidental graze rather than an intended connection, since every
+  // intended connection already got its own explicit Door marker elsewhere. Sealing those cells back to
+  // Wall can never disconnect a real corridor; it only ever removes cells nothing depended on.
+  void SealRoomPerimeters(TileType[,] map)
+  {
+    foreach (RectInt bounds in roomBounds)
+    {
+      foreach (Vector2Int cell in GetRoomPerimeterCells(bounds))
+      {
+        if (GetTile(map, cell.x, cell.y) == TileType.Floor)
+        {
+          SetTile(map, cell.x, cell.y, TileType.Wall);
+        }
+      }
     }
   }
 
@@ -175,33 +252,67 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     ConnectSiblingRooms(node.Left, random, map);
     ConnectSiblingRooms(node.Right, random, map);
 
-    if (!TryFindClosestRoomPair(node.Left, node.Right, out RectInt leftRoom, out RectInt rightRoom))
+    if (!TryFindClosestRoomPair(node.Left, node.Right, out RectInt leftRoom, out int leftIndex, out RectInt rightRoom, out int rightIndex))
     {
       return;
     }
+
+    roomAdjacency[leftIndex].Add(rightIndex);
+    roomAdjacency[rightIndex].Add(leftIndex);
 
     Vector2Int start = GetRoomCenter(leftRoom);
     Vector2Int end = GetRoomCenter(rightRoom);
 
     bool useHorizontalFirst = random.NextDouble() > 0.5;
-    List<Vector2Int> corridorPath = useHorizontalFirst
-      ? BuildHorizontalThenVerticalPath(start, end)
-      : BuildVerticalThenHorizontalPath(start, end);
+    List<Vector2Int> preferredPath = useHorizontalFirst
+      ? BuildHorizontalThenVerticalPath(start, end, leftRoom, rightRoom)
+      : BuildVerticalThenHorizontalPath(start, end, leftRoom, rightRoom);
 
-    CarveCorridorPath(corridorPath, map);
+    // If an unrelated third room happens to sit directly on this route, the preferred path would get
+    // blocked mid-corridor by that room's own wall protection, leaving a dead end. The other L-shape
+    // routes through completely different cells, so it's usually clear even when this one isn't.
+    List<Vector2Int> corridorPath = preferredPath;
+    if (IsPathBlocked(preferredPath, leftIndex, rightIndex))
+    {
+      List<Vector2Int> alternatePath = useHorizontalFirst
+        ? BuildVerticalThenHorizontalPath(start, end, leftRoom, rightRoom)
+        : BuildHorizontalThenVerticalPath(start, end, leftRoom, rightRoom);
+
+      if (!IsPathBlocked(alternatePath, leftIndex, rightIndex))
+      {
+        corridorPath = alternatePath;
+      }
+    }
+
+    CarveCorridorPath(corridorPath, map, leftIndex, rightIndex);
     TryPlaceDoorAtCorridorBoundary(leftRoom, corridorPath, true, map);
     TryPlaceDoorAtCorridorBoundary(rightRoom, corridorPath, false, map);
   }
 
-  bool TryFindClosestRoomPair(BspNode leftNode, BspNode rightNode, out RectInt leftRoom, out RectInt rightRoom)
+  bool IsPathBlocked(List<Vector2Int> path, int allowedRoomA, int allowedRoomB)
   {
-    List<RectInt> leftRooms = new List<RectInt>();
-    List<RectInt> rightRooms = new List<RectInt>();
+    foreach (Vector2Int cell in path)
+    {
+      if (IsOtherRoomsWall(cell, allowedRoomA, allowedRoomB))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool TryFindClosestRoomPair(BspNode leftNode, BspNode rightNode, out RectInt leftRoom, out int leftIndex, out RectInt rightRoom, out int rightIndex)
+  {
+    List<BspNode> leftRooms = new List<BspNode>();
+    List<BspNode> rightRooms = new List<BspNode>();
     CollectRooms(leftNode, leftRooms);
     CollectRooms(rightNode, rightRooms);
 
     leftRoom = default;
+    leftIndex = -1;
     rightRoom = default;
+    rightIndex = -1;
 
     if (leftRooms.Count == 0 || rightRooms.Count == 0)
     {
@@ -210,13 +321,13 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
 
     int bestDistance = int.MaxValue;
 
-    foreach (RectInt first in leftRooms)
+    foreach (BspNode first in leftRooms)
     {
-      Vector2Int firstCenter = GetRoomCenter(first);
+      Vector2Int firstCenter = GetRoomCenter(first.Room);
 
-      foreach (RectInt second in rightRooms)
+      foreach (BspNode second in rightRooms)
       {
-        Vector2Int secondCenter = GetRoomCenter(second);
+        Vector2Int secondCenter = GetRoomCenter(second.Room);
         int distance = Mathf.Abs(firstCenter.x - secondCenter.x) + Mathf.Abs(firstCenter.y - secondCenter.y);
 
         if (distance >= bestDistance)
@@ -225,15 +336,17 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
         }
 
         bestDistance = distance;
-        leftRoom = first;
-        rightRoom = second;
+        leftRoom = first.Room;
+        leftIndex = first.RoomIndex;
+        rightRoom = second.Room;
+        rightIndex = second.RoomIndex;
       }
     }
 
     return true;
   }
 
-  void CollectRooms(BspNode node, List<RectInt> rooms)
+  void CollectRooms(BspNode node, List<BspNode> rooms)
   {
     if (node == null)
     {
@@ -242,27 +355,93 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
 
     if (node.HasRoom)
     {
-      rooms.Add(node.Room);
+      rooms.Add(node);
     }
 
     CollectRooms(node.Left, rooms);
     CollectRooms(node.Right, rooms);
   }
 
-  List<Vector2Int> BuildHorizontalThenVerticalPath(Vector2Int start, Vector2Int end)
+  // A plain 2-segment L (elbow at end.x/end.y) puts the turn wherever the target room's center
+  // happens to be - if that's only a cell or two past the wall the path just exited through, the
+  // second leg then runs straight along that same wall for a stretch instead of turning cleanly away
+  // from it, which is what was carving extra holes in the source room's own wall (only the single
+  // actual crossing point ever gets marked as a door; every other cell the leg grazes along the wall
+  // just silently becomes floor). Clamping the elbow to sit at least CorridorTurnClearance cells past
+  // the exit wall - and adding a third segment to re-align with the target's center - guarantees a
+  // straight run of open corridor before any turn. When the natural elbow already clears the wall (the
+  // common case), the clamp and the extra segment are no-ops and the path stays a simple 2-segment L.
+  const int CorridorTurnClearance = 1;
+
+  List<Vector2Int> BuildHorizontalThenVerticalPath(Vector2Int start, Vector2Int end, RectInt sourceRoom, RectInt destRoom)
   {
+    int elbowX = ChooseClearedElbow(start.x, end.x, sourceRoom.xMin, sourceRoom.xMax, destRoom.xMin, destRoom.xMax, GridWidth);
+
     List<Vector2Int> path = new List<Vector2Int>();
-    AddLineToPath(path, start, new Vector2Int(end.x, start.y));
-    AddLineToPath(path, new Vector2Int(end.x, start.y), end);
+    AddLineToPath(path, start, new Vector2Int(elbowX, start.y));
+    AddLineToPath(path, new Vector2Int(elbowX, start.y), new Vector2Int(elbowX, end.y));
+    AddLineToPath(path, new Vector2Int(elbowX, end.y), end);
     return path;
   }
 
-  List<Vector2Int> BuildVerticalThenHorizontalPath(Vector2Int start, Vector2Int end)
+  List<Vector2Int> BuildVerticalThenHorizontalPath(Vector2Int start, Vector2Int end, RectInt sourceRoom, RectInt destRoom)
   {
+    int elbowY = ChooseClearedElbow(start.y, end.y, sourceRoom.yMin, sourceRoom.yMax, destRoom.yMin, destRoom.yMax, GridHeight);
+
     List<Vector2Int> path = new List<Vector2Int>();
-    AddLineToPath(path, start, new Vector2Int(start.x, end.y));
-    AddLineToPath(path, new Vector2Int(start.x, end.y), end);
+    AddLineToPath(path, start, new Vector2Int(start.x, elbowY));
+    AddLineToPath(path, new Vector2Int(start.x, elbowY), new Vector2Int(end.x, elbowY));
+    AddLineToPath(path, new Vector2Int(end.x, elbowY), end);
     return path;
+  }
+
+  // Clears the source room's wall (as above), and also tries to avoid landing inside the destination
+  // room's own span on that axis - landing there makes the middle leg enter the destination early,
+  // through a side wall near a corner, instead of through its center on the final leg. But with rooms
+  // packed close together (small leaves, tight padding), there may not be a column/row that clears both
+  // rooms at once - source clearance is the one that must never be given up (losing it reintroduces the
+  // wall-hugging bug), so the destination pull-back is only applied when it doesn't creep back into the
+  // source's own cleared zone; otherwise this settles for an off-center (but still single, clean) entry.
+  // Finally clamped to the grid itself - a room near the map edge can have nowhere to push the clearance
+  // into, and an elbow that lands outside the grid isn't just unclamped, it's silently uncarvable: every
+  // cell beyond it gets dropped by the bounds check during carving, stranding the corridor at the door.
+  int ChooseClearedElbow(int startCoord, int endCoord, int sourceMin, int sourceMax, int destMin, int destMax, int gridLength)
+  {
+    if (endCoord > startCoord)
+    {
+      int minClearOfSource = sourceMax + CorridorTurnClearance;
+      int elbow = Mathf.Max(endCoord, minClearOfSource);
+
+      if (elbow >= destMin && elbow < destMax)
+      {
+        int pulledBack = destMin - 1 - CorridorTurnClearance;
+        if (pulledBack >= minClearOfSource)
+        {
+          elbow = pulledBack;
+        }
+      }
+
+      return Mathf.Min(elbow, gridLength - 1);
+    }
+
+    if (endCoord < startCoord)
+    {
+      int maxClearOfSource = sourceMin - 1 - CorridorTurnClearance;
+      int elbow = Mathf.Min(endCoord, maxClearOfSource);
+
+      if (elbow >= destMin && elbow < destMax)
+      {
+        int pulledBack = destMax + CorridorTurnClearance;
+        if (pulledBack <= maxClearOfSource)
+        {
+          elbow = pulledBack;
+        }
+      }
+
+      return Mathf.Max(elbow, 0);
+    }
+
+    return endCoord;
   }
 
   void AddLineToPath(List<Vector2Int> path, Vector2Int from, Vector2Int to)
@@ -285,15 +464,15 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
-  void CarveCorridorPath(List<Vector2Int> corridorPath, TileType[,] map)
+  void CarveCorridorPath(List<Vector2Int> corridorPath, TileType[,] map, int allowedRoomA, int allowedRoomB)
   {
     foreach (Vector2Int cell in corridorPath)
     {
-      CarveBrush(cell, map);
+      CarveBrush(cell, map, allowedRoomA, allowedRoomB);
     }
   }
 
-  void CarveBrush(Vector2Int center, TileType[,] map)
+  void CarveBrush(Vector2Int center, TileType[,] map, int allowedRoomA, int allowedRoomB)
   {
     int negativeOffset = corridorWidth / 2;
     int positiveOffset = corridorWidth - negativeOffset;
@@ -302,12 +481,42 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     {
       for (int y = center.y - negativeOffset; y < center.y + positiveOffset; y++)
       {
-        if (IsInsideMap(x, y))
+        // A room often sits on more than one connection (it can be the closest room for multiple
+        // sibling pairings up the BSP tree), so a later corridor sharing that room is allowed to carve
+        // across its ring too - without this check it could sweep back over an earlier connection's
+        // already-placed Door and silently downgrade it to Floor, orphaning that door (which the final
+        // seal pass would then wall back up, severing a connection that was actually real).
+        if (!IsInsideMap(x, y) || GetTile(map, x, y) == TileType.Door || IsOtherRoomsWall(new Vector2Int(x, y), allowedRoomA, allowedRoomB))
         {
-          map[x, y] = TileType.Floor;
+          continue;
         }
+
+        map[x, y] = TileType.Floor;
       }
     }
+  }
+
+  // A corridor is only allowed to breach the wall ring of the two rooms it's actually connecting -
+  // its own doorway. Any other room's wall ring cell the path happens to graze along the way is left
+  // untouched, so a corridor can never open a gap into a room it isn't meant to connect to. A cell can
+  // belong to more than one room's ring when rooms sit close together, so this blocks as soon as ANY
+  // owner of the cell falls outside the allowed pair - not just when the sole owner does.
+  bool IsOtherRoomsWall(Vector2Int cell, int allowedRoomA, int allowedRoomB)
+  {
+    if (!roomPerimeterOwners.TryGetValue(cell, out List<int> owners))
+    {
+      return false;
+    }
+
+    foreach (int owner in owners)
+    {
+      if (owner != allowedRoomA && owner != allowedRoomB)
+      {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   void TryPlaceDoorAtCorridorBoundary(RectInt room, List<Vector2Int> corridorPath, bool fromStart, TileType[,] map)
@@ -347,6 +556,11 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
+  // Always marks the crossing - even if another door already sits right next to it. An earlier version
+  // suppressed the marking when a neighboring door existed to avoid two doors touching, but the corridor
+  // had already been carved to Floor by that point, so suppressing the *marking* left a silent gap
+  // (Floor, no door, no wall) instead of actually preventing anything. Two doors sitting side by side is
+  // a much smaller problem than an invisible hole in a wall, so this always marks the real crossing.
   void PlaceDoorIfConnected(TileType[,] map, Vector2Int roomCell, Vector2Int corridorCell)
   {
     if (!IsInsideMap(roomCell.x, roomCell.y) || !IsInsideMap(corridorCell.x, corridorCell.y))
@@ -371,6 +585,126 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return new Vector2Int(room.xMin + (room.width / 2), room.yMin + (room.height / 2));
   }
 
+  // Spawn is a random room; boss is whichever room sits furthest from spawn along the room graph (not
+  // straight-line distance), so it's guaranteed to be the most "out of the way" room reachable from the
+  // start - which reads as "end of the level" regardless of the BSP tree's actual shape. Loot rooms are
+  // picked from whatever's left over, so they never double up as the spawn or boss room.
+  void AssignRoomRoles(System.Random random)
+  {
+    LastRooms = null;
+
+    if (roomBounds.Count == 0)
+    {
+      return;
+    }
+
+    int spawnIndex = random.Next(roomBounds.Count);
+    int[] distances = ComputeRoomDistances(spawnIndex);
+    int bossIndex = FindFarthestRoom(distances, spawnIndex);
+    List<int> lootIndices = ChooseLootRooms(distances, spawnIndex, bossIndex, random);
+
+    List<DungeonRoomInfo> rooms = new List<DungeonRoomInfo>(roomBounds.Count);
+
+    for (int i = 0; i < roomBounds.Count; i++)
+    {
+      RoomRole role = RoomRole.Normal;
+
+      if (i == spawnIndex)
+      {
+        role = RoomRole.Spawn;
+      }
+      else if (i == bossIndex)
+      {
+        role = RoomRole.Boss;
+      }
+      else if (lootIndices.Contains(i))
+      {
+        role = RoomRole.Loot;
+      }
+
+      rooms.Add(new DungeonRoomInfo { Bounds = roomBounds[i], Center = GetRoomCenter(roomBounds[i]), Role = role });
+    }
+
+    LastRooms = rooms;
+  }
+
+  int[] ComputeRoomDistances(int startIndex)
+  {
+    int[] distances = new int[roomBounds.Count];
+    for (int i = 0; i < distances.Length; i++)
+    {
+      distances[i] = -1;
+    }
+
+    Queue<int> frontier = new Queue<int>();
+    distances[startIndex] = 0;
+    frontier.Enqueue(startIndex);
+
+    while (frontier.Count > 0)
+    {
+      int current = frontier.Dequeue();
+
+      foreach (int neighbor in roomAdjacency[current])
+      {
+        if (distances[neighbor] != -1)
+        {
+          continue;
+        }
+
+        distances[neighbor] = distances[current] + 1;
+        frontier.Enqueue(neighbor);
+      }
+    }
+
+    return distances;
+  }
+
+  int FindFarthestRoom(int[] distances, int excludeIndex)
+  {
+    int bestIndex = excludeIndex;
+    int bestDistance = -1;
+
+    for (int i = 0; i < distances.Length; i++)
+    {
+      if (i == excludeIndex || distances[i] <= bestDistance)
+      {
+        continue;
+      }
+
+      bestDistance = distances[i];
+      bestIndex = i;
+    }
+
+    return bestIndex;
+  }
+
+  List<int> ChooseLootRooms(int[] distances, int spawnIndex, int bossIndex, System.Random random)
+  {
+    List<int> candidates = new List<int>();
+
+    for (int i = 0; i < roomBounds.Count; i++)
+    {
+      if (i == spawnIndex || i == bossIndex || distances[i] < 0)
+      {
+        continue;
+      }
+
+      candidates.Add(i);
+    }
+
+    List<int> chosen = new List<int>();
+    int count = Mathf.Min(lootRoomCount, candidates.Count);
+
+    for (int i = 0; i < count; i++)
+    {
+      int pick = random.Next(candidates.Count);
+      chosen.Add(candidates[pick]);
+      candidates.RemoveAt(pick);
+    }
+
+    return chosen;
+  }
+
   sealed class BspNode
   {
     public readonly RectInt Area;
@@ -378,6 +712,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     public BspNode Right;
     public RectInt Room;
     public bool HasRoom;
+    public int RoomIndex = -1;
 
     public bool IsLeaf => Left == null && Right == null;
 

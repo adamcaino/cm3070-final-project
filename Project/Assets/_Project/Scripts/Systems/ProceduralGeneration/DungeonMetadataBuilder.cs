@@ -3,8 +3,6 @@
 /// Works on any generator's output (BSP, etc.) since it only depends on TileType, not room geometry.
 /// Wall tiles with no floor tile within one step (including diagonals) are treated as void/empty rock
 /// rather than real walls, since nothing will ever render or need to be seen there in a top-down view.
-/// Corner tiles are never culled this way - they're placed explicitly by the generator at actual room
-/// corners, so unlike Wall they don't need a "is this near floor" heuristic to be considered real.
 /// </summary>
 public static class DungeonMetadataBuilder
 {
@@ -81,7 +79,7 @@ public static class DungeonMetadataBuilder
     {
       TileType neighborType = GetNeighborTileType(map, x + offset.Dx, y + offset.Dy, width, height);
 
-      if (neighborType == TileType.Wall || neighborType == TileType.Corner)
+      if (neighborType == TileType.Wall)
       {
         tile.Walls |= offset.Direction;
       }
