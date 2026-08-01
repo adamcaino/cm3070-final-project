@@ -3,15 +3,14 @@ using UnityEngine;
 
 /// <summary>
 /// Placeholder 3D placement pass. Reads TileMetadata from a DungeonGridGenerator2D and instantiates a
-/// prefab (or a colored primitive stand-in, if the DungeonTileSet's prefab field is left empty) per
-/// tile, positioned and rotated to match.
+/// prefab variant (or a colored primitive stand-in, if the DungeonTileSet's variant array for that
+/// type is empty) per tile, positioned and rotated to match. Variant choice is randomized with a
+/// System.Random seeded from the source generator's LastUsedSeed, so it's reproducible per dungeon seed.
 ///
 /// Conventions assumed here (revisit once real prefabs exist and can dictate their own pivot/facing):
 /// - Grid North (+Y in the 2D grid) maps to world +Z, East (+X) maps to world +X.
 /// - A prefab's forward (+Z) is treated as its decorated/front face.
 /// - Wall tiles rotate to face their open (Floors) direction.
-/// - Corner tiles (explicitly flagged by the generator at room corners) rotate based on which diagonal
-///   direction has floor (see GetCornerRotation).
 /// - Door tiles rotate to face their DoorRoomSide (the wide/room side, as opposed to the 1-tile-wide
 ///   corridor side) so an asymmetric door prefab is oriented consistently on all four sides.
 /// </summary>
@@ -20,9 +19,21 @@ public class DungeonTilePlacer3D : MonoBehaviour
   [SerializeField] DungeonGridGenerator2D sourceGenerator;
   [SerializeField] DungeonTileSet tileSet;
   [SerializeField, Min(0.1f)] float tileSize = 2f;
-  [SerializeField] Transform generatedRoot;
 
+  Transform generatedRoot;
   readonly Dictionary<TileType, Material> placeholderMaterials = new Dictionary<TileType, Material>();
+  System.Random variantRandom;
+
+  public float TileSize => tileSize;
+
+  // Shared with other placement passes (props, points of interest) so every stage maps a grid cell to
+  // the same world position this one used, without each duplicating the offset math.
+  public Vector3 GridToWorld(Vector2Int gridPosition, int gridWidth, int gridHeight)
+  {
+    float xOffset = (gridWidth - 1) * tileSize * 0.5f;
+    float zOffset = (gridHeight - 1) * tileSize * 0.5f;
+    return new Vector3((gridPosition.x * tileSize) - xOffset, 0f, (gridPosition.y * tileSize) - zOffset);
+  }
 
   [ContextMenu("Generate")]
   public void Generate()
@@ -42,6 +53,8 @@ public class DungeonTilePlacer3D : MonoBehaviour
 
     Clear();
     EnsureGeneratedRoot();
+
+    variantRandom = new System.Random(sourceGenerator.LastUsedSeed);
 
     int width = metadata.GetLength(0);
     int height = metadata.GetLength(1);
@@ -75,39 +88,25 @@ public class DungeonTilePlacer3D : MonoBehaviour
   GameObject InstantiateTile(TileType type, Vector3 position, Quaternion rotation)
   {
     GameObject prefab = GetPrefab(type);
-    Vector3 offsetPosition = position + (rotation * GetPivotOffset(type));
-    return prefab != null ? Instantiate(prefab, offsetPosition, rotation) : CreatePlaceholder(type, offsetPosition, rotation);
-  }
-
-  Vector3 GetPivotOffset(TileType type)
-  {
-    switch (type)
-    {
-      case TileType.Floor:
-        return tileSet.floorPivotOffset;
-      case TileType.Wall:
-        return tileSet.wallPivotOffset;
-      case TileType.Door:
-        return tileSet.doorPivotOffset;
-      case TileType.Corner:
-        return tileSet.cornerPivotOffset;
-      default:
-        return Vector3.zero;
-    }
+    return prefab != null ? Instantiate(prefab, position, rotation) : CreatePlaceholder(type, position, rotation);
   }
 
   GameObject GetPrefab(TileType type)
   {
+    GameObject[] variants = GetPrefabVariants(type);
+    return variants == null || variants.Length == 0 ? null : variants[variantRandom.Next(variants.Length)];
+  }
+
+  GameObject[] GetPrefabVariants(TileType type)
+  {
     switch (type)
     {
       case TileType.Floor:
-        return tileSet.floorPrefab;
+        return tileSet.floorPrefabs;
       case TileType.Wall:
-        return tileSet.wallPrefab;
+        return tileSet.wallPrefabs;
       case TileType.Door:
-        return tileSet.doorPrefab;
-      case TileType.Corner:
-        return tileSet.cornerPrefab;
+        return tileSet.doorPrefabs;
       default:
         return null;
     }
@@ -132,8 +131,6 @@ public class DungeonTilePlacer3D : MonoBehaviour
         return new Vector3(tileSize, tileSize, 0.2f);
       case TileType.Door:
         return new Vector3(tileSize * 0.6f, tileSize * 0.8f, 0.2f);
-      case TileType.Corner:
-        return new Vector3(tileSize, tileSize, tileSize);
       default:
         return Vector3.one * tileSize;
     }
@@ -162,8 +159,6 @@ public class DungeonTilePlacer3D : MonoBehaviour
         return tileSet.wallColor;
       case TileType.Door:
         return tileSet.doorColor;
-      case TileType.Corner:
-        return tileSet.cornerColor;
       default:
         return Color.magenta;
     }
@@ -174,70 +169,12 @@ public class DungeonTilePlacer3D : MonoBehaviour
     switch (tile.Type)
     {
       case TileType.Wall:
-        return GetFacingRotation(tile.Floors);
+        return DirectionUtility.GetFacingRotation(tile.Floors);
       case TileType.Door:
-        return GetFacingRotation(tile.DoorRoomSide);
-      case TileType.Corner:
-        return GetCornerRotation(tile.Floors);
+        return DirectionUtility.GetFacingRotation(tile.DoorRoomSide);
       default:
         return Quaternion.identity;
     }
-  }
-
-  Quaternion GetFacingRotation(Direction floors)
-  {
-    Vector3 facing = GetFacingDirection(floors);
-    return facing == Vector3.zero ? Quaternion.identity : Quaternion.LookRotation(facing, Vector3.up);
-  }
-
-  Quaternion GetCornerRotation(Direction floors)
-  {
-    if ((floors & Direction.NorthEast) != Direction.None)
-    {
-      return Quaternion.identity;
-    }
-
-    if ((floors & Direction.SouthEast) != Direction.None)
-    {
-      return Quaternion.Euler(0f, 90f, 0f);
-    }
-
-    if ((floors & Direction.SouthWest) != Direction.None)
-    {
-      return Quaternion.Euler(0f, 180f, 0f);
-    }
-
-    if ((floors & Direction.NorthWest) != Direction.None)
-    {
-      return Quaternion.Euler(0f, 270f, 0f);
-    }
-
-    return Quaternion.identity;
-  }
-
-  Vector3 GetFacingDirection(Direction floors)
-  {
-    if ((floors & Direction.North) != Direction.None)
-    {
-      return Vector3.forward;
-    }
-
-    if ((floors & Direction.East) != Direction.None)
-    {
-      return Vector3.right;
-    }
-
-    if ((floors & Direction.South) != Direction.None)
-    {
-      return Vector3.back;
-    }
-
-    if ((floors & Direction.West) != Direction.None)
-    {
-      return Vector3.left;
-    }
-
-    return Vector3.zero;
   }
 
   void EnsureGeneratedRoot()

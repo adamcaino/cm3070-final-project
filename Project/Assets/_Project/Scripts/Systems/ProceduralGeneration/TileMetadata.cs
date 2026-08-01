@@ -1,10 +1,9 @@
 /// <summary>
 /// Per-tile data describing what a tile is and what surrounds it, derived from a TileType[,] grid.
-/// Walls/Doorways/Floors are flags rather than a single tag so combinations (e.g. two adjacent walls
-/// forming a corner) fall out of the data instead of needing their own enum case. Floors carries both
-/// cardinal (North/East/South/West) and diagonal (NorthEast/etc.) bits: a Wall tile with a cardinal
-/// Floors bit is a straight wall facing that direction; a Wall tile with only a diagonal Floors bit is
-/// a corner (it only survived void-culling because of that diagonal floor tile).
+/// Walls/Doorways/Floors are flags rather than a single tag so combinations fall out of the data
+/// instead of needing their own enum case. Floors carries both cardinal (North/East/South/West) and
+/// diagonal (NorthEast/etc.) bits: a Wall tile with a cardinal Floors bit is a straight wall facing
+/// that direction.
 /// </summary>
 public struct TileMetadata
 {
