@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919967db540743146803e7c893120ea4, type: 3}
+  m_Name: PropSet
+  m_EditorClassIdentifier: Assembly-CSharp::PropSet
+  wallProps:
+  - {fileID: 187152, guid: be116316d74b1c843aa4723d6b1cbd75, type: 3}
+  - {fileID: 159302, guid: 9ea57a7556364dc40bde7100b7472e9f, type: 3}
+  - {fileID: 188314, guid: d81f36a2e60d4e3439795cb2025be89d, type: 3}
+  - {fileID: 198228, guid: 7c3ca7162dce0fa45b56b0ddcc3dbd43, type: 3}
+  - {fileID: 104734, guid: aa706ce3b4dbb094bacad8da5a646b79, type: 3}
+  - {fileID: 184380, guid: 8b85264d64e9e2b4ca1f7e0ccd865b7e, type: 3}
+  - {fileID: 198824, guid: d8e16ee15835f344ca99d0aee677a2b5, type: 3}
+  - {fileID: 132048, guid: 10a0e1f3562db2c48b3c95747552c161, type: 3}
+  - {fileID: 146280, guid: 5f7f98ed84607364bad0d64d0a1e196b, type: 3}
+  wallPropChance: 1
+  wallPositionJitter: 0.3
+  floorProps:
+  - {fileID: 123292, guid: 6add02fc34d9dd94eac23b6662aa046e, type: 3}
+  - {fileID: 100352, guid: 9dd1fef2c903fad4aa2742a14310d828, type: 3}
+  - {fileID: 175928, guid: 54ef48d2526324f4b8429137f7047f63, type: 3}
+  - {fileID: 145852, guid: 0a3c1d99198ee72438dfb09e10c7ce35, type: 3}
+  - {fileID: 152086, guid: 3af22f27f469e2f499f2d46d031546c1, type: 3}
+  - {fileID: 152086, guid: 5af59833035c18547a951e2088cf571b, type: 3}
+  - {fileID: 179390, guid: 24b790e54c80b0a4fbcb12416a3a2606, type: 3}
+  - {fileID: 179390, guid: 342866ef08be9d047a6b2421ab2c309d, type: 3}
+  - {fileID: 192992, guid: a3442956933709b45b2051c64a7a8a09, type: 3}
+  - {fileID: 192992, guid: bea6f65e95d6fe142a8214bc53581917, type: 3}
+  - {fileID: 159436, guid: 69a1214a04a8fb44ebecd7e2849eb32a, type: 3}
+  - {fileID: 159436, guid: 427ce9a6fcd472c4cbd4132cd79d7ede, type: 3}
+  - {fileID: 152268, guid: 81e2df90881413b4a94e92fd1ad2dee7, type: 3}
+  - {fileID: 187504, guid: 1fef441586749434fbe4c8146282b968, type: 3}
+  - {fileID: 140672, guid: d4b8c2a71ab1d26458caf9e134a6893b, type: 3}
+  - {fileID: 186904, guid: 68f2bd8cd44389f44af545a8cefac693, type: 3}
+  - {fileID: 165448, guid: 8afbaec00de8273418927c3ed48a3bba, type: 3}
+  floorPropChance: 1
+  floorPositionJitter: 0.3
+  floorRotationJitterDegrees: 60
