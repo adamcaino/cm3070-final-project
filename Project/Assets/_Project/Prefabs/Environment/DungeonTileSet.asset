@@ -21,7 +21,6 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 851595ababb411b44bcfb52099ca195e, type: 3}
   - {fileID: 919132149155446097, guid: 9abadbfe5b394c948b732b28a6d4c8cb, type: 3}
   - {fileID: 919132149155446097, guid: 6982e7f852176f74bb509836d6dab988, type: 3}
-  - {fileID: 919132149155446097, guid: c7aecdbc841a406498b77c6c6fd8b258, type: 3}
   doorPrefabs:
   - {fileID: 7856071335390764979, guid: bed52056240058f4b9db5208141dc2b0, type: 3}
   - {fileID: 4674481849839134612, guid: ccacc43c2f9b28740916cb7fcbc1d946, type: 3}
