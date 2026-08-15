@@ -13,15 +13,21 @@ MonoBehaviour:
   m_Name: PropSet
   m_EditorClassIdentifier: Assembly-CSharp::PropSet
   wallProps:
-  - {fileID: 187152, guid: be116316d74b1c843aa4723d6b1cbd75, type: 3}
-  - {fileID: 159302, guid: 9ea57a7556364dc40bde7100b7472e9f, type: 3}
-  - {fileID: 188314, guid: d81f36a2e60d4e3439795cb2025be89d, type: 3}
-  - {fileID: 198228, guid: 7c3ca7162dce0fa45b56b0ddcc3dbd43, type: 3}
-  - {fileID: 104734, guid: aa706ce3b4dbb094bacad8da5a646b79, type: 3}
-  - {fileID: 184380, guid: 8b85264d64e9e2b4ca1f7e0ccd865b7e, type: 3}
-  - {fileID: 198824, guid: d8e16ee15835f344ca99d0aee677a2b5, type: 3}
-  - {fileID: 132048, guid: 10a0e1f3562db2c48b3c95747552c161, type: 3}
-  - {fileID: 146280, guid: 5f7f98ed84607364bad0d64d0a1e196b, type: 3}
+  - {fileID: 919132149155446097, guid: a3dddec60adc9be4094dee1bfc5b3c99, type: 3}
+  - {fileID: 919132149155446097, guid: db6a4091a5d7bb24d94a0f7e20ceab6e, type: 3}
+  - {fileID: 919132149155446097, guid: 03e0d8011605df04cabe58648f27b40c, type: 3}
+  - {fileID: 919132149155446097, guid: c73d2d53bc7352b439baf375187fce67, type: 3}
+  - {fileID: 919132149155446097, guid: 9e0028b42cffffd4c9d35adb4669600c, type: 3}
+  - {fileID: 919132149155446097, guid: 1974490b452eeb9448dd945d2a4b5b34, type: 3}
+  - {fileID: 919132149155446097, guid: 23ded2954c8dd40489d5546efa7191d3, type: 3}
+  - {fileID: 919132149155446097, guid: 791db261c32b4974887042646f5756f0, type: 3}
+  - {fileID: 919132149155446097, guid: cfb60d4f53a209047876089e4254ae06, type: 3}
+  - {fileID: 919132149155446097, guid: c04b4688fe39bcf44b6bffd111d8e841, type: 3}
+  - {fileID: 919132149155446097, guid: 31b51f7540dcbbb43a64837e71815da3, type: 3}
+  - {fileID: 919132149155446097, guid: d5d9c11ae4ddce94ba053dce2e270c63, type: 3}
+  - {fileID: 919132149155446097, guid: ad0e7cfb4f0eb2c4f8990c24582be752, type: 3}
+  - {fileID: 919132149155446097, guid: 9a25f89bc6d4eb2468a1083f135665d4, type: 3}
+  - {fileID: 919132149155446097, guid: 73c081a05a2213c4884c2f56fb61216e, type: 3}
   wallPropChance: 1
   wallPositionJitter: 0.3
   floorProps:

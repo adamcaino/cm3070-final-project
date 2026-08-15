@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: -8679921383154817045}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 8839096478568990990}
   - component: {fileID: 2710921390273160778}
   - component: {fileID: 2125811794511402647}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: wall_cracked (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 4882871383871640409}
   - component: {fileID: 770537381022438947}
   - component: {fileID: 4221734930209807773}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: wall_cracked (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -222,7 +222,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1744435601335254320}
   - component: {fileID: 3100298012782286440}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -280,7 +280,7 @@ GameObject:
   - component: {fileID: 1328960697411982251}
   - component: {fileID: 485071050424091601}
   - component: {fileID: 8856154766041631274}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: wall_cracked (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -370,7 +370,7 @@ GameObject:
   - component: {fileID: 1354537163215795501}
   - component: {fileID: 4479495910066386189}
   - component: {fileID: 877168836502678365}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: wall_cracked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
