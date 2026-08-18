@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7f5b4cc4fc8c5c04fad2b5f421f8bb6b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 361042
+  packageName: KayKit - Fantasy Weapons Bits (for Unity)
+  packageVersion: 1.0
+  assetPath: Assets/KayKit/Packs/Bits/KayKit - Fantasy Weapons Bits (for Unity)/Materials/weapons_glow.mat
+  uploadId: 860720
