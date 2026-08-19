@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 2819390325894406846}
   - component: {fileID: 7124864164025246497}
   - component: {fileID: 6745438340264226822}
+  - component: {fileID: 8327425094529276409}
   m_Layer: 8
   m_Name: barrel_small
   m_TagString: Untagged
@@ -146,3 +147,19 @@ CapsuleCollider:
   m_Height: 1.25
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!208 &8327425094529276409
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478215807219989510}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.5, y: 0.625, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.5, z: 0}
+  m_TimeToStationary: 0.5

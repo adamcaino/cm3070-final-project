@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 7183188781646146529}
   - component: {fileID: 3661034133760380074}
   - component: {fileID: 5114133743119349360}
+  - component: {fileID: 4353327355223528866}
   m_Layer: 8
   m_Name: bookcase_double_decoratedA
   m_TagString: Untagged
@@ -144,3 +145,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4, y: 3, z: 0.54943085}
   m_Center: {x: 0, y: 1.5, z: 0.014714211}
+--- !u!208 &4353327355223528866
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6774240534451980750}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 2, y: 1.5000001, z: 0.275}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1.5000001, z: 0.015000001}
+  m_TimeToStationary: 0.5
