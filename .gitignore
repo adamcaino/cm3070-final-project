@@ -35,6 +35,7 @@
 
 # Visual Studio cache directory
 .vs/
+./Project/.vscode/
 
 # Gradle cache directory
 .gradle/
@@ -102,3 +103,6 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 **/[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Ignore "Universal Sound FX"
+**/[Aa]ssets/Universal Sound FX/

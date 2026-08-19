@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Breakable
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -17,8 +18,8 @@ TagManager:
   - Projectile
   - Environment
   - Occlusion
-  - 
-  - 
+  - Floor
+  - Enemy
   - 
   - 
   - 
