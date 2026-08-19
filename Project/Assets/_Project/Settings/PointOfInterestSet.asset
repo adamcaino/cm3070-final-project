@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3572239a660d6eb449181af2da2d3ae4, type: 3}
+  m_Name: PointOfInterestSet
+  m_EditorClassIdentifier: Assembly-CSharp::PointOfInterestSet
+  spawnPortalPrefab: {fileID: 115111439968768042, guid: 2c0faa1f9d2877645bed7a7e2d2bc103, type: 3}
+  spawnPortalColor: {r: 0.2, g: 0.6, b: 1, a: 1}
+  bossPortalPrefab: {fileID: 0}
+  bossPortalColor: {r: 0.6, g: 0, b: 0, a: 1}
+  normalChestPrefabs: []
+  normalChestColor: {r: 1, g: 0.85, b: 0, a: 1}
+  cursedChestPrefabs: []
+  cursedChestColor: {r: 0.45, g: 0, b: 0.55, a: 1}
+  cursedChestChance: 0.25
