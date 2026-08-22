@@ -1635,6 +1635,10 @@ PrefabInstance:
       propertyPath: maxHealth
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 1294956345480066201, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: getHitChance
+      value: 0.05
+      objectReference: {fileID: 0}
     - target: {fileID: 1320465464072123591, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_Avatar
       value: 
@@ -1668,12 +1672,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8339616953708558886, guid: 9a3f07b9aa1503b418a10af46a524b32, type: 3}
     - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: cooldown
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: maxAngle
       value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: maxRange
-      value: 4.5
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: minRange
@@ -1683,17 +1691,21 @@ PrefabInstance:
       propertyPath: hitCollider
       value: 
       objectReference: {fileID: 8872011989829620380}
+    - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: recoveryTime
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.37
+      value: -15
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.07
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1818,15 +1830,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlamethrowerAttack
   minRange: 0
-  maxRange: 5
+  maxRange: 3
   minAngle: 0
   maxAngle: 120
-  cooldown: 5
-  recoveryTime: 0.6
-  priority: 0
+  cooldown: 1
+  recoveryTime: 0
+  priority: 1
   attackAnimationIndex: 1
   damage: 1
   flamethrowerVFX: {fileID: 8927199658405341219}
+  vfxLingerTime: 1
 --- !u!4 &3378684554605637378 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3503377346613577585, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
@@ -1982,6 +1995,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 19891236, guid: bf3207238f5565442b1ac1f843ca9c90, type: 3}
+      propertyPath: LightsModule.maxLights
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 19891236, guid: bf3207238f5565442b1ac1f843ca9c90, type: 3}
       propertyPath: CollisionModule.enabled
       value: 1
       objectReference: {fileID: 0}
@@ -2038,7 +2055,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ce57dd1026ce614390e4a69734c2c19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlameHitbox
-  tickInterval: 0.25
+  tickInterval: 0.5
 --- !u!82 &3588519542618017283
 AudioSource:
   m_ObjectHideFlags: 0
