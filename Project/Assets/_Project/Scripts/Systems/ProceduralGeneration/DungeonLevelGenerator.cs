@@ -13,7 +13,9 @@ public class DungeonLevelGenerator : MonoBehaviour
   [SerializeField] DungeonGridGenerator2D gridGenerator;
   [SerializeField] DungeonTilePlacer3D tilePlacer;
   [SerializeField] DungeonPropPlacer3D propPlacer;
+  [SerializeField] DungeonNavMeshBaker navMeshBaker;
   [SerializeField] DungeonPointOfInterestPlacer3D poiPlacer;
+  [SerializeField] DungeonEnemyPlacer3D enemyPlacer;
 
   [Header("Reproducibility")]
   [SerializeField] bool generateOnStart;
@@ -37,7 +39,9 @@ public class DungeonLevelGenerator : MonoBehaviour
     gridGenerator.Generate();
     tilePlacer.Generate();
     propPlacer.Generate();
+    navMeshBaker.Generate();
     poiPlacer.Generate();
+    enemyPlacer.Generate();
   }
 
   public void Generate(int seed)
@@ -50,13 +54,17 @@ public class DungeonLevelGenerator : MonoBehaviour
     gridGenerator.Generate(seed);
     tilePlacer.Generate();
     propPlacer.Generate();
+    navMeshBaker.Generate();
     poiPlacer.Generate();
+    enemyPlacer.Generate();
   }
 
   [ContextMenu("Clear")]
   public void Clear()
   {
+    enemyPlacer?.Clear();
     poiPlacer?.Clear();
+    navMeshBaker?.Clear();
     propPlacer?.Clear();
     tilePlacer?.Clear();
     gridGenerator?.Clear();
@@ -64,12 +72,12 @@ public class DungeonLevelGenerator : MonoBehaviour
 
   bool HasAllReferences()
   {
-    if (gridGenerator != null && tilePlacer != null && propPlacer != null && poiPlacer != null)
+    if (gridGenerator != null && tilePlacer != null && propPlacer != null && navMeshBaker != null && poiPlacer != null && enemyPlacer != null)
     {
       return true;
     }
 
-    Debug.LogWarning($"{nameof(DungeonLevelGenerator)} is missing a grid generator, tile placer, prop placer, or point of interest placer.");
+    Debug.LogWarning($"{nameof(DungeonLevelGenerator)} is missing a grid generator, tile placer, prop placer, navmesh baker, point of interest placer, or enemy placer.");
     return false;
   }
 }

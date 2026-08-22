@@ -20,11 +20,18 @@ public class PlayerLocomotion : MonoBehaviour
   [SerializeField, Min(0f)] float rotationSpeed = 720f;
   [SerializeField, Min(0f)] float gravity = 20f;
 
+  [Header("Target Lock")]
+  [Tooltip("How long the body takes to turn onto a newly locked/cycled target, instead of snapping - 0 is an instant snap. Ongoing tracking of a single locked target's movement isn't affected, only the moment of switching.")]
+  [SerializeField, Min(0f)] float lockedTurnDuration = 0.5f;
+
   CharacterController controller;
   Transform cameraTransform;
+  TargetLockController targetLock;
   Vector2 moveInput;
   Vector2 effectiveMoveInput;
   float verticalVelocity;
+  float lockedTurnTimer;
+  Quaternion lockedTurnStartRotation;
 
   public float CurrentSpeed { get; private set; }
   public Vector3 PlanarVelocity { get; private set; }
@@ -36,16 +43,33 @@ public class PlayerLocomotion : MonoBehaviour
   {
     controller = GetComponent<CharacterController>();
     cameraTransform = Camera.main != null ? Camera.main.transform : null;
+    targetLock = GetComponent<TargetLockController>();
   }
 
   void OnEnable()
   {
     moveAction?.action.Enable();
+
+    if (targetLock != null)
+    {
+      targetLock.OnLockOn += HandleLockOn;
+    }
   }
 
   void OnDisable()
   {
     moveAction?.action.Disable();
+
+    if (targetLock != null)
+    {
+      targetLock.OnLockOn -= HandleLockOn;
+    }
+  }
+
+  void HandleLockOn(Transform target)
+  {
+    lockedTurnTimer = 0f;
+    lockedTurnStartRotation = transform.rotation;
   }
 
   void Update()
@@ -55,7 +79,9 @@ public class PlayerLocomotion : MonoBehaviour
       moveInput.x,
       moveInput.y < 0f ? moveInput.y * backwardSpeedMultiplier : moveInput.y);
 
-    Vector3 moveDirection = CalculateMoveDirection();
+    Transform lockedTarget = targetLock != null && targetLock.IsLocked ? targetLock.LockedTarget : null;
+
+    Vector3 moveDirection = lockedTarget != null ? CalculateLockedMoveDirection(lockedTarget) : CalculateMoveDirection();
     ApplyGravity();
 
     Vector3 motion = (moveDirection * moveSpeed) + (Vector3.up * verticalVelocity);
@@ -64,7 +90,14 @@ public class PlayerLocomotion : MonoBehaviour
     PlanarVelocity = new Vector3(motion.x, 0f, motion.z);
     CurrentSpeed = PlanarVelocity.magnitude;
 
-    RotateTowardsCamera();
+    if (lockedTarget != null)
+    {
+      RotateTowardsTarget(lockedTarget);
+    }
+    else
+    {
+      RotateTowardsCamera();
+    }
   }
 
   Vector3 CalculateMoveDirection()
@@ -91,6 +124,46 @@ public class PlayerLocomotion : MonoBehaviour
 
     Vector3 direction = (forward * effectiveMoveInput.y) + (right * effectiveMoveInput.x);
     return direction.sqrMagnitude > 1f ? direction.normalized : direction;
+  }
+
+  Vector3 CalculateLockedMoveDirection(Transform target)
+  {
+    if (effectiveMoveInput.sqrMagnitude < 0.0001f)
+    {
+      return Vector3.zero;
+    }
+
+    Vector3 forward = Vector3.ProjectOnPlane(target.position - transform.position, Vector3.up).normalized;
+    if (forward.sqrMagnitude < 0.0001f)
+    {
+      return Vector3.zero;
+    }
+
+    Vector3 right = Vector3.Cross(Vector3.up, forward);
+    Vector3 direction = (forward * effectiveMoveInput.y) + (right * effectiveMoveInput.x);
+    return direction.sqrMagnitude > 1f ? direction.normalized : direction;
+  }
+
+  void RotateTowardsTarget(Transform target)
+  {
+    Vector3 forward = Vector3.ProjectOnPlane(target.position - transform.position, Vector3.up);
+    if (forward.sqrMagnitude < 0.0001f)
+    {
+      return;
+    }
+
+    Quaternion targetRotation = Quaternion.LookRotation(forward, Vector3.up);
+
+    if (lockedTurnTimer < lockedTurnDuration)
+    {
+      lockedTurnTimer += Time.deltaTime;
+      float t = lockedTurnDuration > 0f ? Mathf.Clamp01(lockedTurnTimer / lockedTurnDuration) : 1f;
+      transform.rotation = Quaternion.Slerp(lockedTurnStartRotation, targetRotation, t);
+    }
+    else
+    {
+      transform.rotation = targetRotation;
+    }
   }
 
   void RotateTowardsCamera()
