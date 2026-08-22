@@ -245,6 +245,8 @@ GameObject:
   - component: {fileID: 368994889340158225}
   - component: {fileID: 5282451526283921465}
   - component: {fileID: 8052257905713045075}
+  - component: {fileID: 4515826197927904166}
+  - component: {fileID: 3752070151079720267}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -334,6 +336,7 @@ MonoBehaviour:
   backwardSpeedMultiplier: 0.5
   rotationSpeed: 1080
   gravity: 20
+  lockedTurnDuration: 0.5
 --- !u!114 &2561254430613787946
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -470,7 +473,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ac65ad36d5aa0594bb2a3055b7e4497f, type: 3}
   - {fileID: 8300000, guid: f80902ebd45b25345905b1875545973d, type: 3}
   stepDistance: 1.6
-  volume: 0.15
+  volume: 0.3
   pitchVariance: 0.15
   minMoveSpeed: 0.1
 --- !u!82 &5282451526283921465
@@ -593,6 +596,47 @@ CapsuleCollider:
   m_Height: 1.7
   m_Direction: 1
   m_Center: {x: 0, y: 0.92, z: 0}
+--- !u!114 &4515826197927904166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bf7bea829f118c478b5c8b4f7f761ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetLockController
+  lockTargetAction: {fileID: -8158819135931090493, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
+  cycleTargetAction: {fileID: -2815850487529766735, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  lockRange: 10
+  unlockRange: 12
+  maxLockAngle: 90
+  eyeHeight: 1
+--- !u!114 &3752070151079720267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec468d02566b19845a792c1b233ff448, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLockOnCamera
+  targetLock: {fileID: 4515826197927904166}
+  orbitalVcam: {fileID: 0}
+  lockOnVcam: {fileID: 0}
+  freePriorityOffset: -1
+  lockedPriorityOffset: 20
 --- !u!1001 &299330332136971605
 PrefabInstance:
   m_ObjectHideFlags: 0
