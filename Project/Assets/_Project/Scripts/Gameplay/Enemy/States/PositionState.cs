@@ -59,11 +59,15 @@ public class PositionState : IEnemyState
     // against the attack trigger - only ever attack once the enemy has actually come to a stop.
     if (!enemy.IsMoving)
     {
+      // Rolled once per decision rather than per-frame: the highest-priority match gets first refusal via
+      // its SelectionChance, and a miss falls through to the next-best match in the same pass instead of
+      // re-rolling next frame, so a sub-1 chance thins out how often an attack wins without ever stalling
+      // the enemy when nothing else is in range.
       IAttack matchingAttack = enemy.Attacks
-        .Where(a => distance >= a.MinRange && distance <= a.MaxRange
+        .Where(a => a.CanExecute && distance >= a.MinRange && distance <= a.MaxRange
           && angle >= a.MinAngle && angle <= a.MaxAngle)
         .OrderByDescending(a => a.Priority)
-        .FirstOrDefault();
+        .FirstOrDefault(a => Random.value <= a.SelectionChance);
 
       if (matchingAttack != null)
       {

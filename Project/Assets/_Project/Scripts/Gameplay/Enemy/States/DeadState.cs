@@ -19,7 +19,12 @@ public class DeadState : IEnemyState
       enemyCollider.enabled = false;
     }
 
-    if (enemy.Animator != null)
+    // Frozen deaths swap straight to the Enemy_Death_Frozen prefab (EnemyDeathVFX) instead of playing
+    // the normal death animation - the Animator's paused (speed 0) while frozen anyway, so triggering
+    // it here would just queue an animation that never plays before the object is destroyed.
+    bool diedFrozen = enemy.StatusEffects != null && enemy.StatusEffects.IsFrozen;
+
+    if (!diedFrozen && enemy.Animator != null)
     {
       enemy.Animator.SetBool(DeadParam, true);
     }

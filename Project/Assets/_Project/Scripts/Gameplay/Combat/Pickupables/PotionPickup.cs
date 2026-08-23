@@ -2,9 +2,8 @@ using UnityEngine;
 
 public class PotionPickup : PickupBase
 {
-  [SerializeField] int healAmount = 1;
+  [SerializeField] int healAmount = 2;
   [SerializeField] GameObject pickupVfxPrefab;
-  [SerializeField] AudioClip pickupSfxClip;
 
   protected override bool TryApplyEffect(Collider player)
   {
@@ -18,5 +17,4 @@ public class PotionPickup : PickupBase
   }
 
   protected override void PlayPickupVfx() => SpawnVfx(pickupVfxPrefab);
-  protected override void PlayPickupSfx() => PlaySfx(pickupSfxClip);
 }

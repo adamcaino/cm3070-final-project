@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -22,6 +23,10 @@ public class PlayerWeapon : MonoBehaviour
   bool socketCleared;
 
   public WeaponData Current { get; private set; }
+  public int RemainingUses { get; private set; }
+
+  public event Action<WeaponData> OnWeaponChanged;
+  public event Action<int, int> OnManaChanged;
 
   void Awake()
   {
@@ -75,8 +80,12 @@ public class PlayerWeapon : MonoBehaviour
     }
 
     Current = weapon;
+    RemainingUses = weapon.maxUses;
 
     UpdateAmbience(weapon);
+
+    OnWeaponChanged?.Invoke(weapon);
+    OnManaChanged?.Invoke(RemainingUses, weapon.maxUses);
   }
 
   void UpdateAmbience(WeaponData weapon)
@@ -132,9 +141,25 @@ public class PlayerWeapon : MonoBehaviour
     Vector3 hitPoint = other.ClosestPoint(equippedHitbox.transform.position);
     damageable.TakeDamage(Current.damage, gameObject, hitPoint);
 
-    if (Current.afflictionType == AfflictionType.None) return;
+    if (Current.afflictionType != AfflictionType.None)
+    {
+      IAfflictable afflictable = other.GetComponentInParent<IAfflictable>();
+      afflictable?.ApplyAffliction(Current.afflictionType, Current.afflictionDuration, Current.afflictionMagnitude, gameObject);
+    }
 
-    IAfflictable afflictable = other.GetComponentInParent<IAfflictable>();
-    afflictable?.ApplyAffliction(Current.afflictionType, Current.afflictionDuration, Current.afflictionMagnitude, gameObject);
+    ConsumeUse();
+  }
+
+  void ConsumeUse()
+  {
+    if (!Current.IsSpecial) return;
+
+    RemainingUses = Mathf.Max(0, RemainingUses - 1);
+    OnManaChanged?.Invoke(RemainingUses, Current.maxUses);
+
+    if (RemainingUses <= 0)
+    {
+      Equip(defaultWeapon);
+    }
   }
 }

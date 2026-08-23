@@ -3,9 +3,21 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public abstract class PickupBase : MonoBehaviour
 {
+  [SerializeField] float rotationSpeed = 90f;
+  Transform cachedTransform;
+
   void Awake()
   {
+    cachedTransform = transform;
     GetComponent<Collider>().isTrigger = true;
+  }
+
+  void Update()
+  {
+    if (Mathf.Approximately(rotationSpeed, 0f)) return;
+
+    // Rotate the pickup for a simple visual effect.
+    cachedTransform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f, Space.World);
   }
 
   void OnTriggerEnter(Collider other)
@@ -14,7 +26,6 @@ public abstract class PickupBase : MonoBehaviour
     if (!TryApplyEffect(other)) return;
 
     PlayPickupVfx();
-    PlayPickupSfx();
     Destroy(gameObject);
   }
 
@@ -28,14 +39,6 @@ public abstract class PickupBase : MonoBehaviour
     if (vfxPrefab != null)
     {
       Instantiate(vfxPrefab, transform.position, Quaternion.identity);
-    }
-  }
-
-  protected void PlaySfx(AudioClip clip)
-  {
-    if (clip != null)
-    {
-      AudioSource.PlayClipAtPoint(clip, transform.position);
     }
   }
 }

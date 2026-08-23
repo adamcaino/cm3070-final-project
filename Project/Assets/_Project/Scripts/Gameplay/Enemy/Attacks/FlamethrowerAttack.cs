@@ -35,6 +35,8 @@ public class FlamethrowerAttack : AttackBase
 
   void HandleDied() => DisableFlame();
 
+  public override void Interrupt() => DisableFlame();
+
   protected override void OnExecute(EnemyController enemy)
   {
     PlayAttackAnimation(enemy);
