@@ -8,8 +8,7 @@ public class WeaponHitbox : MonoBehaviour
 {
   Collider hitCollider;
 
-  // Keyed by IDamageable rather than Collider - a target can present more than one collider, and those
-  // should still only ever count as a single hit per swing.
+  // Keyed by IDamageable so multiple colliders count as one hit per swing.
   readonly HashSet<IDamageable> hitThisSwing = new HashSet<IDamageable>();
 
   public event Action<Collider> OnHit;
@@ -41,9 +40,9 @@ public class WeaponHitbox : MonoBehaviour
     // Prevent Player from hitting themselves.
     if (other.CompareTag("Player")) return;
 
-    // GetComponentInParent, not GetComponent - the collider that's actually hit (e.g. an enemy's Body
-    // collider on a child bone) often isn't on the same GameObject as Health itself.
+    // Find damageable components on parent objects of child colliders.
     IDamageable damageable = other.GetComponentInParent<IDamageable>();
+
     if (damageable == null) return;
     if (!hitThisSwing.Add(damageable)) return;
 

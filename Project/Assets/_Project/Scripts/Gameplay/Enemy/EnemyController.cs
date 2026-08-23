@@ -2,12 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-/// <summary>
-/// Thin context object for the state machine - holds the current state and shared references/tuning that
-/// every state needs (agent, animator, player, attacks) so states themselves stay plain C# classes with
-/// no MonoBehaviour/Inspector concerns of their own. Death is handled here rather than inside whichever
-/// state is active, since it's a valid interrupt from any state, not a transition any one state decides on.
-/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(EnemyDetection))]
@@ -33,10 +27,14 @@ public class EnemyController : MonoBehaviour
 
   IEnemyState currentState;
 
+  // Stops state-driven movement/facing while frozen without disabling the component.
+  public bool IsFrozen { get; set; }
+
   public NavMeshAgent Agent { get; private set; }
   public Animator Animator { get; private set; }
   public Health Health { get; private set; }
   public EnemyDetection Detection { get; private set; }
+  public StatusEffectReceiver StatusEffects { get; private set; }
   public Transform Player { get; private set; }
   public IReadOnlyList<IAttack> Attacks { get; private set; }
 
@@ -45,9 +43,7 @@ public class EnemyController : MonoBehaviour
   public float RotationSpeed => rotationSpeed;
   public float AggroMemoryDuration => aggroMemoryDuration;
 
-  // Single source of truth for "is this enemy currently moving" - both animation (EnemyAnimationDriver)
-  // and gameplay logic (e.g. PositionState gating attacks) read this instead of each computing their own
-  // velocity check, so they can't disagree about the enemy's movement state on any given frame.
+  // Shared movement state for animation and gameplay logic.
   public bool IsMoving => Agent.velocity.sqrMagnitude > movingSpeedThreshold * movingSpeedThreshold;
 
   void Awake()
@@ -56,6 +52,7 @@ public class EnemyController : MonoBehaviour
     Animator = GetComponent<Animator>();
     Health = GetComponent<Health>();
     Detection = GetComponent<EnemyDetection>();
+    StatusEffects = GetComponent<StatusEffectReceiver>();
     Attacks = GetComponents<IAttack>();
 
     GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYERTAG);
@@ -79,6 +76,8 @@ public class EnemyController : MonoBehaviour
 
   void Update()
   {
+    if (IsFrozen) return;
+
     currentState?.Tick(this);
   }
 
@@ -89,9 +88,7 @@ public class EnemyController : MonoBehaviour
     currentState?.Enter(this);
   }
 
-  // Shared by any "aware" state (Position, Attack) that wants to keep turning to face the player under
-  // manual control rather than the NavMeshAgent's own movement-coupled rotation. Slerps rather than
-  // rotating at a constant angular speed so the turn eases out instead of snapping to face the target.
+  // Smoothly faces the target for aware states using manual rotation.
   public void FaceTowards(Vector3 worldPosition)
   {
     Vector3 direction = worldPosition - transform.position;

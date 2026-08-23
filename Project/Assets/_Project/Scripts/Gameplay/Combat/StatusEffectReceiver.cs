@@ -2,27 +2,55 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-/// <summary>
-/// Applies Burn (periodic Health damage) and Freeze (NavMeshAgent speed to zero) over time. Only one
-/// affliction is active at a time - a new application replaces whatever's running rather than
-/// stacking, restoring Freeze's cached speed first so it can't stomp the agent's real base speed.
-/// </summary>
 [RequireComponent(typeof(Health))]
 public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 {
   const float BurnTickInterval = 1f;
 
+  [SerializeField] Color freezeColour = new Color(0.6f, 0.85f, 1f, 1f);
+  [SerializeField] GameObject burningEffectPrefab;
+
   Health health;
   NavMeshAgent agent;
+  Animator animator;
+  HitFlash hitFlash;
+  EnemyController enemyController;
+  Renderer[] renderers;
+  MaterialPropertyBlock propertyBlock;
+  Color[] cachedColours;
   Coroutine activeEffect;
+  GameObject activeBurningEffect;
   float cachedAgentSpeed;
+  float cachedAnimatorSpeed;
   bool isFrozen;
+
+  static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
+  static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
+
+  public bool IsFrozen => isFrozen;
 
   void Awake()
   {
     health = GetComponent<Health>();
     agent = GetComponent<NavMeshAgent>();
+    animator = GetComponentInChildren<Animator>();
+    hitFlash = GetComponent<HitFlash>();
+    enemyController = GetComponent<EnemyController>();
+    renderers = GetComponentsInChildren<Renderer>();
+    propertyBlock = new MaterialPropertyBlock();
   }
+
+  void OnEnable()
+  {
+    health.OnDied += HandleDied;
+  }
+
+  void OnDisable()
+  {
+    health.OnDied -= HandleDied;
+  }
+
+  void HandleDied() => EndBurn();
 
   public void ApplyAffliction(AfflictionType type, float duration, int magnitude, GameObject source)
   {
@@ -32,6 +60,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
       activeEffect = null;
     }
     EndFreeze();
+    EndBurn();
 
     switch (type)
     {
@@ -46,6 +75,11 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 
   IEnumerator BurnRoutine(float duration, int magnitude, GameObject source)
   {
+    if (burningEffectPrefab != null)
+    {
+      activeBurningEffect = Instantiate(burningEffectPrefab, GetMeshCenter(), Quaternion.identity, transform);
+    }
+
     float elapsed = 0f;
     while (elapsed < duration)
     {
@@ -54,13 +88,49 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 
       if (health.IsDead)
       {
+        EndBurn();
         yield break;
       }
 
       health.TakeDamage(magnitude, source, health.transform.position);
     }
 
+    EndBurn();
     activeEffect = null;
+  }
+
+  void EndBurn()
+  {
+    if (activeBurningEffect == null) return;
+
+    Destroy(activeBurningEffect);
+    activeBurningEffect = null;
+  }
+
+  // transform.position sits at the enemy's root/feet - union all its renderers' bounds instead so the
+  // effect centres on the visible mesh (a multi-part body like the dragon's could otherwise put it at
+  // whichever renderer happens to come first).
+  Vector3 GetMeshCenter()
+  {
+    bool hasBounds = false;
+    Bounds bounds = default;
+
+    foreach (Renderer rend in renderers)
+    {
+      if (rend == null) continue;
+
+      if (!hasBounds)
+      {
+        bounds = rend.bounds;
+        hasBounds = true;
+      }
+      else
+      {
+        bounds.Encapsulate(rend.bounds);
+      }
+    }
+
+    return hasBounds ? bounds.center : transform.position;
   }
 
   IEnumerator FreezeRoutine(float duration)
@@ -73,12 +143,91 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 
     cachedAgentSpeed = agent.speed;
     agent.speed = 0f;
+
+    if (animator != null)
+    {
+      cachedAnimatorSpeed = animator.speed;
+      animator.speed = 0f;
+    }
+
+    if (hitFlash != null)
+    {
+      hitFlash.Cancel();
+      hitFlash.enabled = false;
+    }
+
+    ApplyFreezeTint();
+
+    if (enemyController != null)
+    {
+      enemyController.IsFrozen = true;
+
+      foreach (IAttack attack in enemyController.Attacks)
+      {
+        attack.Interrupt();
+      }
+    }
+
     isFrozen = true;
 
     yield return new WaitForSeconds(duration);
 
     EndFreeze();
     activeEffect = null;
+  }
+
+  void ApplyFreezeTint()
+  {
+    if (renderers == null || renderers.Length == 0)
+    {
+      return;
+    }
+
+    cachedColours = new Color[renderers.Length];
+
+    for (int i = 0; i < renderers.Length; i++)
+    {
+      Renderer rend = renderers[i];
+      if (rend == null)
+      {
+        continue;
+      }
+
+      cachedColours[i] = rend.sharedMaterial != null && rend.sharedMaterial.HasProperty(BaseColorPropertyId)
+        ? rend.sharedMaterial.GetColor(BaseColorPropertyId)
+        : (rend.sharedMaterial != null && rend.sharedMaterial.HasProperty(ColorPropertyId)
+          ? rend.sharedMaterial.GetColor(ColorPropertyId)
+          : Color.white);
+
+      rend.GetPropertyBlock(propertyBlock);
+      propertyBlock.SetColor(BaseColorPropertyId, freezeColour);
+      propertyBlock.SetColor(ColorPropertyId, freezeColour);
+      rend.SetPropertyBlock(propertyBlock);
+    }
+  }
+
+  void RestoreTint()
+  {
+    if (renderers == null || cachedColours == null)
+    {
+      return;
+    }
+
+    for (int i = 0; i < renderers.Length; i++)
+    {
+      Renderer rend = renderers[i];
+      if (rend == null)
+      {
+        continue;
+      }
+
+      rend.GetPropertyBlock(propertyBlock);
+      propertyBlock.SetColor(BaseColorPropertyId, cachedColours[i]);
+      propertyBlock.SetColor(ColorPropertyId, cachedColours[i]);
+      rend.SetPropertyBlock(propertyBlock);
+    }
+
+    cachedColours = null;
   }
 
   void EndFreeze()
@@ -89,6 +238,25 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     }
 
     agent.speed = cachedAgentSpeed;
+
+    if (animator != null)
+    {
+      animator.speed = cachedAnimatorSpeed;
+    }
+
+    RestoreTint();
+
+    if (hitFlash != null)
+    {
+      hitFlash.enabled = true;
+    }
+
+    if (enemyController != null)
+    {
+      enemyController.IsFrozen = false;
+    }
+
     isFrozen = false;
   }
 }
+

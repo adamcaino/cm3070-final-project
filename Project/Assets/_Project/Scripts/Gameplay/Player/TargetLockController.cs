@@ -29,11 +29,19 @@ public class TargetLockController : MonoBehaviour
 
   readonly Collider[] overlapBuffer = new Collider[16];
   readonly HashSet<Health> candidateBuffer = new HashSet<Health>();
+  readonly HashSet<Health> cycleCandidateBuffer = new HashSet<Health>();
   readonly List<(Health health, float angle)> cycleBuffer = new List<(Health, float)>();
 
   public Transform SoftTarget { get; private set; }
   public Transform LockedTarget { get; private set; }
   public bool IsLocked => LockedTarget != null;
+
+  /// <summary>
+  /// All enemies currently within lockRange, inside the lock cone, and unobstructed - refreshed every
+  /// Update. Exposed as the concrete HashSet (not IReadOnlyCollection) so foreach over it on the
+  /// consuming side doesn't box the enumerator.
+  /// </summary>
+  public HashSet<Health> RangeCandidates => candidateBuffer;
 
   public event Action<Transform> OnSoftTargetChanged;
   public event Action<Transform> OnLockOn;
@@ -215,8 +223,8 @@ public class TargetLockController : MonoBehaviour
 
   void CycleTarget(int direction)
   {
-    CollectCandidates(candidateBuffer, unlockRange);
-    if (candidateBuffer.Count == 0)
+    CollectCandidates(cycleCandidateBuffer, unlockRange);
+    if (cycleCandidateBuffer.Count == 0)
     {
       return;
     }
@@ -224,7 +232,7 @@ public class TargetLockController : MonoBehaviour
     Vector3 cameraForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
 
     cycleBuffer.Clear();
-    foreach (Health candidate in candidateBuffer)
+    foreach (Health candidate in cycleCandidateBuffer)
     {
       Vector3 toCandidate = Vector3.ProjectOnPlane(candidate.transform.position - transform.position, Vector3.up);
       float angle = Vector3.SignedAngle(cameraForward, toCandidate, Vector3.up);

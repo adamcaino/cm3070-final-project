@@ -2,11 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Flashes a solid colour over its renderers then fades back to the original texture/tint.
-/// Health is optional - when present it auto-triggers on damage/heal, but any script can also
-/// call Flash(colour) directly (e.g. a shield reacting to a block with no Health of its own).
-/// </summary>
 public class HitFlash : MonoBehaviour
 {
   static readonly int BaseColourId = Shader.PropertyToID("_BaseColor");
@@ -71,6 +66,20 @@ public class HitFlash : MonoBehaviour
     activeFlash = StartCoroutine(FlashAndFadeRoutine(colour, GetOrCreateTexture(colour)));
   }
 
+  public void Cancel()
+  {
+    if (activeFlash != null)
+    {
+      StopCoroutine(activeFlash);
+      activeFlash = null;
+    }
+
+    foreach (Renderer r in renderers)
+    {
+      if (r != null) r.SetPropertyBlock(null);
+    }
+  }
+
   Texture2D GetOrCreateTexture(Color colour)
   {
     if (!flashTextures.TryGetValue(colour, out Texture2D texture))
@@ -107,8 +116,6 @@ public class HitFlash : MonoBehaviour
       originalTextures[i] = material != null && material.HasProperty(textureId) ? material.GetTexture(textureId) : null;
     }
 
-    // Solid flat swap - overrides the base map itself so the hit reads as a full colour flash
-    // rather than a tint of the existing texture detail, then reverts to a tint-based fade below.
     for (int i = 0; i < renderers.Length; i++)
     {
       Renderer renderer = renderers[i];

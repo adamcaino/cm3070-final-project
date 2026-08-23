@@ -14,5 +14,4 @@ public class WeaponPickup : PickupBase
   }
 
   protected override void PlayPickupVfx() => SpawnVfx(weaponData != null ? weaponData.pickupVFX : null);
-  protected override void PlayPickupSfx() => PlaySfx(weaponData != null ? weaponData.pickupSFX : null);
 }

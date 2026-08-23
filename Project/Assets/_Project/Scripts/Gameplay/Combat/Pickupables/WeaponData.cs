@@ -23,5 +23,11 @@ public class WeaponData : ScriptableObject
 
   [Header("Pickup Effect")]
   public GameObject pickupVFX;
-  public AudioClip pickupSFX;
+
+  [Header("Special Weapon (optional)")]
+  [Tooltip("Number of successful hits before the weapon breaks and the player reverts to their default weapon. 0 = unlimited (not a special weapon).")]
+  [Min(0)] public int maxUses = 0;
+  public Sprite icon;
+
+  public bool IsSpecial => maxUses > 0;
 }
