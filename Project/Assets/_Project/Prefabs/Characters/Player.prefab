@@ -232,6 +232,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5688163719658216244}
   - component: {fileID: 2390910826196949288}
+  - component: {fileID: 8052257905713045075}
   - component: {fileID: 6840927739654754821}
   - component: {fileID: 8232320761440155490}
   - component: {fileID: 2561254430613787946}
@@ -243,10 +244,10 @@ GameObject:
   - component: {fileID: 744266610392814389}
   - component: {fileID: 7983451807699535686}
   - component: {fileID: 368994889340158225}
-  - component: {fileID: 5282451526283921465}
-  - component: {fileID: 8052257905713045075}
   - component: {fileID: 4515826197927904166}
   - component: {fileID: 3752070151079720267}
+  - component: {fileID: 5282451526283921465}
+  - component: {fileID: 3402423134007483424}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -296,6 +297,29 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.0001
   m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0.92, z: 0}
+--- !u!136 &8052257905713045075
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35
+  m_Height: 1.7
+  m_Direction: 1
   m_Center: {x: 0, y: 0.92, z: 0}
 --- !u!95 &6840927739654754821
 Animator:
@@ -394,7 +418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 722a859adfae45e43823e9fd7e59fa80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  maxHealth: 5
+  maxHealth: 10
 --- !u!114 &5282451526283921464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -476,6 +500,46 @@ MonoBehaviour:
   volume: 0.3
   pitchVariance: 0.15
   minMoveSpeed: 0.1
+--- !u!114 &4515826197927904166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bf7bea829f118c478b5c8b4f7f761ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetLockController
+  lockTargetAction: {fileID: -8158819135931090493, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
+  cycleTargetAction: {fileID: -2815850487529766735, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  lockRange: 10
+  unlockRange: 12
+  maxLockAngle: 90
+  eyeHeight: 1
+--- !u!114 &3752070151079720267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec468d02566b19845a792c1b233ff448, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLockOnCamera
+  orbitalVcam: {fileID: 0}
+  lockOnVcam: {fileID: 0}
+  freePriorityOffset: -1
+  lockedPriorityOffset: 20
 --- !u!82 &5282451526283921465
 AudioSource:
   m_ObjectHideFlags: 0
@@ -573,30 +637,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!136 &8052257905713045075
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8619926447436871835}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.35
-  m_Height: 1.7
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.92, z: 0}
---- !u!114 &4515826197927904166
+--- !u!114 &3402423134007483424
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -605,38 +646,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8619926447436871835}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bf7bea829f118c478b5c8b4f7f761ba, type: 3}
+  m_Script: {fileID: 11500000, guid: bbee2c929badf264caa2d141c56df251, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TargetLockController
-  lockTargetAction: {fileID: -8158819135931090493, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
-  cycleTargetAction: {fileID: -2815850487529766735, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 2048
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 256
-  lockRange: 10
-  unlockRange: 12
-  maxLockAngle: 90
-  eyeHeight: 1
---- !u!114 &3752070151079720267
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8619926447436871835}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec468d02566b19845a792c1b233ff448, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerLockOnCamera
-  targetLock: {fileID: 4515826197927904166}
-  orbitalVcam: {fileID: 0}
-  lockOnVcam: {fileID: 0}
-  freePriorityOffset: -1
-  lockedPriorityOffset: 20
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLockOnAudio
+  toggleLockOnClip: {fileID: 8300000, guid: e602a6a51d87d3645a0ef237d6064974, type: 3}
 --- !u!1001 &299330332136971605
 PrefabInstance:
   m_ObjectHideFlags: 0

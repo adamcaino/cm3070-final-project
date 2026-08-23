@@ -21,5 +21,8 @@ MonoBehaviour:
   swingVfxPrefab: {fileID: 171468, guid: b4a8dae8244450942a1486f2f1179595, type: 3}
   swingSfxClip: {fileID: 8300000, guid: 561b6a4e69f38a745939dfa7fd2befab, type: 3}
   ambientSfxClip: {fileID: 8300000, guid: ba7148990cef43c4e82e7527f32b1c04, type: 3}
-  ambientVolume: 0.2
+  ambientVolume: 0.1
   pickupVFX: {fileID: 9158635742410941698, guid: b05855f158faf624190c9a6865adc82b, type: 3}
+  pickupSFX: {fileID: 8300000, guid: 86531a186fdc1e446baf3902efbf7662, type: 3}
+  maxUses: 10
+  icon: {fileID: 21300000, guid: e746dac179783734c9ec1c31f63ebc0e, type: 3}

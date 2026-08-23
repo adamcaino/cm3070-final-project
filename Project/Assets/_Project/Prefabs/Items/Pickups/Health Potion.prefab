@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 906079248396777851}
   - component: {fileID: 7268815372580270735}
-  - component: {fileID: 10222945229193216}
   - component: {fileID: 4697041312864180662}
   m_Layer: 0
   m_Name: Health Potion
@@ -56,19 +55,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.6
   m_Center: {x: 0, y: 0.75, z: 0}
---- !u!114 &10222945229193216
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538519450748768500}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6408a4c26a349bd4fbcfcfec76f090be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  rotationSpeed: 90
 --- !u!114 &4697041312864180662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,9 +67,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8de037445b1e27b4791a4b79bca18b3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  healAmount: 1
+  rotationSpeed: 90
+  healAmount: 2
   pickupVfxPrefab: {fileID: 1857989084323932508, guid: 57e8cdf781ffd2842bcfa8162195cb1f, type: 3}
-  pickupSfxClip: {fileID: 8300000, guid: 944fc21edac9d7b47b9c38f0c6ae4671, type: 3}
 --- !u!1001 &2697819279064684764
 PrefabInstance:
   m_ObjectHideFlags: 0
