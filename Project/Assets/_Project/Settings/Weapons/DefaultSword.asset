@@ -19,5 +19,10 @@ MonoBehaviour:
   afflictionMagnitude: 0
   afflictionDuration: 0
   swingVfxPrefab: {fileID: 2325574002585902465, guid: 11cbc65c711f3004983a70feaf62be2c, type: 3}
-  swingVfxLifetime: 1
   swingSfxClip: {fileID: 8300000, guid: cb8e11d82178a8141a97b3f096afe777, type: 3}
+  ambientSfxClip: {fileID: 0}
+  ambientVolume: 0.3
+  pickupVFX: {fileID: 0}
+  pickupSFX: {fileID: 0}
+  maxUses: 0
+  icon: {fileID: 21300000, guid: 70a2b54721934ab44b58c0048d07710a, type: 3}

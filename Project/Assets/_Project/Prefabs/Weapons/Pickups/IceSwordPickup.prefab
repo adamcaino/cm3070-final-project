@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 400000}
   - component: {fileID: 135000}
   - component: {fileID: 114000}
-  - component: {fileID: -2097642635139264659}
   m_Layer: 0
   m_Name: IceSwordPickup
   m_TagString: Untagged
@@ -70,20 +69,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 620863a77550368409891b9799d00b2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPickup
-  weaponData: {fileID: 11400000, guid: fb8f60cdf0228fb48ab8cd9f6a18093e, type: 2}
---- !u!114 &-2097642635139264659
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6408a4c26a349bd4fbcfcfec76f090be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotatePickup
   rotationSpeed: 90
+  weaponData: {fileID: 11400000, guid: fb8f60cdf0228fb48ab8cd9f6a18093e, type: 2}
 --- !u!1001 &1385466741173112119
 PrefabInstance:
   m_ObjectHideFlags: 0
