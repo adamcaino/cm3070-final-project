@@ -106,7 +106,3 @@ InitTestScene*.unity*
 
 # Ignore "Universal Sound FX"
 **/[Aa]ssets/Universal Sound FX/
-
-# Ignore VS Code settings folder
-.vscode/
-/Project/.vscode/
