@@ -2092,11 +2092,23 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 668e26cb85bc58f48a9ff142a33abe9e, type: 2}
     - target: {fileID: 3402451386083904355, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_Speed
-      value: 1
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: roamRadius
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: roamWaitTime
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: rotationSpeed
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5408711672216210058, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: visionRadius
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: maxRange
@@ -2108,11 +2120,11 @@ PrefabInstance:
       objectReference: {fileID: 8115462907296700936}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -15.36805
+      value: -34.86805
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2170,6 +2182,10 @@ PrefabInstance:
       propertyPath: 'attackClips.Array.data[0]'
       value: 
       objectReference: {fileID: 8300000, guid: 9716ddb0592edba49a2453a5f4374dff, type: 3}
+    - target: {fileID: 8041900046043807537, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 348267976961546459, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
     m_RemovedGameObjects:

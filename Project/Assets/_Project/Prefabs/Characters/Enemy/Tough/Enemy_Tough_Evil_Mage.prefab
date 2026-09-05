@@ -2196,7 +2196,7 @@ PrefabInstance:
       objectReference: {fileID: 3302938984780892341}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 21.699947
+      value: 2.1999474
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2204,7 +2204,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -46.248188
+      value: -48.11
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2258,6 +2258,10 @@ PrefabInstance:
       propertyPath: 'attackClips.Array.data[0]'
       value: 
       objectReference: {fileID: 8300000, guid: 847125c9f95a3b3469adef0998c2aa39, type: 3}
+    - target: {fileID: 8041900046043807537, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 348267976961546459, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
     m_RemovedGameObjects:
@@ -2299,8 +2303,10 @@ MonoBehaviour:
   minAngle: 0
   maxAngle: 180
   priority: 1
+  selectionChance: 1
   attackAnimationIndex: 1
   damage: 0
+  completionTimeout: 3
   summonChargeSfx: {fileID: 8300000, guid: c684e9315c595814785d62a464801719, type: 3}
   summonChargeVfx: {fileID: 7665836482491079815}
   minionSpawnPrefab: {fileID: 5364540796241693561, guid: 76c3194c294451145bfc24d0bea23619, type: 3}

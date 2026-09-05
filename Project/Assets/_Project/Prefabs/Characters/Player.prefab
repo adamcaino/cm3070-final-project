@@ -248,6 +248,7 @@ GameObject:
   - component: {fileID: 3752070151079720267}
   - component: {fileID: 5282451526283921465}
   - component: {fileID: 3402423134007483424}
+  - component: {fileID: 3923457466075790948}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -295,7 +296,7 @@ CharacterController:
   m_Radius: 0.35
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.0001
+  m_SkinWidth: 0.03
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.92, z: 0}
 --- !u!136 &8052257905713045075
@@ -479,6 +480,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAudio
   hurtClips:
   - {fileID: 8300000, guid: 77d38b6e7bb33054db776f2f81a8b0ab, type: 3}
+  deathClip: {fileID: 8300000, guid: 487b9030fde873d418ae3ecaddfbf2ed, type: 3}
 --- !u!114 &368994889340158225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -650,6 +652,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLockOnAudio
   toggleLockOnClip: {fileID: 8300000, guid: e602a6a51d87d3645a0ef237d6064974, type: 3}
+--- !u!114 &3923457466075790948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e4854f78394819448dfdf549fcd1b71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathHandler
+  gameOverDelay: 3
+  playerControls: {fileID: -944628639613478452, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
+  playerActionMapName: Player
 --- !u!1001 &299330332136971605
 PrefabInstance:
   m_ObjectHideFlags: 0
