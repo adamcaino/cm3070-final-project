@@ -3,12 +3,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// One-off setup command that wires up lock-on feedback: adds a TargetLockIconController under the
-/// UI scene's Canvas (with the Alert_Dot prefabs assigned) and a PlayerLockOnAudio component on the
-/// Player prefab (with the toggle SFX assigned). Mirrors UIOverlaySetup/PauseMenuSetup's pattern.
-/// Idempotent - re-running skips whichever half is already present.
-/// </summary>
+// Wires the lock-on HUD and player SFX into the UI scene and player prefab.
 static class LockOnFeedbackSetup
 {
   const string UIScenePath = "Assets/_Project/Scenes/UI.unity";

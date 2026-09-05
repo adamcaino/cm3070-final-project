@@ -5,6 +5,7 @@ using UnityEngine;
 [CustomEditor(typeof(DungeonLevelGenerator))]
 public class DungeonLevelGeneratorEditor : Editor
 {
+  // Adds quick generation and cleanup controls for dungeon layout generation.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();
