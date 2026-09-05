@@ -1,6 +1,7 @@
 using Unity.AI.Navigation;
 using UnityEngine;
 
+[RequireComponent(typeof(NavMeshSurface))]
 public class DungeonNavMeshBaker : MonoBehaviour
 {
   [SerializeField] NavMeshSurface surface;
@@ -8,12 +9,6 @@ public class DungeonNavMeshBaker : MonoBehaviour
   [ContextMenu("Generate")]
   public void Generate()
   {
-    if (surface == null)
-    {
-      Debug.LogWarning($"{nameof(DungeonNavMeshBaker)} is missing a NavMeshSurface.");
-      return;
-    }
-
     surface.BuildNavMesh();
   }
 

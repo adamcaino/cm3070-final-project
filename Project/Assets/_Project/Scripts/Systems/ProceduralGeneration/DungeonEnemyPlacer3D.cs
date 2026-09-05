@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Enemy placement pass. Walks every RoomRole.Normal room (Spawn/Boss/Loot rooms are POI territory, not
@@ -9,6 +10,8 @@ using UnityEngine;
 /// </summary>
 public class DungeonEnemyPlacer3D : MonoBehaviour
 {
+  const float NavMeshSampleDistance = 2f;
+
   [SerializeField] BSPDungeonGenerator sourceGenerator;
   [SerializeField] DungeonTilePlacer3D tilePlacer;
   [SerializeField] EnemySet enemySet;
@@ -66,8 +69,15 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
       Vector2Int cell = PickSpawnCell(room.Bounds);
       Vector3 worldPosition = tilePlacer.GridToWorld(cell, gridWidth, gridHeight);
 
+      if (!NavMesh.SamplePosition(worldPosition, out NavMeshHit navMeshHit, NavMeshSampleDistance, NavMesh.AllAreas))
+      {
+        string prefabName = prefab != null ? prefab.name : "Placeholder";
+        Debug.LogWarning($"{nameof(DungeonEnemyPlacer3D)} skipped {prefabName} in room {room.RoomId} at cell {cell} (world position {worldPosition}) because no NavMesh was found within {NavMeshSampleDistance} units.");
+        continue;
+      }
+
       GameObject instance = prefab != null
-        ? Instantiate(prefab, worldPosition, Quaternion.identity)
+        ? Instantiate(prefab, navMeshHit.position, Quaternion.identity)
         : CreatePlaceholder(enemySet.placeholderColor, worldPosition);
 
       instance.name = $"Enemy [{cell.x},{cell.y}]";

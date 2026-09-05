@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: -8679921383154817045}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: floor_tile_small_broken_A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -118,6 +118,10 @@ PrefabInstance:
     - target: {fileID: 5774132731378250276, guid: d2997b4aed87f9e4083b82eb5d2be773, type: 3}
       propertyPath: m_Name
       value: floor_tile_small_broken_A
+      objectReference: {fileID: 0}
+    - target: {fileID: 5774132731378250276, guid: d2997b4aed87f9e4083b82eb5d2be773, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 5965940783117387256, guid: d2997b4aed87f9e4083b82eb5d2be773, type: 3}
       propertyPath: m_LocalPosition.x

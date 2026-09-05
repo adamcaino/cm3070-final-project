@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -40,13 +41,7 @@ public class DungeonLevelGenerator : MonoBehaviour
       return;
     }
 
-    gridGenerator.Generate();
-    tilePlacer.Generate();
-    propPlacer.Generate();
-    navMeshBaker.Generate();
-    poiPlacer.Generate();
-    bossPlacer.Generate();
-    enemyPlacer.Generate();
+    StartCoroutine(GenerateSequence());
   }
 
   public void Generate(int seed)
@@ -56,18 +51,38 @@ public class DungeonLevelGenerator : MonoBehaviour
       return;
     }
 
-    gridGenerator.Generate(seed);
+    StartCoroutine(GenerateSequence(seed));
+  }
+
+  IEnumerator GenerateSequence(int? seed = null)
+  {
+    if (seed.HasValue)
+    {
+      gridGenerator.Generate(seed.Value);
+    }
+    else
+    {
+      gridGenerator.Generate();
+    }
+
+    yield return null;
     tilePlacer.Generate();
+    yield return null;
     propPlacer.Generate();
+    yield return null;
     navMeshBaker.Generate();
+    yield return null;
     poiPlacer.Generate();
+    yield return null;
     bossPlacer.Generate();
+    yield return null;
     enemyPlacer.Generate();
   }
 
   [ContextMenu("Clear")]
   public void Clear()
   {
+    StopAllCoroutines();
     enemyPlacer?.Clear();
     bossPlacer?.Clear();
     poiPlacer?.Clear();
