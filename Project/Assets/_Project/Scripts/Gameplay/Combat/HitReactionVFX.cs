@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Spawns simple VFX when the attached Health component takes damage or heals.
 [RequireComponent(typeof(Health))]
 public class HitReactionVFX : MonoBehaviour
 {

@@ -16,7 +16,7 @@ public abstract class PickupBase : MonoBehaviour
   {
     if (Mathf.Approximately(rotationSpeed, 0f)) return;
 
-    // Rotate the pickup for a simple visual effect.
+
     cachedTransform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f, Space.World);
   }
 

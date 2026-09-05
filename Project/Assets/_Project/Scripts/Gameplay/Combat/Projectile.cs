@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Simple straight-line hitscan-free projectile for ranged attacks (fireballs, spells). Owner calls
-/// Launch right after Instantiate; the projectile carries its own damage/speed/source so RangedAttack
-/// doesn't need to hold per-instance state.
-/// </summary>
 [RequireComponent(typeof(Collider))]
 public class Projectile : MonoBehaviour
 {
@@ -20,6 +15,7 @@ public class Projectile : MonoBehaviour
     GetComponent<Collider>().isTrigger = true;
   }
 
+  // Stores the projectile's state so it can move and resolve impact without needing a persistent owner.
   public void Launch(Vector3 launchDirection, float launchSpeed, int launchDamage, GameObject launchSource)
   {
     direction = launchDirection.normalized;

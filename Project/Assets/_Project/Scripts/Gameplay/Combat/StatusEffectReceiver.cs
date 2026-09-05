@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
+// Applies burn and freeze effects by modifying movement, animation speed, and material tint.
 [RequireComponent(typeof(Health))]
 public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 {
@@ -52,6 +53,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 
   void HandleDied() => EndBurn();
 
+  // Cancels any current effect and starts the matching affliction routine.
   public void ApplyAffliction(AfflictionType type, float duration, int magnitude, GameObject source)
   {
     if (activeEffect != null)
@@ -107,9 +109,6 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     activeBurningEffect = null;
   }
 
-  // transform.position sits at the enemy's root/feet - union all its renderers' bounds instead so the
-  // effect centres on the visible mesh (a multi-part body like the dragon's could otherwise put it at
-  // whichever renderer happens to come first).
   Vector3 GetMeshCenter()
   {
     bool hasBounds = false;
@@ -259,4 +258,3 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     isFrozen = false;
   }
 }
-

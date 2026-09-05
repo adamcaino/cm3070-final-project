@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Enables a hit window for melee attacks and prevents repeated hits from the same swing.
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
 public class WeaponHitbox : MonoBehaviour
 {
   Collider hitCollider;
 
-  // Keyed by IDamageable so multiple colliders count as one hit per swing.
   readonly HashSet<IDamageable> hitThisSwing = new HashSet<IDamageable>();
 
   public event Action<Collider> OnHit;
@@ -37,10 +37,8 @@ public class WeaponHitbox : MonoBehaviour
 
   void OnTriggerEnter(Collider other)
   {
-    // Prevent Player from hitting themselves.
     if (other.CompareTag("Player")) return;
 
-    // Find damageable components on parent objects of child colliders.
     IDamageable damageable = other.GetComponentInParent<IDamageable>();
 
     if (damageable == null) return;

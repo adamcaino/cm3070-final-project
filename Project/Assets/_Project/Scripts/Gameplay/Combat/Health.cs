@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+// Tracks HP, applies incoming damage, and raises events for damage, healing, and death.
 public class Health : MonoBehaviour, IDamageable
 {
   [SerializeField, Min(1)] int maxHealth = 3;
@@ -21,6 +22,7 @@ public class Health : MonoBehaviour, IDamageable
     blocker = GetComponent<IDamageBlocker>();
   }
 
+  // Returns true only when the hit actually kills this actor.
   public bool TakeDamage(int amount, GameObject source, Vector3 hitPoint)
   {
     if (IsDead || amount <= 0) return false;
@@ -42,6 +44,7 @@ public class Health : MonoBehaviour, IDamageable
     return true;
   }
 
+  // Clamps healing so the actor cannot exceed max HP or be revived after death.
   public void Heal(int amount)
   {
     if (amount <= 0 || IsDead) return;

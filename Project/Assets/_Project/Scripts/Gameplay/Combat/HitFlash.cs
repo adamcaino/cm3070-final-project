@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Briefly overrides material tint/texture to give immediate visual feedback on damage or healing.
 public class HitFlash : MonoBehaviour
 {
   static readonly int BaseColourId = Shader.PropertyToID("_BaseColor");

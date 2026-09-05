@@ -9,7 +9,6 @@ public class PotionPickup : PickupBase
   {
     Health health = player.GetComponent<Health>();
 
-    // Don't consume the potion if the player is already at full health.
     if (health == null || health.CurrentHealth >= health.MaxHealth) return false;
 
     health.Heal(healAmount);
