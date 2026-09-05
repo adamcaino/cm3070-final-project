@@ -5,6 +5,7 @@ using UnityEngine;
 [CustomEditor(typeof(DungeonEnemyPlacer3D))]
 public class DungeonEnemyPlacer3DEditor : Editor
 {
+  // Adds one-click generation and cleanup actions to the custom inspector.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();

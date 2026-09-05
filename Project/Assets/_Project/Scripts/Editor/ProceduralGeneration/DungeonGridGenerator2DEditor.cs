@@ -5,6 +5,7 @@ using UnityEngine;
 [CustomEditor(typeof(DungeonGridGenerator2D), true)]
 public class DungeonGridGenerator2DEditor : Editor
 {
+  // Exposes generation, seed reuse, and cleanup actions in the inspector.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();

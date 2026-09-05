@@ -6,10 +6,7 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-/// <summary>
-/// One-off setup commands for the additive UI-overlay pattern (see UISceneLoader). Run these once each
-/// after the UI scene or a new gameplay scene is created; they're idempotent so re-running is harmless.
-/// </summary>
+// Creates the shared UI overlay and bootstraps gameplay scenes with the UISceneLoader pattern.
 static class UIOverlaySetup
 {
   const string UIScenePath = "Assets/_Project/Scenes/UI.unity";

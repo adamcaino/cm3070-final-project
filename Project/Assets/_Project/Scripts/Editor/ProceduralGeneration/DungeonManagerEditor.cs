@@ -5,6 +5,7 @@ using UnityEngine;
 [CustomEditor(typeof(DungeonManager))]
 public class DungeonManagerEditor : Editor
 {
+  // Adds quick layout generation and reset actions for the dungeon manager.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();

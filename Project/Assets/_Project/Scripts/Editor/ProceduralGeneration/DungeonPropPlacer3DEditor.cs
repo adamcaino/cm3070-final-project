@@ -5,6 +5,7 @@ using UnityEngine;
 [CustomEditor(typeof(DungeonPropPlacer3D))]
 public class DungeonPropPlacer3DEditor : Editor
 {
+  // Adds generation and cleanup controls to the custom inspector.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();

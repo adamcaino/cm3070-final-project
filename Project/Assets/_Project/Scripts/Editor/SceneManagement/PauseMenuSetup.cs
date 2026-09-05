@@ -7,11 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-/// <summary>
-/// One-off setup command that builds the pause menu hierarchy (background dim, pause panel,
-/// options panel) under the UI scene's Canvas and wires it to a new PauseMenuController, mirroring
-/// UIOverlaySetup's pattern. Idempotent - re-running skips if a PauseMenuController already exists.
-/// </summary>
+// Generates the pause menu hierarchy and binds the controller, actions, and audio references.
 static class PauseMenuSetup
 {
   const string UIScenePath = "Assets/_Project/Scenes/UI.unity";
