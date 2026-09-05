@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// Soft-locks onto the nearest valid enemy every frame (range + FOV cone from the camera + line-of-sight
-/// raycast, mirroring EnemyDetection's pattern) and lets the player toggle a hard lock onto it via input.
-/// PlayerLocomotion and PlayerLockOnCamera read LockedTarget/IsLocked and the OnLockOn/OnLockOff events
-/// rather than polling, so this is the single source of truth for lock state.
-/// </summary>
+
+
+
+
+
+
 public class TargetLockController : MonoBehaviour
 {
   [Header("Input")]
@@ -36,11 +36,11 @@ public class TargetLockController : MonoBehaviour
   public Transform LockedTarget { get; private set; }
   public bool IsLocked => LockedTarget != null;
 
-  /// <summary>
-  /// All enemies currently within lockRange, inside the lock cone, and unobstructed - refreshed every
-  /// Update. Exposed as the concrete HashSet (not IReadOnlyCollection) so foreach over it on the
-  /// consuming side doesn't box the enumerator.
-  /// </summary>
+
+
+
+
+
   public HashSet<Health> RangeCandidates => candidateBuffer;
 
   public event Action<Transform> OnSoftTargetChanged;

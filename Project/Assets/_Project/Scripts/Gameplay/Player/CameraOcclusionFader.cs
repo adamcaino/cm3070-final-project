@@ -1,13 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Raycasts from this transform (the physical camera) towards a target each frame. Anything hit
-/// on occluderMask has its materials swapped to occlusionMaterial and faded in; once it's no
-/// longer in the way it fades back out and its original (opaque) materials are restored. Swapping
-/// rather than leaving the renderer permanently Transparent avoids the double-sided blending
-/// artifact a thin mesh shows when rendered Transparent all the time.
-/// </summary>
 public class CameraOcclusionFader : MonoBehaviour
 {
   [Header("Target")]

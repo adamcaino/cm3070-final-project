@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// Reads the Move action and drives a CharacterController relative to the active camera's facing,
-/// so "forward" always means "away from camera" regardless of which way the player model is turned.
-/// The body's yaw is slaved to the camera's yaw every frame (not just while moving) - the camera is
-/// the sole source of facing (see PlayerCameraOrbit), so WASD becomes a true strafe/backpedal input
-/// relative to a fixed forward instead of turning the character itself.
-/// </summary>
+
+
+
+
+
+
+
 [RequireComponent(typeof(CharacterController))]
 public class PlayerLocomotion : MonoBehaviour
 {
