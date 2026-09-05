@@ -1,10 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// Plays a toggle SFX whenever TargetLockController's OnLockOn fires - covers both a fresh lock
-/// (space) and cycling onto a different target (q/e), since CycleTarget routes through LockOn too.
-/// OnLockOff deliberately doesn't trigger this; unlocking has no sound per design.
-/// </summary>
+
+
+
+
+
 [RequireComponent(typeof(TargetLockController))]
 [RequireComponent(typeof(AudioSource))]
 public class PlayerLockOnAudio : MonoBehaviour
