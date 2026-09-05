@@ -11,13 +11,50 @@ public class BossAreaHazardController : MonoBehaviour
     [SerializeField, Range(1f, 5f)] float hazardEffectDuration = 3f;
     [SerializeField, Min(0.01f)] float hazardSize = 2f;
 
+    Coroutine hazardRoutine;
+    bool isStopping;
+
     void Start()
     {
-        StartCoroutine(HazardSequence());
+        hazardRoutine = StartCoroutine(HazardSequence());
+    }
+
+    public void StopHazard()
+    {
+        if (isStopping)
+        {
+            return;
+        }
+
+        isStopping = true;
+
+        if (hazardRoutine != null)
+        {
+            StopCoroutine(hazardRoutine);
+            hazardRoutine = null;
+        }
+
+        if (hazardAreaCollider != null)
+        {
+            hazardAreaCollider.enabled = false;
+        }
+
+        if (hazardAreaPrefab != null)
+        {
+            hazardAreaPrefab.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+
+        if (hazardEffectPrefab != null)
+        {
+            hazardEffectPrefab.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+
+        StartCoroutine(DestroyWhenParticlesFinish());
     }
 
     IEnumerator HazardSequence()
     {
+        isStopping = false;
         hazardAreaCollider.enabled = false;
 
         ParticleSystem.MainModule areaMain = hazardAreaPrefab.main;
@@ -51,8 +88,13 @@ public class BossAreaHazardController : MonoBehaviour
         hazardAreaPrefab.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         hazardEffectPrefab.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 
-        // Cleanup phase: wait for particles to finish fading out before destroying
-        while (hazardEffectPrefab.IsAlive(true))
+        yield return DestroyWhenParticlesFinish();
+    }
+
+    IEnumerator DestroyWhenParticlesFinish()
+    {
+        while ((hazardAreaPrefab != null && hazardAreaPrefab.IsAlive(true))
+            || (hazardEffectPrefab != null && hazardEffectPrefab.IsAlive(true)))
         {
             yield return null;
         }

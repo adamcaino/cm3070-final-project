@@ -1,4 +1,7 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -14,29 +17,124 @@ public class GameOverScreen : MonoBehaviour
   [Header("Load Seed")]
   [SerializeField] InputField seedInputField;
 
+  [Header("Input")]
+  [SerializeField] InputActionAsset playerControls;
+  [SerializeField] string playerActionMapName = "Player";
+
+  [Header("Main Menu Transition")]
+  [SerializeField] AudioMixer mixer;
+  [SerializeField] ScreenFader screenFader;
+  [SerializeField] string mainMenuSceneName = "MainMenu";
+  [SerializeField, Min(0f)] float menuTransitionFadeDuration = 1f;
+
+  [Header("Win/Lose")]
+  [SerializeField] string gameOverTitleText = "GAME OVER";
+  [SerializeField] string victoryTitleText = "YOU WIN!";
+  [SerializeField, Min(0f)] float victoryScreenDelay = 2.5f;
+  [SerializeField] AudioClip victoryAudioPrefab;
+  [SerializeField] GameObject victoryVfxPrefab;
+  [SerializeField, Min(0f)] float victoryVfxDistance = 4f;
+
   string gameplaySceneName;
+  bool isTransitioning;
+  Coroutine showVictoryRoutine;
+  Text titleText;
 
   void Awake()
   {
+    titleText = ResolveTitleText();
     SetVisible(false);
   }
 
   void OnEnable()
   {
     GameOverSignal.Raised += Show;
+    GameOverSignal.VictoryRaised += ShowVictory;
   }
 
   void OnDisable()
   {
     GameOverSignal.Raised -= Show;
+    GameOverSignal.VictoryRaised -= ShowVictory;
+
+    if (showVictoryRoutine != null)
+    {
+      StopCoroutine(showVictoryRoutine);
+      showVictoryRoutine = null;
+    }
   }
 
   void Show(string sceneName)
   {
     gameplaySceneName = sceneName;
+    SetPanelTitle(gameOverTitleText);
+    SetPlayerControlsEnabled(false);
     SetVisible(true);
-    Cursor.lockState = CursorLockMode.None;
-    Cursor.visible = true;
+    SetCursorLocked(false);
+  }
+
+  void ShowVictory(string sceneName)
+  {
+    gameplaySceneName = sceneName;
+
+    if (showVictoryRoutine != null)
+    {
+      StopCoroutine(showVictoryRoutine);
+    }
+
+    SetPlayerControlsEnabled(false);
+    SetVisible(false);
+    SetCursorLocked(true);
+    showVictoryRoutine = StartCoroutine(ShowVictoryRoutine());
+  }
+
+  IEnumerator ShowVictoryRoutine()
+  {
+    yield return new WaitForSeconds(victoryScreenDelay);
+
+    SetPanelTitle(victoryTitleText);
+    SetVisible(true);
+    SpawnVictoryVfx();
+    PlayVictorySfx();
+    SetCursorLocked(false);
+    GameOverSignal.RaiseVictoryScreenShown(gameplaySceneName);
+    showVictoryRoutine = null;
+  }
+
+  void SpawnVictoryVfx()
+  {
+    if (victoryVfxPrefab == null || panel == null) return;
+
+    Camera mainCamera = Camera.main;
+    RectTransform panelTransform = panel.GetComponent<RectTransform>();
+    if (mainCamera == null || panelTransform == null) return;
+
+    Vector3[] corners = new Vector3[4];
+    panelTransform.GetWorldCorners(corners);
+
+    GameObject player = GameObject.FindGameObjectWithTag("Player");
+    if (player == null) return;
+
+    float playerYRotation = player.transform.eulerAngles.y;
+    SpawnVictoryVfxAtCorner(mainCamera, corners[1], playerYRotation - 90f);
+    SpawnVictoryVfxAtCorner(mainCamera, corners[2], playerYRotation + 90f);
+  }
+
+  void SpawnVictoryVfxAtCorner(Camera mainCamera, Vector3 corner, float yRotation)
+  {
+    Vector2 screenPosition = RectTransformUtility.WorldToScreenPoint(null, corner);
+    Vector3 position = mainCamera.ScreenToWorldPoint(
+      new Vector3(screenPosition.x, screenPosition.y, victoryVfxDistance));
+    Quaternion rotation = Quaternion.Euler(0f, yRotation, 0f);
+
+    Instantiate(victoryVfxPrefab, position, rotation);
+  }
+
+  void PlayVictorySfx()
+  {
+    if (victoryAudioPrefab == null) return;
+
+    GetComponent<AudioSource>()?.PlayOneShot(victoryAudioPrefab);
   }
 
   public void NewGame()
@@ -57,12 +155,43 @@ public class GameOverScreen : MonoBehaviour
 
   public void Exit()
   {
+    if (isTransitioning) return;
+
+    isTransitioning = true;
     Time.timeScale = 1f;
-#if UNITY_EDITOR
-    UnityEditor.EditorApplication.isPlaying = false;
-#else
-    Application.Quit();
-#endif
+    StartCoroutine(LoadMainMenuRoutine());
+  }
+
+  IEnumerator LoadMainMenuRoutine()
+  {
+    float savedMasterVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);
+
+    if (screenFader != null)
+    {
+      Coroutine screenFade = screenFader.FadeOutAndStart(menuTransitionFadeDuration);
+      yield return FadeAudio(savedMasterVolume, 0f, menuTransitionFadeDuration);
+      yield return screenFade;
+    }
+    else
+    {
+      yield return FadeAudio(savedMasterVolume, 0f, menuTransitionFadeDuration);
+    }
+
+    SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
+  }
+
+  IEnumerator FadeAudio(float from, float to, float duration)
+  {
+    float elapsed = 0f;
+    while (elapsed < duration)
+    {
+      elapsed += Time.deltaTime;
+      float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+      AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, Mathf.Lerp(from, to, t));
+      yield return null;
+    }
+
+    AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, to);
   }
 
   void LoadGameplayScene()
@@ -70,6 +199,7 @@ public class GameOverScreen : MonoBehaviour
     if (string.IsNullOrEmpty(gameplaySceneName)) return;
 
     Time.timeScale = 1f;
+    SetPlayerControlsEnabled(true);
     SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
   }
 
@@ -77,5 +207,52 @@ public class GameOverScreen : MonoBehaviour
   {
     background.SetActive(visible);
     panel.SetActive(visible);
+  }
+
+  void SetPlayerControlsEnabled(bool isEnabled)
+  {
+    InputActionMap map = playerControls != null ? playerControls.FindActionMap(playerActionMapName) : null;
+    if (map == null) return;
+
+    if (isEnabled)
+    {
+      map.Enable();
+    }
+    else
+    {
+      map.Disable();
+    }
+  }
+
+  void SetCursorLocked(bool locked)
+  {
+    Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+    Cursor.visible = !locked;
+  }
+
+  void SetPanelTitle(string value)
+  {
+    if (titleText == null)
+    {
+      titleText = ResolveTitleText();
+    }
+
+    if (titleText != null)
+    {
+      titleText.text = value;
+    }
+  }
+
+  Text ResolveTitleText()
+  {
+    if (panel == null) return null;
+
+    Transform titleTransform = panel.transform.Find("Title");
+    if (titleTransform != null)
+    {
+      return titleTransform.GetComponent<Text>();
+    }
+
+    return panel.GetComponentInChildren<Text>(true);
   }
 }

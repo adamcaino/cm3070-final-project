@@ -13,7 +13,6 @@ using UnityEngine;
 public class DungeonPointOfInterestPlacer3D : MonoBehaviour
 {
   const Direction CardinalDirections = Direction.North | Direction.East | Direction.South | Direction.West;
-  const string PlayerSpawnPointName = "PlayerSpawnPos";
 
   [SerializeField] BSPDungeonGenerator sourceGenerator;
   [SerializeField] DungeonTilePlacer3D tilePlacer;
@@ -67,21 +66,18 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
 
   void ResolveRuntimeReferences()
   {
-    if (player == null)
+    GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+    if (playerObject != null)
     {
-      GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
-      if (playerObject != null)
-      {
-        player = playerObject.transform;
-      }
-      else
-      {
-        PlayerDeathHandler deathHandler = FindFirstObjectByType<PlayerDeathHandler>();
-        player = deathHandler != null ? deathHandler.transform : null;
-      }
+      player = playerObject.transform;
+    }
+    else
+    {
+      PlayerDeathHandler deathHandler = FindFirstObjectByType<PlayerDeathHandler>();
+      player = deathHandler != null ? deathHandler.transform : null;
     }
 
-    if (playerCameraOrbit == null && player != null)
+    if (player != null)
     {
       playerCameraOrbit = player.GetComponent<PlayerCameraOrbit>();
     }
@@ -185,29 +181,79 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     SpawnFromSet(poiSet.lootPrefabs, placeholderColor, worldPosition, Quaternion.identity, label);
   }
 
-  // The player needs to land at the portal's own PlayerSpawnPos child (its authored "step out here"
-  // point) rather than the portal's pivot, so this only runs once the portal instance actually exists.
+  // The Player is authored inside the generated portal and is detached after instantiation so it can
+  // run independently from the portal's transform during gameplay.
   void PlacePlayer(GameObject portalInstance)
   {
+    if (player == null)
+    {
+      ResolvePlayerFromPortal(portalInstance);
+    }
+
     if (player == null)
     {
       Debug.LogWarning($"{nameof(DungeonPointOfInterestPlacer3D)} has no player assigned - skipping spawn placement.");
       return;
     }
 
-    Transform spawnPoint = portalInstance != null ? FindDeepChild(portalInstance.transform, PlayerSpawnPointName) : null;
-    if (spawnPoint == null)
+    // Preserve the Player's authored world pose while removing it from the portal hierarchy.
+    if (player.parent != null)
     {
-      Debug.LogError($"{nameof(DungeonPointOfInterestPlacer3D)} could not find {PlayerSpawnPointName} on the generated spawn portal.", portalInstance);
+      player.SetParent(null, true);
+    }
+
+    player.localScale = Vector3.one;
+
+    RefreshPlayerRuntimeReferences();
+
+    // Adopt the Player's authored facing before locomotion starts following the camera.
+    playerCameraOrbit?.SnapImmediatelyToTarget(player);
+  }
+
+  void ResolvePlayerFromPortal(GameObject portalInstance)
+  {
+    if (portalInstance == null)
+    {
       return;
     }
 
-    player.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
+    Transform portalPlayer = FindTaggedChild(portalInstance.transform, "Player");
+    if (portalPlayer == null)
+    {
+      PlayerLocomotion locomotion = portalInstance.GetComponentInChildren<PlayerLocomotion>(true);
+      portalPlayer = locomotion != null ? locomotion.transform : null;
+    }
 
-    // Must run after the player's spawn rotation is set, and before PlayerLocomotion's first Update
-    // slaves the player's facing back to the camera - otherwise the camera's leftover default yaw
-    // would win instead of adopting the authored spawn facing.
-    playerCameraOrbit?.SnapToTarget(spawnPoint);
+    if (portalPlayer == null)
+    {
+      return;
+    }
+
+    player = portalPlayer;
+    playerCameraOrbit = player.GetComponent<PlayerCameraOrbit>();
+  }
+
+  void RefreshPlayerRuntimeReferences()
+  {
+    if (player == null)
+    {
+      return;
+    }
+
+    PlayerLocomotion locomotion = player.GetComponent<PlayerLocomotion>();
+    locomotion?.RefreshRuntimeReferences();
+
+    TargetLockController lockController = player.GetComponent<TargetLockController>();
+    lockController?.RefreshRuntimeReferences();
+
+    playerCameraOrbit = player.GetComponent<PlayerCameraOrbit>();
+    playerCameraOrbit?.RefreshRuntimeReferences();
+
+    PlayerLockOnCamera lockOnCamera = player.GetComponent<PlayerLockOnCamera>();
+    lockOnCamera?.RefreshRuntimeReferences();
+
+    PlayerDeathCamera deathCamera = FindFirstObjectByType<PlayerDeathCamera>();
+    deathCamera?.RefreshRuntimeReferences();
   }
 
   // Transform.Find only checks direct children, but PlayerSpawnPos sits a level deeper (under a
@@ -222,6 +268,30 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
       }
 
       Transform match = FindDeepChild(child, name);
+      if (match != null)
+      {
+        return match;
+      }
+    }
+
+    return null;
+  }
+
+  static Transform FindTaggedChild(Transform root, string tag)
+  {
+    if (root == null)
+    {
+      return null;
+    }
+
+    foreach (Transform child in root)
+    {
+      if (child.CompareTag(tag))
+      {
+        return child;
+      }
+
+      Transform match = FindTaggedChild(child, tag);
       if (match != null)
       {
         return match;

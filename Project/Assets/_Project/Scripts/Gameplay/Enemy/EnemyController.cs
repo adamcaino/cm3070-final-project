@@ -36,6 +36,7 @@ public class EnemyController : MonoBehaviour
   [SerializeField, Min(0f)] float deathBaseOffsetSettleDuration = 0.5f;
 
   IEnemyState currentState;
+  bool isBoss;
 
   public bool IsFrozen { get; set; }
 
@@ -46,6 +47,7 @@ public class EnemyController : MonoBehaviour
   public StatusEffectReceiver StatusEffects { get; private set; }
   public Transform Player { get; private set; }
   public IReadOnlyList<IAttack> Attacks { get; private set; }
+  public bool IsBoss => isBoss;
 
   public float RoamRadius => roamRadius;
   public float RoamWaitTime => roamWaitTime;
@@ -66,6 +68,9 @@ public class EnemyController : MonoBehaviour
 
     GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYERTAG);
     Player = playerObject != null ? playerObject.transform : null;
+
+    // Bosses are authored with a BossRoomEncounter on the same GameObject.
+    isBoss = TryGetComponent<BossRoomEncounter>(out _);
   }
 
   void OnEnable()
@@ -87,7 +92,11 @@ public class EnemyController : MonoBehaviour
 
   public void Wake()
   {
-    Animator?.SetTrigger(PlayerSpottedParam);
+    if (isBoss)
+    {
+      Animator?.SetTrigger(PlayerSpottedParam);
+    }
+
     ChangeState(new PositionState());
   }
 

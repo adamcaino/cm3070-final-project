@@ -1,13 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
-
-
-
-
-
-
 [RequireComponent(typeof(CharacterController))]
 public class PlayerLocomotion : MonoBehaviour
 {
@@ -42,6 +35,11 @@ public class PlayerLocomotion : MonoBehaviour
   void Awake()
   {
     controller = GetComponent<CharacterController>();
+    RefreshRuntimeReferences();
+  }
+
+  public void RefreshRuntimeReferences()
+  {
     cameraTransform = Camera.main != null ? Camera.main.transform : null;
     targetLock = GetComponent<TargetLockController>();
   }

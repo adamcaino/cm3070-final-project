@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class HealthBarUI : MonoBehaviour
 {
@@ -20,12 +21,45 @@ public class HealthBarUI : MonoBehaviour
     baseScale = transform.localScale;
   }
 
-  void Start()
+  void OnEnable()
   {
+    DungeonReadySignal.Raised += HandleDungeonReady;
+    RefreshHealthReference(false);
+  }
+
+  void OnDisable()
+  {
+    DungeonReadySignal.Raised -= HandleDungeonReady;
+
+    if (health == null) return;
+
+    health.OnDamaged -= HandleDamaged;
+    health.OnHealed -= HandleHealed;
+    health.OnDied -= HandleDied;
+  }
+
+  void HandleDungeonReady()
+  {
+    RefreshHealthReference(true);
+  }
+
+  void RefreshHealthReference(bool logIfMissing)
+  {
+    // Unsubscribe from old health if it exists
+    if (health != null)
+    {
+      health.OnDamaged -= HandleDamaged;
+      health.OnHealed -= HandleHealed;
+      health.OnDied -= HandleDied;
+    }
+
     GameObject player = GameObject.FindGameObjectWithTag(PLAYERTAG);
     if (player == null)
     {
-      Debug.LogWarning("HealthBarUI: no GameObject tagged 'Player' found in the loaded scenes.");
+      if (logIfMissing)
+      {
+        Debug.LogWarning("HealthBarUI: no GameObject tagged 'Player' found in the loaded scenes.");
+      }
       return;
     }
 

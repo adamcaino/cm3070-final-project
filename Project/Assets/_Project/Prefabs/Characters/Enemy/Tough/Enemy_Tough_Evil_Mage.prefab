@@ -2182,6 +2182,10 @@ PrefabInstance:
       propertyPath: m_Speed
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: roamWaitTime
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5408711672216210058, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: visionRadius
       value: 15
@@ -2307,6 +2311,7 @@ MonoBehaviour:
   attackAnimationIndex: 1
   damage: 0
   completionTimeout: 3
+  unlockStage: 1
   summonChargeSfx: {fileID: 8300000, guid: c684e9315c595814785d62a464801719, type: 3}
   summonChargeVfx: {fileID: 7665836482491079815}
   minionSpawnPrefab: {fileID: 5364540796241693561, guid: 76c3194c294451145bfc24d0bea23619, type: 3}

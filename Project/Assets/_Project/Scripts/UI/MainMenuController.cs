@@ -37,6 +37,8 @@ public class MainMenuController : MonoBehaviour
   [SerializeField] ScreenFader screenFader;
   [Tooltip("Seconds for the screen to fade to black; the NPC walk runs for the same duration.")]
   [SerializeField, Min(0f)] float introFadeDuration = 2f;
+  [Tooltip("Seconds for the Main Menu to fade in when the scene loads.")]
+  [SerializeField, Min(0f)] float menuFadeInDuration = 1f;
   [SerializeField] PlayerAnimationDriver introAnimationDriver;
   [SerializeField] ScriptedForwardWalker introWalker;
 
@@ -47,22 +49,60 @@ public class MainMenuController : MonoBehaviour
     audioSource = GetComponent<AudioSource>();
     AudioMixerVolume.ApplySaved(mixer);
 
+    if (screenFader == null)
+    {
+      screenFader = CreateMenuFadeOverlay();
+    }
+
     newGameButton.onClick.AddListener(OnNewGame);
     loadSeedButton.onClick.AddListener(OnLoadSeed);
     optionsButton.onClick.AddListener(OnOptions);
     controlsButton.onClick.AddListener(OnControls);
     exitButton.onClick.AddListener(OnExit);
 
-    ShowMain();
+    ShowMain(false);
+  }
+
+  void Start()
+  {
+    StartCoroutine(FadeInAudioAndScreen());
+  }
+
+  ScreenFader CreateMenuFadeOverlay()
+  {
+    GameObject overlayObject = new GameObject("Main Menu Fade Overlay");
+    Canvas canvas = overlayObject.AddComponent<Canvas>();
+    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+    canvas.sortingOrder = 1000;
+    overlayObject.AddComponent<CanvasScaler>();
+
+    Image image = overlayObject.AddComponent<Image>();
+    RectTransform rectTransform = image.rectTransform;
+    rectTransform.anchorMin = Vector2.zero;
+    rectTransform.anchorMax = Vector2.one;
+    rectTransform.offsetMin = Vector2.zero;
+    rectTransform.offsetMax = Vector2.zero;
+
+    ScreenFader fader = overlayObject.AddComponent<ScreenFader>();
+    overlayObject.transform.SetParent(transform, false);
+    return fader;
   }
 
   public void ShowMain()
+  {
+    ShowMain(true);
+  }
+
+  void ShowMain(bool playCloseSound)
   {
     mainPanel.SetActive(true);
     seedEntryPanel.gameObject.SetActive(false);
     optionsPanel.gameObject.SetActive(false);
     controlsPanel.gameObject.SetActive(false);
-    PlayClip(menuCloseClip);
+    if (playCloseSound)
+    {
+      PlayClip(menuCloseClip);
+    }
   }
 
   void OnNewGame()
@@ -128,6 +168,8 @@ public class MainMenuController : MonoBehaviour
 
   IEnumerator GameplayTransitionRoutine()
   {
+    float savedMasterVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);
+
     if (introAnimationDriver != null) introAnimationDriver.enabled = false;
     if (introWalker != null)
     {
@@ -137,9 +179,42 @@ public class MainMenuController : MonoBehaviour
 
     if (screenFader != null)
     {
-      yield return screenFader.FadeOutAndStart(introFadeDuration);
+      yield return FadeOutAudioAndScreen(savedMasterVolume);
+    }
+    else
+    {
+      yield return FadeAudio(savedMasterVolume, 0f, introFadeDuration);
     }
 
     SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+  }
+
+  IEnumerator FadeOutAudioAndScreen(float savedMasterVolume)
+  {
+    Coroutine screenFade = screenFader.FadeOutAndStart(introFadeDuration);
+    yield return FadeAudio(savedMasterVolume, 0f, introFadeDuration);
+    yield return screenFade;
+  }
+
+  IEnumerator FadeAudio(float from, float to, float duration)
+  {
+    float elapsed = 0f;
+    while (elapsed < duration)
+    {
+      elapsed += Time.deltaTime;
+      float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+      AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, Mathf.Lerp(from, to, t));
+      yield return null;
+    }
+
+    AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, to);
+  }
+
+  IEnumerator FadeInAudioAndScreen()
+  {
+    AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, 0f);
+    Coroutine screenFade = screenFader.FadeInAndStart(menuFadeInDuration);
+    yield return FadeAudio(0f, AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam), menuFadeInDuration);
+    yield return screenFade;
   }
 }

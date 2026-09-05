@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // Briefly overrides material tint/texture to give immediate visual feedback on damage or healing.
@@ -24,7 +25,9 @@ public class HitFlash : MonoBehaviour
   void Awake()
   {
     health = GetComponent<Health>();
-    renderers = GetComponentsInChildren<Renderer>();
+    renderers = GetComponentsInChildren<Renderer>()
+      .Where(r => r != null && !(r is ParticleSystemRenderer))
+      .ToArray();
     propertyBlock = new MaterialPropertyBlock();
     flashTextures = new Dictionary<Color, Texture2D>();
   }
@@ -105,6 +108,12 @@ public class HitFlash : MonoBehaviour
 
   IEnumerator FlashAndFadeRoutine(Color flashColour, Texture2D flashTexture)
   {
+    if (renderers == null || renderers.Length == 0)
+    {
+      activeFlash = null;
+      yield break;
+    }
+
     Color[] originalColours = new Color[renderers.Length];
     Texture[] originalTextures = new Texture[renderers.Length];
 

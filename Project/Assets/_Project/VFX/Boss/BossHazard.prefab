@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 82454405419811923}
   - component: {fileID: 6970935771819079998}
   - component: {fileID: 7700289029821278409}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: BossHazard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -164,7 +164,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 197318, guid: c82022460ac6d274cb9e2aefc6da9dc9, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 429692, guid: c82022460ac6d274cb9e2aefc6da9dc9, type: 3}
       propertyPath: m_LocalPosition.x
@@ -265,7 +265,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 143440, guid: 411410f9528530540bdec97694c0e4f8, type: 3}
       propertyPath: m_Layer
-      value: 11
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 143440, guid: 411410f9528530540bdec97694c0e4f8, type: 3}
       propertyPath: m_TagString
@@ -273,7 +273,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 165632, guid: 411410f9528530540bdec97694c0e4f8, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 422718, guid: 411410f9528530540bdec97694c0e4f8, type: 3}
       propertyPath: m_LocalPosition.x

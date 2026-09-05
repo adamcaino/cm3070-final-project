@@ -48,3 +48,4 @@ MonoBehaviour:
   tilePlacer: {fileID: 0}
   poiSet: {fileID: 11400000, guid: 563824bf66f68d0429a75aeac361fff8, type: 2}
   player: {fileID: 0}
+  playerCameraOrbit: {fileID: 0}

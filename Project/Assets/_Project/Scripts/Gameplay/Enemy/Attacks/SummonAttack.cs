@@ -38,11 +38,12 @@ public class SummonAttack : AttackBase
       for (int i = 0; i < spawnCount; i++)
       {
         Vector3 candidate = transform.position + (Random.insideUnitSphere * spawnRadius);
-        Vector3 spawnPosition = NavMesh.SamplePosition(candidate, out NavMeshHit hit, spawnRadius, NavMesh.AllAreas)
-          ? hit.position
-          : transform.position;
+        if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, spawnRadius, NavMesh.AllAreas))
+        {
+          continue;
+        }
 
-        GameObject spawned = Instantiate(minionSpawnPrefab, spawnPosition, Quaternion.identity);
+        GameObject spawned = Instantiate(minionSpawnPrefab, hit.position, Quaternion.identity);
 
         if (spawned.TryGetComponent(out SpawnEnemy spawner))
         {

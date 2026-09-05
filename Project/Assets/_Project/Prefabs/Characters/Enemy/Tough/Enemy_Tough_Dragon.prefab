@@ -1794,7 +1794,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: roamRadius
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5408711672216210058, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: visionRadius
@@ -1987,6 +1987,7 @@ MonoBehaviour:
   attackAnimationIndex: 1
   damage: 1
   completionTimeout: 3
+  unlockStage: 1
   flamethrowerVFX: {fileID: 8927199658405341219}
   vfxLingerTime: 1
 --- !u!4 &3378684554605637378 stripped

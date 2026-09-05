@@ -10,7 +10,6 @@ public class EnemyAlert : MonoBehaviour
 {
   [Header("Alert VFX")]
   [SerializeField] GameObject alertVfxPrefab;
-  [SerializeField, Min(0f)] float vfxLifetime = 2f;
 
   [Header("Relay")]
   [SerializeField, Min(0f)] float alertRadius = 8f;
@@ -52,13 +51,14 @@ public class EnemyAlert : MonoBehaviour
   {
     PlayAlertVfx();
 
+    if (!controller.IsFrozen)
+    {
+      controller.Wake();
+    }
+
     if (relayToNearby)
     {
       RelayToNearbyEnemies();
-    }
-    else if (!controller.IsFrozen)
-    {
-      controller.Wake();
     }
 
     // Turn off this script to prevent re-alerting

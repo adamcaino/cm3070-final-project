@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Shows Alert_Dot_White above every enemy TargetLockController currently considers a lock-on
@@ -31,7 +32,22 @@ public class TargetLockIconController : MonoBehaviour
     selfRect = GetComponent<RectTransform>();
   }
 
-  void Start()
+  void OnEnable()
+  {
+    DungeonReadySignal.Raised += HandleDungeonReady;
+  }
+
+  void OnDisable()
+  {
+    DungeonReadySignal.Raised -= HandleDungeonReady;
+  }
+
+  void HandleDungeonReady()
+  {
+    RefreshPlayerLockController();
+  }
+
+  void RefreshPlayerLockController()
   {
     GameObject player = GameObject.FindGameObjectWithTag(PLAYERTAG);
     if (player == null)
@@ -51,8 +67,11 @@ public class TargetLockIconController : MonoBehaviour
 
     mainCamera = Camera.main;
 
-    redIcon = Instantiate(redIconPrefab, selfRect).GetComponent<RectTransform>();
-    redIcon.gameObject.SetActive(false);
+    if (redIcon == null)
+    {
+      redIcon = Instantiate(redIconPrefab, selfRect).GetComponent<RectTransform>();
+      redIcon.gameObject.SetActive(false);
+    }
   }
 
   void LateUpdate()

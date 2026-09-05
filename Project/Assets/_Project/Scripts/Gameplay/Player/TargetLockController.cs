@@ -49,6 +49,11 @@ public class TargetLockController : MonoBehaviour
 
   void Awake()
   {
+    RefreshRuntimeReferences();
+  }
+
+  public void RefreshRuntimeReferences()
+  {
     cameraTransform = Camera.main != null ? Camera.main.transform : null;
   }
 

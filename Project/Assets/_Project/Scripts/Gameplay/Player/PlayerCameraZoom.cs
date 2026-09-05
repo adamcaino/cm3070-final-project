@@ -22,9 +22,15 @@ public class PlayerCameraZoom : MonoBehaviour
   [SerializeField, Min(0f)] float zoomSpeed = 5f;
 
   float targetDistance;
+  bool isDead;
 
   void Awake()
   {
+    if (orbitalFollow == null)
+    {
+      orbitalFollow = PlayerCameraOrbit.ResolveGameplayOrbitalFollow();
+    }
+
     if (orbitalFollow != null)
     {
       targetDistance = orbitalFollow.Radius;
@@ -34,16 +40,20 @@ public class PlayerCameraZoom : MonoBehaviour
   void OnEnable()
   {
     zoomAction?.action.Enable();
+    PlayerDiedSignal.Raised += HandlePlayerDied;
+    GameOverSignal.VictoryRaised += HandleVictoryRaised;
   }
 
   void OnDisable()
   {
     zoomAction?.action.Disable();
+    PlayerDiedSignal.Raised -= HandlePlayerDied;
+    GameOverSignal.VictoryRaised -= HandleVictoryRaised;
   }
 
   void Update()
   {
-    if (orbitalFollow == null || zoomAction == null)
+    if (isDead || orbitalFollow == null || zoomAction == null)
     {
       return;
     }
@@ -55,5 +65,22 @@ public class PlayerCameraZoom : MonoBehaviour
     }
 
     orbitalFollow.Radius = Mathf.Lerp(orbitalFollow.Radius, targetDistance, zoomSpeed * Time.deltaTime);
+  }
+
+  void HandlePlayerDied()
+  {
+    isDead = true;
+    zoomAction?.action.Disable();
+  }
+
+  void HandleVictoryRaised(string sceneName)
+  {
+    if (sceneName != gameObject.scene.name)
+    {
+      return;
+    }
+
+    isDead = true;
+    zoomAction?.action.Disable();
   }
 }

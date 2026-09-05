@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Sits on a full-screen Image in the UI scene. Flashes it to damageColour then fades back to
@@ -23,11 +24,44 @@ public class ScreenDamageFlash : MonoBehaviour
   void Awake()
   {
     image = GetComponent<Image>();
+    SetAlpha(0f);
+  }
+
+  void OnEnable()
+  {
+    DungeonReadySignal.Raised += HandleDungeonReady;
+    RefreshHealthReference(false);
+  }
+
+  void OnDisable()
+  {
+    DungeonReadySignal.Raised -= HandleDungeonReady;
+
+    if (health == null) return;
+
+    health.OnDamaged -= HandleDamaged;
+  }
+
+  void HandleDungeonReady()
+  {
+    RefreshHealthReference(true);
+  }
+
+  void RefreshHealthReference(bool logIfMissing)
+  {
+    // Unsubscribe from old health if it exists
+    if (health != null)
+    {
+      health.OnDamaged -= HandleDamaged;
+    }
 
     GameObject player = GameObject.FindGameObjectWithTag(PLAYERTAG);
     if (player == null)
     {
-      Debug.LogWarning("ScreenDamageFlash: no GameObject tagged 'Player' found in the loaded scenes.");
+      if (logIfMissing)
+      {
+        Debug.LogWarning("ScreenDamageFlash: no GameObject tagged 'Player' found in the loaded scenes.");
+      }
       return;
     }
 
@@ -35,23 +69,10 @@ public class ScreenDamageFlash : MonoBehaviour
     if (health == null)
     {
       Debug.LogWarning("ScreenDamageFlash: player has no Health component.");
+      return;
     }
 
-    SetAlpha(0f);
-  }
-
-  void OnEnable()
-  {
-    if (health == null) return;
-
     health.OnDamaged += HandleDamaged;
-  }
-
-  void OnDisable()
-  {
-    if (health == null) return;
-
-    health.OnDamaged -= HandleDamaged;
   }
 
   void HandleDamaged(Vector3 _)

@@ -1,18 +1,6 @@
 using System.Linq;
 using UnityEngine;
 
-
-
-
-
-
-
-
-
-
-
-
-
 public class PositionState : IEnemyState
 {
   EnemyController enemy;
@@ -36,6 +24,8 @@ public class PositionState : IEnemyState
       return;
     }
 
+    enemy.FaceTowards(enemy.Player.position);
+
     if (!enemy.Agent.isActiveAndEnabled || !enemy.Agent.isOnNavMesh)
     {
       return;
@@ -55,38 +45,46 @@ public class PositionState : IEnemyState
       }
     }
 
-    enemy.FaceTowards(enemy.Player.position);
-
+    // Attack as soon as an attack is valid for distance/angle; waiting for near-zero
+    // velocity can stall melee enemies that keep tiny navmesh drift.
     float distance = Vector3.Distance(enemy.transform.position, enemy.Player.position);
 
     Vector3 toPlayer = enemy.Player.position - enemy.transform.position;
     toPlayer.y = 0f;
     float angle = toPlayer.sqrMagnitude > 0.0001f ? Vector3.Angle(enemy.transform.forward, toPlayer) : 0f;
 
+    IAttack[] executableAttacks = enemy.Attacks
+      .Where(a => a.CanExecute)
+      .OrderByDescending(a => a.Priority)
+      .ToArray();
 
-
-    if (!enemy.IsMoving)
+    if (executableAttacks.Length == 0)
     {
-
-
-
-
-      IAttack matchingAttack = enemy.Attacks
-        .Where(a => a.CanExecute && distance >= a.MinRange && distance <= a.MaxRange
-          && angle >= a.MinAngle && angle <= a.MaxAngle)
-        .OrderByDescending(a => a.Priority)
-        .FirstOrDefault(a => Random.value <= a.SelectionChance);
-
-      if (matchingAttack != null)
-      {
-        enemy.ChangeState(new AttackState(matchingAttack));
-        return;
-      }
+      return;
     }
 
+    IAttack matchingAttack = executableAttacks
+      .Where(a => distance >= a.MinRange && distance <= a.MaxRange
+        && angle >= a.MinAngle && angle <= a.MaxAngle)
+      .FirstOrDefault(a => Random.value <= a.SelectionChance);
 
+    // If chance rolls skip every candidate this frame, still pick the top valid attack
+    // so phase 1 cannot stall forever behind unlucky RNG.
+    if (matchingAttack == null)
+    {
+      matchingAttack = executableAttacks.FirstOrDefault(a =>
+        distance >= a.MinRange && distance <= a.MaxRange
+        && angle >= a.MinAngle && angle <= a.MaxAngle);
+    }
 
-    IAttack targetAttack = enemy.Attacks.OrderByDescending(a => a.Priority).First();
+    if (matchingAttack != null)
+    {
+      enemy.Agent.ResetPath();
+      enemy.ChangeState(new AttackState(matchingAttack));
+      return;
+    }
+
+    IAttack targetAttack = executableAttacks[0];
 
     if (distance > targetAttack.MaxRange)
     {

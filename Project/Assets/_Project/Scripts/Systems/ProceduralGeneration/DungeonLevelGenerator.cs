@@ -56,6 +56,8 @@ public class DungeonLevelGenerator : MonoBehaviour
 
   IEnumerator GenerateSequence(int? seed = null)
   {
+    DungeonReadySignal.Reset();
+
     if (seed.HasValue)
     {
       gridGenerator.Generate(seed.Value);

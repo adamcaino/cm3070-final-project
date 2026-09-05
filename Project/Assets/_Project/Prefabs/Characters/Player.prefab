@@ -249,6 +249,7 @@ GameObject:
   - component: {fileID: 5282451526283921465}
   - component: {fileID: 3402423134007483424}
   - component: {fileID: 3923457466075790948}
+  - component: {fileID: 2182193878955062140}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -551,7 +552,7 @@ AudioSource:
   m_GameObject: {fileID: 8619926447436871835}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 6200068061141796076, guid: 366ee15b2efd83241b09a44bb5449d66, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -667,6 +668,23 @@ MonoBehaviour:
   gameOverDelay: 3
   playerControls: {fileID: -944628639613478452, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
   playerActionMapName: Player
+--- !u!114 &2182193878955062140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619926447436871835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c0dc809f9c5a3e43a2c41af855afcca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraOrbit
+  lookAction: {fileID: -4548469295087043708, guid: 0dcd4fc4259d6e74cbec5e9158ca0731, type: 3}
+  orbitalFollow: {fileID: 0}
+  horizontalSpeed: 1
+  verticalSpeed: 1
+  invertVertical: 0
 --- !u!1001 &299330332136971605
 PrefabInstance:
   m_ObjectHideFlags: 0

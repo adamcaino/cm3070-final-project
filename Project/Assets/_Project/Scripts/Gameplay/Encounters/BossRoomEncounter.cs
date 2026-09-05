@@ -4,12 +4,13 @@ using UnityEngine;
 public class BossRoomEncounter : RoomEncounter
 {
   [SerializeField] Health bossHealth;
-  [SerializeField] AudioClip bossMusic;
-  [SerializeField] AudioClip clearAmbienceMusic;
+  [SerializeField, Min(0f)] float victoryMusicFadeDuration = 2f;
 
   BossHealthBarUI healthUI;
   MusicPlayer musicPlayer;
   EnemyController bossController;
+  BossSet bossSet;
+  bool hasClearedEncounter;
 
   void Awake()
   {
@@ -38,7 +39,7 @@ public class BossRoomEncounter : RoomEncounter
     }
   }
 
-  public void Configure(Health health, IReadOnlyList<Door> doors)
+  public void Configure(Health health, IReadOnlyList<Door> doors, BossSet configuredBossSet)
   {
     if (bossHealth != null)
     {
@@ -47,13 +48,8 @@ public class BossRoomEncounter : RoomEncounter
 
     bossHealth = health;
     bossHealth.OnDied += HandleBossDied;
+    bossSet = configuredBossSet;
     SetDoors(doors);
-  }
-
-  public void SetMusic(AudioClip encounterMusic, AudioClip ambienceMusic)
-  {
-    bossMusic = encounterMusic;
-    clearAmbienceMusic = ambienceMusic;
   }
 
   void HandleBossDied() => CompleteEncounter();
@@ -72,13 +68,29 @@ public class BossRoomEncounter : RoomEncounter
     }
 
     healthUI?.BeginTracking(bossHealth);
-    musicPlayer?.Play(bossMusic);
+    if (bossSet != null)
+    {
+      musicPlayer?.Play(bossSet.bossMusic);
+    }
     bossController?.Wake();
   }
 
   void HandleEncounterCleared()
   {
+    if (hasClearedEncounter) return;
+
+    hasClearedEncounter = true;
     healthUI?.StopTracking();
-    musicPlayer?.Play(clearAmbienceMusic);
+
+    if (musicPlayer == null)
+    {
+      musicPlayer = FindFirstObjectByType<MusicPlayer>();
+    }
+
+    if (bossSet != null)
+    {
+      musicPlayer?.PlayCrossfade(bossSet.clearAmbienceMusic, victoryMusicFadeDuration);
+    }
+    GameOverSignal.RaiseVictory(gameObject.scene.name);
   }
 }

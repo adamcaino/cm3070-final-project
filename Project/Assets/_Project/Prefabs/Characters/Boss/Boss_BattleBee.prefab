@@ -465,6 +465,10 @@ PrefabInstance:
       propertyPath: hitCollider
       value: 
       objectReference: {fileID: 2957553593293355773}
+    - target: {fileID: 5254688593586406437, guid: 3de0afbd3b39ad94a9d99334e4abf7c6, type: 3}
+      propertyPath: selectionChance
+      value: 0.33
+      objectReference: {fileID: 0}
     - target: {fileID: 5307791635164460857, guid: 3de0afbd3b39ad94a9d99334e4abf7c6, type: 3}
       propertyPath: m_LocalPosition.y
       value: 1
@@ -553,6 +557,10 @@ PrefabInstance:
       propertyPath: hitCollider
       value: 
       objectReference: {fileID: 2957553593293355773}
+    - target: {fileID: 8666649403384107706, guid: 3de0afbd3b39ad94a9d99334e4abf7c6, type: 3}
+      propertyPath: selectionChance
+      value: 0.66
+      objectReference: {fileID: 0}
     - target: {fileID: 8933045983065942862, guid: 3de0afbd3b39ad94a9d99334e4abf7c6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
