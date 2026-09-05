@@ -622,7 +622,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
         role = RoomRole.Loot;
       }
 
-      rooms.Add(new DungeonRoomInfo { Bounds = roomBounds[i], Center = GetRoomCenter(roomBounds[i]), Role = role });
+      rooms.Add(new DungeonRoomInfo { RoomId = i, Bounds = roomBounds[i], Center = GetRoomCenter(roomBounds[i]), Role = role });
     }
 
     LastRooms = rooms;

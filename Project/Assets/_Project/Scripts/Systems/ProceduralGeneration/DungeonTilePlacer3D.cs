@@ -22,9 +22,17 @@ public class DungeonTilePlacer3D : MonoBehaviour
 
   Transform generatedRoot;
   readonly Dictionary<TileType, Material> placeholderMaterials = new Dictionary<TileType, Material>();
+  readonly Dictionary<Vector2Int, GameObject> placedDoors = new Dictionary<Vector2Int, GameObject>();
   System.Random variantRandom;
 
   public float TileSize => tileSize;
+
+  // Lets later placement passes (boss/loot room locking) find the actual Door instance at a cell the
+  // 2D generator already knows is a doorway, without re-deriving it from world-space search.
+  public bool TryGetDoorInstance(Vector2Int cell, out GameObject instance)
+  {
+    return placedDoors.TryGetValue(cell, out instance);
+  }
 
   // Shared with other placement passes (props, points of interest) so every stage maps a grid cell to
   // the same world position this one used, without each duplicating the offset math.
@@ -83,6 +91,11 @@ public class DungeonTilePlacer3D : MonoBehaviour
     GameObject instance = InstantiateTile(tile.Type, position, rotation);
     instance.name = $"{tile.Type} [{x},{y}]";
     instance.transform.SetParent(generatedRoot, false);
+
+    if (tile.Type == TileType.Door)
+    {
+      placedDoors[new Vector2Int(x, y)] = instance;
+    }
   }
 
   GameObject InstantiateTile(TileType type, Vector3 position, Quaternion rotation)
@@ -213,19 +226,14 @@ public class DungeonTilePlacer3D : MonoBehaviour
       return;
     }
 
+    // NavMesh baking runs synchronously right after regeneration in the same Start(); a deferred
+    // Destroy() would leave last level's tiles queryable by NavMeshSurface.BuildNavMesh() until end
+    // of frame, baking a navmesh over flooring that no longer visually exists.
     for (int i = generatedRoot.childCount - 1; i >= 0; i--)
     {
-      GameObject child = generatedRoot.GetChild(i).gameObject;
-
-#if UNITY_EDITOR
-      if (!Application.isPlaying)
-      {
-        DestroyImmediate(child);
-        continue;
-      }
-#endif
-
-      Destroy(child);
+      DestroyImmediate(generatedRoot.GetChild(i).gameObject);
     }
+
+    placedDoors.Clear();
   }
 }

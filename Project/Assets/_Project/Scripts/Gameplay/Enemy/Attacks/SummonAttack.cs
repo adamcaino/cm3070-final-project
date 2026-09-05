@@ -14,7 +14,7 @@ public class SummonAttack : AttackBase
   [Header("Debug")]
   [SerializeField] List<GameObject> activeMinions = new();
 
-  // Only restocks after most minions are gone.
+
   public override bool CanExecute => PruneDeadMinions() <= 1;
 
   protected override void OnExecute(EnemyController enemy)
@@ -27,8 +27,8 @@ public class SummonAttack : AttackBase
     }
   }
 
-  // Called by an animation event when minions spawn. Completes here so the state cannot
-  // re-trigger before the newly summoned minions have actually appeared.
+
+
   public void SummonMinions()
   {
     int spawnCount = minionCount - PruneDeadMinions();

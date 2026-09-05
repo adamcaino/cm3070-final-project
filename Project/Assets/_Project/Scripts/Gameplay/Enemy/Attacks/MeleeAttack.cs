@@ -23,14 +23,20 @@ public class MeleeAttack : MeleeHitboxAttack
 
   public void EnableHitbox()
   {
+    if (!IsExecuting) return;
+
     hitThisSwing.Clear();
     isHitboxActive = true;
+
     ActivateHitbox();
   }
 
   public void DisableHitbox()
   {
+    if (!isHitboxActive) return;
+
     isHitboxActive = false;
+
     DeactivateHitbox();
   }
 }

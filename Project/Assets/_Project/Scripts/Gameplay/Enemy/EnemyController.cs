@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+// Coordinates state changes, aggro flow, and freeze behavior for the enemy.
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(EnemyDetection))]
@@ -9,6 +10,11 @@ using UnityEngine.AI;
 public class EnemyController : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
+  static readonly int PlayerSpottedParam = Animator.StringToHash("playerSpotted");
+
+  [Header("Startup")]
+  [Tooltip("Start in IdleState (no movement, no reaction to detection/damage) instead of RoamState - for an enemy that should stay dormant until something explicit wakes it, e.g. a boss waiting on its room's encounter trigger.")]
+  [SerializeField] bool startIdle;
 
   [Header("Roaming")]
   [SerializeField, Min(0f)] float roamRadius = 10f;
@@ -25,9 +31,12 @@ public class EnemyController : MonoBehaviour
   [Header("Movement")]
   [SerializeField, Min(0f)] float movingSpeedThreshold = 0.1f;
 
+  [Header("Death")]
+  [Tooltip("Time to smoothly settle the NavMeshAgent's base offset to 0 on death, so flying/hovering enemies come down to the ground for their death animation instead of snapping.")]
+  [SerializeField, Min(0f)] float deathBaseOffsetSettleDuration = 0.5f;
+
   IEnemyState currentState;
 
-  // Stops state-driven movement/facing while frozen without disabling the component.
   public bool IsFrozen { get; set; }
 
   public NavMeshAgent Agent { get; private set; }
@@ -42,8 +51,8 @@ public class EnemyController : MonoBehaviour
   public float RoamWaitTime => roamWaitTime;
   public float RotationSpeed => rotationSpeed;
   public float AggroMemoryDuration => aggroMemoryDuration;
+  public float DeathBaseOffsetSettleDuration => deathBaseOffsetSettleDuration;
 
-  // Shared movement state for animation and gameplay logic.
   public bool IsMoving => Agent.velocity.sqrMagnitude > movingSpeedThreshold * movingSpeedThreshold;
 
   void Awake()
@@ -62,16 +71,24 @@ public class EnemyController : MonoBehaviour
   void OnEnable()
   {
     Health.OnDied += HandleDied;
+    PlayerDiedSignal.Raised += HandlePlayerDied;
   }
 
   void OnDisable()
   {
     Health.OnDied -= HandleDied;
+    PlayerDiedSignal.Raised -= HandlePlayerDied;
   }
 
   void Start()
   {
-    ChangeState(new RoamState());
+    ChangeState(startIdle ? (IEnemyState)new IdleState() : new RoamState());
+  }
+
+  public void Wake()
+  {
+    Animator?.SetTrigger(PlayerSpottedParam);
+    ChangeState(new PositionState());
   }
 
   void Update()
@@ -88,7 +105,7 @@ public class EnemyController : MonoBehaviour
     currentState?.Enter(this);
   }
 
-  // Smoothly faces the target for aware states using manual rotation.
+
   public void FaceTowards(Vector3 worldPosition)
   {
     Vector3 direction = worldPosition - transform.position;
@@ -106,5 +123,12 @@ public class EnemyController : MonoBehaviour
   void HandleDied()
   {
     ChangeState(new DeadState());
+  }
+
+  void HandlePlayerDied()
+  {
+    if (Health.IsDead) return;
+
+    ChangeState(new VictoryState());
   }
 }

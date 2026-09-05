@@ -1,20 +1,23 @@
 using UnityEngine;
 
-/// <summary>
-/// Rolls a chance to spawn a health pickup when this enemy dies. Kept separate from EnemyAI since drop
-/// config is per-enemy-type data, not AI behaviour - just a Health.OnDied subscriber.
-/// </summary>
 [RequireComponent(typeof(Health))]
+[RequireComponent(typeof(Animator))]
 public class EnemyLootDrop : MonoBehaviour
 {
-  [SerializeField] GameObject[] healthItemPrefabs;
-  [SerializeField, Range(0f, 1f)] float dropChance = 0.25f;
+  [SerializeField] GameObject healthItemPrefab;
+  [SerializeField, Range(0f, 1f)] float dropChance = 0.1f;
+  [Tooltip("Fallback reveal value while waiting for the Animator to reach the Die state.")]
+  [SerializeField, Min(0.1f)] float dieStateDetectTimeout = 1f;
 
   Health health;
+  StatusEffectReceiver statusEffects;
+  Animator animator;
 
   void Awake()
   {
     health = GetComponent<Health>();
+    statusEffects = GetComponent<StatusEffectReceiver>();
+    animator = GetComponent<Animator>();
   }
 
   void OnEnable()
@@ -29,12 +32,14 @@ public class EnemyLootDrop : MonoBehaviour
 
   void HandleDied()
   {
-    if (healthItemPrefabs == null || healthItemPrefabs.Length == 0 || Random.value > dropChance)
+    if (healthItemPrefab == null || Random.value > dropChance)
     {
       return;
     }
 
-    GameObject prefab = healthItemPrefabs[Random.Range(0, healthItemPrefabs.Length)];
-    Instantiate(prefab, transform.position, Quaternion.identity);
+    bool diedFrozen = statusEffects != null && statusEffects.IsFrozen;
+
+    GameObject drop = Instantiate(healthItemPrefab, transform.position, Quaternion.identity);
+    drop.AddComponent<DelayedPickupReveal>().RevealAfterDieAnimation(animator, diedFrozen, dieStateDetectTimeout);
   }
 }

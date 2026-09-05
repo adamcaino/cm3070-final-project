@@ -11,6 +11,7 @@ public class EnemySet : ScriptableObject
 {
   [Header("Enemies")]
   public GameObject[] enemyPrefabs;
+  public GameObject[] toughEnemyPrefabs;
   public Color placeholderColor = new Color(0.8f, 0.1f, 0.1f, 1f);
 
   [Header("Density")]

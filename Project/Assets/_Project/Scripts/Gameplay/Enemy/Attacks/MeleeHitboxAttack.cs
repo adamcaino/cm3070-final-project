@@ -1,18 +1,14 @@
 using UnityEngine;
 
-// Shared hitbox-collider plumbing for attacks that damage IDamageables touching a collider while it's
-// active - subclasses decide how a touch translates into damage (single hit vs. damage over time) since
-// that differs per attack, but share the collider enable/disable and the actual TakeDamage call.
-// Subclasses expose their own activate/deactivate entry points under distinct names because Animator
-// animation events call a method by name across every component on the GameObject; two attacks sharing
-// the same method names would fire together.
 public abstract class MeleeHitboxAttack : AttackBase
 {
   [SerializeField] Collider hitCollider;
   EnemyController owner => GetComponent<EnemyController>();
 
-  void Awake()
+  protected override void Awake()
   {
+    base.Awake();
+
     if (hitCollider == null)
     {
       Debug.LogWarning($"{name}: {GetType().Name} has no Hit Collider assigned.", this);
