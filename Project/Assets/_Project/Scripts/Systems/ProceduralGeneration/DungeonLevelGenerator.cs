@@ -77,6 +77,8 @@ public class DungeonLevelGenerator : MonoBehaviour
     bossPlacer.Generate();
     yield return null;
     enemyPlacer.Generate();
+
+    DungeonReadySignal.Raise();
   }
 
   [ContextMenu("Clear")]

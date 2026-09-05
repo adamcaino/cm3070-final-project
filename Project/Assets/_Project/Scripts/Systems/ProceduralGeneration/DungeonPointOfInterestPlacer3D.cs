@@ -27,6 +27,8 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
   [ContextMenu("Generate")]
   public void Generate()
   {
+    ResolveRuntimeReferences();
+
     if (sourceGenerator == null || tilePlacer == null || poiSet == null)
     {
       Debug.LogWarning($"{nameof(DungeonPointOfInterestPlacer3D)} is missing a source generator, tile placer, or point of interest set.");
@@ -63,6 +65,28 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     }
   }
 
+  void ResolveRuntimeReferences()
+  {
+    if (player == null)
+    {
+      GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+      if (playerObject != null)
+      {
+        player = playerObject.transform;
+      }
+      else
+      {
+        PlayerDeathHandler deathHandler = FindFirstObjectByType<PlayerDeathHandler>();
+        player = deathHandler != null ? deathHandler.transform : null;
+      }
+    }
+
+    if (playerCameraOrbit == null && player != null)
+    {
+      playerCameraOrbit = player.GetComponent<PlayerCameraOrbit>();
+    }
+  }
+
   // Placed against a wall (rather than the room center) so a large portal prefab doesn't loom over
   // the middle of the room, and rotated to match that wall's facing so it reads as built into it.
   void PlaceSpawn(DungeonRoomInfo room, TileMetadata[,] metadata, int gridWidth, int gridHeight)
@@ -78,7 +102,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
 
     Vector3 worldPosition = tilePlacer.GridToWorld(cell, gridWidth, gridHeight);
     GameObject portal = SpawnPortal(worldPosition, rotation);
-    PlacePlayer(portal, worldPosition);
+    PlacePlayer(portal);
   }
 
   bool TryFindWallAgainstRoom(RectInt bounds, TileMetadata[,] metadata, int gridWidth, int gridHeight, out Vector2Int wallCell, out Direction facing)
@@ -146,7 +170,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
       : CreatePlaceholder(poiSet.spawnPortalColour, worldPosition);
 
     instance.name = "Spawn Portal";
-    instance.transform.SetParent(generatedRoot, false);
+    instance.transform.SetParent(generatedRoot, true);
     return instance;
   }
 
@@ -163,7 +187,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
 
   // The player needs to land at the portal's own PlayerSpawnPos child (its authored "step out here"
   // point) rather than the portal's pivot, so this only runs once the portal instance actually exists.
-  void PlacePlayer(GameObject portalInstance, Vector3 fallbackWorldPosition)
+  void PlacePlayer(GameObject portalInstance)
   {
     if (player == null)
     {
@@ -172,19 +196,18 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     }
 
     Transform spawnPoint = portalInstance != null ? FindDeepChild(portalInstance.transform, PlayerSpawnPointName) : null;
-    if (spawnPoint != null)
+    if (spawnPoint == null)
     {
-      player.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
+      Debug.LogError($"{nameof(DungeonPointOfInterestPlacer3D)} could not find {PlayerSpawnPointName} on the generated spawn portal.", portalInstance);
+      return;
     }
-    else
-    {
-      player.position = fallbackWorldPosition;
-    }
+
+    player.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
 
     // Must run after the player's spawn rotation is set, and before PlayerLocomotion's first Update
     // slaves the player's facing back to the camera - otherwise the camera's leftover default yaw
     // would win instead of adopting the authored spawn facing.
-    playerCameraOrbit?.SnapYawToTarget(player);
+    playerCameraOrbit?.SnapToTarget(spawnPoint);
   }
 
   // Transform.Find only checks direct children, but PlayerSpawnPos sits a level deeper (under a

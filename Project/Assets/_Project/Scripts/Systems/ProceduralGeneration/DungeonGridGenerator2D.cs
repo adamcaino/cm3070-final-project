@@ -29,6 +29,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   protected int GridWidth => gridWidth;
   protected int GridHeight => gridHeight;
   protected int FixedSeed => fixedSeed;
+  public bool HasGenerated => hasGeneratedAtLeastOnce;
   public int LastUsedSeed { get; private set; }
   public TileMetadata[,] LastMetadata { get; private set; }
 

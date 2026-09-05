@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class DungeonBossPlacer3D : MonoBehaviour
 {
   const float TriggerZoneHeight = 4f;
+  const float NavMeshSampleDistance = 2f;
 
   [SerializeField] BSPDungeonGenerator sourceGenerator;
   [SerializeField] DungeonTilePlacer3D tilePlacer;
@@ -47,6 +49,14 @@ public class DungeonBossPlacer3D : MonoBehaviour
   {
     List<Door> doors = FindRoomDoors(room.Bounds, metadata, gridWidth, gridHeight, room.RoomId);
     Vector3 worldPosition = tilePlacer.GridToWorld(room.Center, gridWidth, gridHeight);
+
+    if (!NavMesh.SamplePosition(worldPosition, out NavMeshHit navMeshHit, NavMeshSampleDistance, NavMesh.AllAreas))
+    {
+      Debug.LogWarning($"{nameof(DungeonBossPlacer3D)} skipped boss in room {room.RoomId} at world position {worldPosition} because no NavMesh was found within {NavMeshSampleDistance} units.");
+      return;
+    }
+
+    worldPosition = navMeshHit.position;
 
     // Select a random boss prefab from the array if available.
     GameObject bossPrefab = bossSet.bossPrefabs != null && bossSet.bossPrefabs.Length > 0
