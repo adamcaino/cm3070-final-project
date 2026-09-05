@@ -81,7 +81,7 @@ Light:
   m_RenderMode: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 7937
   m_RenderingLayerMask: 1
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
@@ -1391,6 +1391,10 @@ PrefabInstance:
       value: shield_C
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2de1e537598f6ae4cb326edf948d21e5, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2de1e537598f6ae4cb326edf948d21e5, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -1485,6 +1489,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0ef413b2d1d39a349b72093065fc41f8, type: 3}
       propertyPath: m_Name
       value: shield_B
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0ef413b2d1d39a349b72093065fc41f8, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

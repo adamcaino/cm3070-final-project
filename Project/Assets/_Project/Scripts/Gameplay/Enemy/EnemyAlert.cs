@@ -4,6 +4,8 @@ using UnityEngine;
 // relaying the alert to nearby enemies, who are woken into PositionState even without having
 // seen the player themselves. Not attached to boss prefabs - bosses neither alert nor relay.
 [RequireComponent(typeof(EnemyController))]
+[RequireComponent(typeof(Health))]
+[RequireComponent(typeof(EnemyDetection))]
 public class EnemyAlert : MonoBehaviour
 {
   [Header("Alert VFX")]
@@ -16,23 +18,27 @@ public class EnemyAlert : MonoBehaviour
   readonly Collider[] overlapBuffer = new Collider[16];
 
   EnemyController controller;
+  Health health;
+  EnemyDetection detection;
   LayerMask enemyMask = 1 << 11;
 
   void Awake()
   {
     controller = GetComponent<EnemyController>();
+    health = GetComponent<Health>();
+    detection = GetComponent<EnemyDetection>();
   }
 
   void OnEnable()
   {
-    controller.Health.OnDamaged += HandleDamaged;
-    controller.Detection.OnPlayerSpotted += HandlePlayerSpotted;
+    health.OnDamaged += HandleDamaged;
+    detection.OnPlayerSpotted += HandlePlayerSpotted;
   }
 
   void OnDisable()
   {
-    controller.Health.OnDamaged -= HandleDamaged;
-    controller.Detection.OnPlayerSpotted -= HandlePlayerSpotted;
+    health.OnDamaged -= HandleDamaged;
+    detection.OnPlayerSpotted -= HandlePlayerSpotted;
   }
 
   void HandleDamaged(Vector3 hitPoint) => Trigger(relayToNearby: true);
@@ -76,7 +82,7 @@ public class EnemyAlert : MonoBehaviour
     for (int i = 0; i < count; i++)
     {
       EnemyAlert ally = overlapBuffer[i].GetComponentInParent<EnemyAlert>();
-      if (ally == null || ally == this || ally.controller.Health.IsDead)
+      if (ally == null || ally == this || ally.health.IsDead)
       {
         continue;
       }
