@@ -18,18 +18,13 @@ public class PlayerLockOnCamera : MonoBehaviour
 
   void Awake()
   {
-    targetLock = GetComponent<TargetLockController>();
-
-    basePriority = orbitalVcam != null ? orbitalVcam.Priority.Value : 0;
-
-    if (lockOnVcam != null)
-    {
-      lockOnVcam.Priority = basePriority + freePriorityOffset;
-    }
+    RefreshRuntimeReferences();
   }
 
   void OnEnable()
   {
+    RefreshRuntimeReferences();
+
     if (targetLock == null)
     {
       return;
@@ -50,6 +45,60 @@ public class PlayerLockOnCamera : MonoBehaviour
     targetLock.OnLockOff -= HandleLockOff;
   }
 
+  public void RefreshRuntimeReferences()
+  {
+    targetLock = GetComponent<TargetLockController>();
+
+    if (orbitalVcam == null)
+    {
+      CinemachineOrbitalFollow orbitalFollow = PlayerCameraOrbit.ResolveGameplayOrbitalFollow();
+      orbitalVcam = orbitalFollow != null ? orbitalFollow.GetComponent<CinemachineCamera>() : null;
+    }
+
+    if (lockOnVcam == null)
+    {
+      CinemachineCamera[] cameras = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+      foreach (CinemachineCamera camera in cameras)
+      {
+        if (camera == null || camera == orbitalVcam || camera.GetComponent<PlayerDeathCamera>() != null)
+        {
+          continue;
+        }
+
+        lockOnVcam = camera;
+        break;
+      }
+    }
+
+    basePriority = orbitalVcam != null ? orbitalVcam.Priority.Value : 0;
+
+    // Ensure orbital camera has higher priority than lock-on camera when not locked.
+    if (orbitalVcam != null && orbitalVcam.Priority.Value <= 0)
+    {
+      orbitalVcam.Priority = 10;
+      basePriority = 10;
+    }
+
+    if (lockOnVcam == null)
+    {
+      return;
+    }
+
+    lockOnVcam.Follow = transform.Find("CameraTargetPos") ?? transform;
+
+    // Set lock-on camera to lose to orbital when free, and win only when player is locked.
+    if (targetLock != null && targetLock.IsLocked)
+    {
+      lockOnVcam.LookAt = targetLock.LockedTarget;
+      lockOnVcam.Priority = basePriority + lockedPriorityOffset;
+    }
+    else
+    {
+      lockOnVcam.LookAt = null;
+      lockOnVcam.Priority = basePriority + freePriorityOffset;
+    }
+  }
+
   void HandleLockOn(Transform target)
   {
     if (lockOnVcam == null)
@@ -57,6 +106,7 @@ public class PlayerLockOnCamera : MonoBehaviour
       return;
     }
 
+    lockOnVcam.PreviousStateIsValid = false;
     lockOnVcam.LookAt = target;
     lockOnVcam.Priority = basePriority + lockedPriorityOffset;
   }

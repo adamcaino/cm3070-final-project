@@ -5,6 +5,8 @@ using UnityEngine.AI;
 public class DungeonBossPlacer3D : MonoBehaviour
 {
   const float TriggerZoneHeight = 4f;
+  const int BossBackWallOffsetTiles = 3;
+  const int TriggerEntranceClearanceTiles = 0;
   const float NavMeshSampleDistance = 2f;
 
   [SerializeField] BSPDungeonGenerator sourceGenerator;
@@ -47,8 +49,9 @@ public class DungeonBossPlacer3D : MonoBehaviour
 
   void PlaceBoss(DungeonRoomInfo room, TileMetadata[,] metadata, int gridWidth, int gridHeight)
   {
-    List<Door> doors = FindRoomDoors(room.Bounds, metadata, gridWidth, gridHeight, room.RoomId);
-    Vector3 worldPosition = tilePlacer.GridToWorld(room.Center, gridWidth, gridHeight);
+    List<Door> doors = FindRoomDoors(room.Bounds, metadata, gridWidth, gridHeight, room.RoomId, out Vector2Int entranceDirection);
+    Vector2Int bossCell = GetBackRoomCell(room.Bounds, entranceDirection);
+    Vector3 worldPosition = tilePlacer.GridToWorld(bossCell, gridWidth, gridHeight);
 
     if (!NavMesh.SamplePosition(worldPosition, out NavMeshHit navMeshHit, NavMeshSampleDistance, NavMesh.AllAreas))
     {
@@ -77,18 +80,18 @@ public class DungeonBossPlacer3D : MonoBehaviour
       return;
     }
 
-    encounter.Configure(health, doors);
-    encounter.SetMusic(bossSet.bossMusic, bossSet.clearAmbienceMusic);
+    encounter.Configure(health, doors, bossSet);
 
-    GameObject triggerZone = CreateEncounterTriggerZone(room.Bounds, worldPosition, encounter);
+    GameObject triggerZone = CreateEncounterTriggerZone(room.Bounds, worldPosition, entranceDirection, encounter);
     triggerZone.transform.SetParent(generatedRoot, false);
   }
 
   // Every Door cell on the room's perimeter, resolved to its placed instance via the tile placer and
   // tagged with which room it borders - the same lookup a future loot-room placer would reuse.
-  List<Door> FindRoomDoors(RectInt bounds, TileMetadata[,] metadata, int gridWidth, int gridHeight, int roomId)
+  List<Door> FindRoomDoors(RectInt bounds, TileMetadata[,] metadata, int gridWidth, int gridHeight, int roomId, out Vector2Int entranceDirection)
   {
     List<Door> doors = new List<Door>();
+    entranceDirection = Vector2Int.zero;
 
     foreach (Vector2Int cell in GetRoomPerimeterCells(bounds))
     {
@@ -100,6 +103,11 @@ public class DungeonBossPlacer3D : MonoBehaviour
       if (metadata[cell.x, cell.y].Type != TileType.Door)
       {
         continue;
+      }
+
+      if (entranceDirection == Vector2Int.zero)
+      {
+        entranceDirection = GetRoomSideDirection(bounds, cell);
       }
 
       if (!tilePlacer.TryGetDoorInstance(cell, out GameObject instance) || !instance.TryGetComponent(out Door door))
@@ -117,6 +125,53 @@ public class DungeonBossPlacer3D : MonoBehaviour
     }
 
     return doors;
+  }
+
+  static Vector2Int GetRoomSideDirection(RectInt bounds, Vector2Int perimeterCell)
+  {
+    if (perimeterCell.x < bounds.xMin)
+    {
+      return Vector2Int.left;
+    }
+
+    if (perimeterCell.x >= bounds.xMax)
+    {
+      return Vector2Int.right;
+    }
+
+    if (perimeterCell.y < bounds.yMin)
+    {
+      return Vector2Int.down;
+    }
+
+    return Vector2Int.up;
+  }
+
+  static Vector2Int GetBackRoomCell(RectInt bounds, Vector2Int entranceDirection)
+  {
+    int x = bounds.xMin + (bounds.width / 2);
+    int y = bounds.yMin + (bounds.height / 2);
+
+    if (entranceDirection.x < 0)
+    {
+      x = bounds.xMax - BossBackWallOffsetTiles;
+    }
+    else if (entranceDirection.x > 0)
+    {
+      x = bounds.xMin + BossBackWallOffsetTiles - 1;
+    }
+    else if (entranceDirection.y < 0)
+    {
+      y = bounds.yMax - BossBackWallOffsetTiles;
+    }
+    else if (entranceDirection.y > 0)
+    {
+      y = bounds.yMin + BossBackWallOffsetTiles - 1;
+    }
+
+    return new Vector2Int(
+      Mathf.Clamp(x, bounds.xMin, bounds.xMax - 1),
+      Mathf.Clamp(y, bounds.yMin, bounds.yMax - 1));
   }
 
   static List<Vector2Int> GetRoomPerimeterCells(RectInt bounds)
@@ -138,14 +193,29 @@ public class DungeonBossPlacer3D : MonoBehaviour
     return cells;
   }
 
-  GameObject CreateEncounterTriggerZone(RectInt bounds, Vector3 roomCenterWorld, RoomEncounter encounter)
+  GameObject CreateEncounterTriggerZone(RectInt bounds, Vector3 roomCenterWorld, Vector2Int entranceDirection, RoomEncounter encounter)
   {
     GameObject zone = new GameObject("Boss Encounter Trigger");
-    zone.transform.position = roomCenterWorld + (Vector3.up * (TriggerZoneHeight * 0.5f));
+    Vector3 triggerCenter = roomCenterWorld;
+    int triggerWidth = bounds.width;
+    int triggerDepth = bounds.height;
+
+    if (entranceDirection.x != 0)
+    {
+      triggerWidth = Mathf.Max(1, bounds.width - TriggerEntranceClearanceTiles);
+      triggerCenter.x -= entranceDirection.x * (TriggerEntranceClearanceTiles * tilePlacer.TileSize * 0.5f);
+    }
+    else if (entranceDirection.y != 0)
+    {
+      triggerDepth = Mathf.Max(1, bounds.height - TriggerEntranceClearanceTiles);
+      triggerCenter.z -= entranceDirection.y * (TriggerEntranceClearanceTiles * tilePlacer.TileSize * 0.5f);
+    }
+
+    zone.transform.position = triggerCenter + (Vector3.up * (TriggerZoneHeight * 0.5f));
 
     BoxCollider trigger = zone.AddComponent<BoxCollider>();
     trigger.isTrigger = true;
-    trigger.size = new Vector3(bounds.width * tilePlacer.TileSize, TriggerZoneHeight, bounds.height * tilePlacer.TileSize);
+    trigger.size = new Vector3(triggerWidth * tilePlacer.TileSize, TriggerZoneHeight, triggerDepth * tilePlacer.TileSize);
 
     TriggerRelay relay = zone.AddComponent<TriggerRelay>();
     relay.Configure(encounter.gameObject);

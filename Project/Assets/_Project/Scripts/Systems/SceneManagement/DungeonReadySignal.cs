@@ -6,6 +6,16 @@ using System;
 public static class DungeonReadySignal
 {
   public static event Action Raised;
+  public static bool IsReady { get; private set; }
 
-  public static void Raise() => Raised?.Invoke();
+  public static void Reset()
+  {
+    IsReady = false;
+  }
+
+  public static void Raise()
+  {
+    IsReady = true;
+    Raised?.Invoke();
+  }
 }

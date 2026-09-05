@@ -310,7 +310,7 @@ MonoBehaviour:
   openAngle: 90
   rotationSpeed: 180
   invertSwingDirection: 0
-  openSFX: {fileID: 8300000, guid: 287c27a0c55e89e4cbffa59954d50cc7, type: 3}
+  openSFX: {fileID: 8300000, guid: 127738f3e39f4474797a48b5b7325a66, type: 3}
   closeSFX: {fileID: 8300000, guid: 8e3eb66681c6b664aa2ae5c8e44b6229, type: 3}
 --- !u!82 &1189960101027201861
 AudioSource:
@@ -321,7 +321,7 @@ AudioSource:
   m_GameObject: {fileID: 4674481849839134612}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 6200068061141796076, guid: 366ee15b2efd83241b09a44bb5449d66, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -369,7 +369,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0

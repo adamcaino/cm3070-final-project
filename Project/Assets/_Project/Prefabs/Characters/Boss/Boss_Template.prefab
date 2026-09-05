@@ -615,6 +615,7 @@ MonoBehaviour:
   rotationSpeed: 8
   aggroMemoryDuration: 100
   movingSpeedThreshold: 0.1
+  deathBaseOffsetSettleDuration: 0.5
 --- !u!114 &1712603388502870553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -627,7 +628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70788f6fc42c4caf89f82fff47c016a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossPhaseController
-  stageCount: 4
+  phaseTwoThreshold: 0.5
 --- !u!114 &6296655381327722855
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -655,7 +656,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 364edab0ff2c6bc4ca8c3b44d07a79d7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeAttack
   minRange: 0
   maxRange: 3
@@ -678,7 +679,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 364edab0ff2c6bc4ca8c3b44d07a79d7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeAttack
   minRange: 0
   maxRange: 3
@@ -711,8 +712,8 @@ MonoBehaviour:
   hitClips: []
   deathClips:
   - {fileID: 8300000, guid: 4f65fc399204d9f4eae87ee929f91c83, type: 3}
-  flightLoopClip: {fileID: 8300000, guid: 7aad11e60088dc142836b506ffbd59f4, type: 3}
-  playContinuously: 1
+  flyingAudioSource: {fileID: 0}
+  flyingOneShotClip: {fileID: 0}
 --- !u!82 &7371988669600744595
 AudioSource:
   m_ObjectHideFlags: 0
@@ -722,7 +723,7 @@ AudioSource:
   m_GameObject: {fileID: 1966489106715915697}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 6200068061141796076, guid: 366ee15b2efd83241b09a44bb5449d66, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

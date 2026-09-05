@@ -30,6 +30,43 @@ public class PlayerDeathCamera : MonoBehaviour
   {
     deathVcam = GetComponent<CinemachineCamera>();
     orbitalFollow = GetComponent<CinemachineOrbitalFollow>();
+    RefreshRuntimeReferences();
+  }
+
+  public void RefreshRuntimeReferences()
+  {
+    if (gameplayVcam == null)
+    {
+      CinemachineCamera[] cameras = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+      foreach (CinemachineCamera camera in cameras)
+      {
+        if (camera != null && camera != deathVcam && camera.GetComponent<PlayerDeathCamera>() == null)
+        {
+          gameplayVcam = camera;
+          break;
+        }
+      }
+    }
+
+    if (brain == null)
+    {
+      brain = FindFirstObjectByType<CinemachineBrain>();
+    }
+
+    // Ensure DeathCam starts with lower priority than gameplay camera (which should be ~10).
+    // On death, activePriorityOffset will push it above 100 to take over.
+    if (deathVcam != null)
+    {
+      deathVcam.Priority = 0;
+    }
+
+    // Ensure gameplay camera has explicit priority higher than death cam at start.
+    if (gameplayVcam != null && gameplayVcam.Priority.Value <= 0)
+    {
+      gameplayVcam.Priority = 10;
+    }
+
+    SyncPlayerTargets();
   }
 
   void OnEnable()
@@ -44,14 +81,55 @@ public class PlayerDeathCamera : MonoBehaviour
 
   void HandlePlayerDied()
   {
+    SyncPlayerTargets();
+
     if (brain != null)
     {
       brain.DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Styles.EaseInOut, blendDuration);
     }
 
-    int basePriority = gameplayVcam != null ? gameplayVcam.Priority.Value : 0;
-    deathVcam.Priority = basePriority + activePriorityOffset;
+    CinemachineCamera[] cameras = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+    foreach (CinemachineCamera camera in cameras)
+    {
+      if (camera != deathVcam)
+      {
+        camera.Priority = 0;
+      }
+    }
+
+    deathVcam.Priority = Mathf.Max(activePriorityOffset, 1000);
+
+    CinemachineOrbitalFollow gameplayOrbitalFollow = gameplayVcam != null
+      ? gameplayVcam.GetComponent<CinemachineOrbitalFollow>()
+      : null;
+
+    if (gameplayOrbitalFollow != null)
+    {
+      orbitalFollow.Radius = gameplayOrbitalFollow.Radius;
+      orbitalFollow.HorizontalAxis.Value = gameplayOrbitalFollow.HorizontalAxis.Value;
+      orbitalFollow.VerticalAxis.Value = gameplayOrbitalFollow.VerticalAxis.Value;
+    }
+
+    deathVcam.PreviousStateIsValid = false;
     isActive = true;
+  }
+
+  void SyncPlayerTargets()
+  {
+    if (deathVcam == null)
+    {
+      return;
+    }
+
+    PlayerDeathHandler player = FindFirstObjectByType<PlayerDeathHandler>();
+
+    if (player == null)
+    {
+      return;
+    }
+
+    deathVcam.Follow = player.transform;
+    deathVcam.LookAt = player.transform;
   }
 
   void Update()

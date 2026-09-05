@@ -2096,11 +2096,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: roamRadius
-      value: 6
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: roamWaitTime
-      value: 6
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: rotationSpeed

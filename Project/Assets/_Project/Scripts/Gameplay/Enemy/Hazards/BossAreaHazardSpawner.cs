@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(BossRoomEncounter))]
@@ -15,6 +16,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
 
   float currentInterval;
   Coroutine spawnRoutine;
+  readonly List<BossAreaHazardController> activeHazards = new List<BossAreaHazardController>();
 
   void Awake()
   {
@@ -71,6 +73,8 @@ public class BossAreaHazardSpawner : MonoBehaviour
       StopCoroutine(spawnRoutine);
       spawnRoutine = null;
     }
+
+    StopActiveHazards();
   }
 
   IEnumerator SpawnRoutine()
@@ -89,12 +93,34 @@ public class BossAreaHazardSpawner : MonoBehaviour
     Vector3 spawnPosition = enemyController.Player.position + Vector3.up * 0.1f;
     GameObject hazard = Instantiate(hazardPrefab, spawnPosition, Quaternion.identity);
 
+    BossAreaHazardController hazardController = hazard.GetComponent<BossAreaHazardController>();
+    if (hazardController != null)
+    {
+      activeHazards.Add(hazardController);
+    }
+
     // IAreaHazard implementations live on a child of the hazard root (e.g. BeeSwarmHazard sits next to
     // its own trigger collider), so this has to search the hierarchy rather than the root GameObject alone.
     IAreaHazard areaHazard = hazard.GetComponentInChildren<IAreaHazard>();
     if (areaHazard != null)
     {
       areaHazard.Configure(hazardDamage);
+    }
+  }
+
+  void StopActiveHazards()
+  {
+    for (int i = activeHazards.Count - 1; i >= 0; i--)
+    {
+      BossAreaHazardController hazard = activeHazards[i];
+      if (hazard == null)
+      {
+        activeHazards.RemoveAt(i);
+        continue;
+      }
+
+      hazard.StopHazard();
+      activeHazards.RemoveAt(i);
     }
   }
 }

@@ -23,13 +23,18 @@ public static class AudioMixerVolume
 
   public static void Set(AudioMixer mixer, string exposedParam, float linear01)
   {
+    SetRuntime(mixer, exposedParam, linear01);
+
+    PlayerPrefs.SetFloat(exposedParam, linear01);
+    PlayerPrefs.Save();
+  }
+
+  public static void SetRuntime(AudioMixer mixer, string exposedParam, float linear01)
+  {
     if (mixer != null)
     {
       mixer.SetFloat(exposedParam, LinearToDecibel(linear01));
     }
-
-    PlayerPrefs.SetFloat(exposedParam, linear01);
-    PlayerPrefs.Save();
   }
 
   public static float GetSaved(string exposedParam)

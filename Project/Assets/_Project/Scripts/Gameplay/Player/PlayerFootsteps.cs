@@ -1,7 +1,6 @@
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(PlayerLocomotion))]
 public class PlayerFootsteps : MonoBehaviour
 {
   [SerializeField] AudioClip[] footstepClips;
@@ -13,6 +12,7 @@ public class PlayerFootsteps : MonoBehaviour
 
   CharacterController controller;
   PlayerLocomotion locomotion;
+  ScriptedForwardWalker scriptedWalker;
   AudioSource audioSource;
   float distanceSinceLastStep;
   int lastClipIndex = -1;
@@ -21,6 +21,7 @@ public class PlayerFootsteps : MonoBehaviour
   {
     controller = GetComponent<CharacterController>();
     locomotion = GetComponent<PlayerLocomotion>();
+    scriptedWalker = GetComponent<ScriptedForwardWalker>();
     audioSource = GetComponent<AudioSource>();
   }
 
@@ -31,13 +32,16 @@ public class PlayerFootsteps : MonoBehaviour
       return;
     }
 
-    if (!controller.isGrounded || locomotion.CurrentSpeed < minMoveSpeed)
+    float currentSpeed = locomotion != null && locomotion.enabled
+      ? locomotion.CurrentSpeed
+      : scriptedWalker != null ? scriptedWalker.CurrentSpeed : 0f;
+    if (!controller.isGrounded || currentSpeed < minMoveSpeed)
     {
       distanceSinceLastStep = 0f;
       return;
     }
 
-    distanceSinceLastStep += locomotion.CurrentSpeed * Time.deltaTime;
+    distanceSinceLastStep += currentSpeed * Time.deltaTime;
 
     if (distanceSinceLastStep >= stepDistance)
     {

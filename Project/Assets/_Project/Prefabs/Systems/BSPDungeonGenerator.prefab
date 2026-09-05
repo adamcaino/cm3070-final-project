@@ -48,14 +48,16 @@ MonoBehaviour:
   gridHeight: 48
   generateOnStart: 0
   randomizeSeed: 1
-  fixedSeed: 4925859
+  fixedSeed: 33968093
   tileSize: 1
   floorColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   wallColor: {r: 0, g: 0, b: 0, a: 1}
   doorColor: {r: 1, g: 0, b: 0, a: 1}
-  mapOffset: {x: 0, y: 0, z: 500}
+  mapOffset: {x: 0, y: 0, z: 200}
   maxDepth: 4
-  minLeafSize: 12
-  minimumRoomSize: 4
-  maximumRoomSize: 8
-  minCorridorLength: 3
+  minLeafSize: 10
+  minimumRoomSize: 6
+  maximumRoomSize: 10
+  minCorridorLength: 2
+  corridorWidth: 3
+  lootRoomCount: 2

@@ -13,6 +13,7 @@ public class PlayerAttack : MonoBehaviour
 
   Animator animator;
   bool isDefending;
+  bool isInputLocked;
 
   public bool IsDefending => isDefending;
 
@@ -23,6 +24,8 @@ public class PlayerAttack : MonoBehaviour
 
   void OnEnable()
   {
+    GameOverSignal.VictoryRaised += HandleVictoryRaised;
+
     if (attackAction == null || defendAction == null) return;
 
     attackAction.action.performed += OnAttackPerformed;
@@ -35,6 +38,8 @@ public class PlayerAttack : MonoBehaviour
 
   void OnDisable()
   {
+    GameOverSignal.VictoryRaised -= HandleVictoryRaised;
+
     if (attackAction == null || defendAction == null) return;
 
     attackAction.action.performed -= OnAttackPerformed;
@@ -47,7 +52,7 @@ public class PlayerAttack : MonoBehaviour
 
   void OnAttackPerformed(InputAction.CallbackContext context)
   {
-    if (isDefending) return;
+    if (isInputLocked || isDefending) return;
 
     animator.SetTrigger(AttackParam);
   }
@@ -56,5 +61,19 @@ public class PlayerAttack : MonoBehaviour
   {
     isDefending = context.performed;
     animator.SetBool(DefendParam, isDefending);
+  }
+
+  void HandleVictoryRaised(string sceneName)
+  {
+    if (sceneName != gameObject.scene.name)
+    {
+      return;
+    }
+
+    isInputLocked = true;
+    isDefending = false;
+    animator.SetBool(DefendParam, false);
+    attackAction?.action.Disable();
+    defendAction?.action.Disable();
   }
 }

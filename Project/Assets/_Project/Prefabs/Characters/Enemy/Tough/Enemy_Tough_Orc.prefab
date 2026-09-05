@@ -2294,6 +2294,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 00f3b026d06248946815d3b87095c799, type: 2}
+    - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: roamWaitTime
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 5262404797084814601, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_Size.z
       value: 2
@@ -2424,6 +2428,7 @@ MonoBehaviour:
   attackAnimationIndex: 1
   damage: 1
   completionTimeout: 3
+  unlockStage: 1
   hitCollider: {fileID: 4372885745799235994}
   spinSfx: {fileID: 8300000, guid: 1aeabb385d4fa1d4cb9585cf6b148c4c, type: 3}
   tickInterval: 0.5

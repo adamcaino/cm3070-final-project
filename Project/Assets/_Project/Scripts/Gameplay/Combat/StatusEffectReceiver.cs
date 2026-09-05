@@ -10,6 +10,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 
   [SerializeField] Color freezeColour = new Color(0.6f, 0.85f, 1f, 1f);
   [SerializeField] GameObject burningEffectPrefab;
+  [SerializeField] Vector3 burningEffectScale = new Vector3(0.75f, 0.75f, 0.75f);
 
   Health health;
   NavMeshAgent agent;
@@ -17,6 +18,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
   HitFlash hitFlash;
   EnemyController enemyController;
   Renderer[] renderers;
+  Collider[] colliders;
   MaterialPropertyBlock propertyBlock;
   Color[] cachedColours;
   Coroutine activeEffect;
@@ -38,6 +40,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     hitFlash = GetComponent<HitFlash>();
     enemyController = GetComponent<EnemyController>();
     renderers = GetComponentsInChildren<Renderer>();
+    colliders = GetComponentsInChildren<Collider>();
     propertyBlock = new MaterialPropertyBlock();
   }
 
@@ -49,6 +52,16 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
   void OnDisable()
   {
     health.OnDied -= HandleDied;
+  }
+
+  void LateUpdate()
+  {
+    if (activeBurningEffect == null)
+    {
+      return;
+    }
+
+    activeBurningEffect.transform.position = GetEffectCenter();
   }
 
   void HandleDied() => EndBurn();
@@ -79,7 +92,16 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
   {
     if (burningEffectPrefab != null)
     {
-      activeBurningEffect = Instantiate(burningEffectPrefab, GetMeshCenter(), Quaternion.identity, transform);
+      activeBurningEffect = Instantiate(burningEffectPrefab, GetEffectCenter(), Quaternion.identity, transform);
+      activeBurningEffect.transform.localScale = burningEffectScale;
+
+      ParticleSystem[] particles = activeBurningEffect.GetComponentsInChildren<ParticleSystem>(true);
+      for (int i = 0; i < particles.Length; i++)
+      {
+        particles[i].Play(true);
+      }
+
+      activeBurningEffect.transform.position = GetEffectCenter();
     }
 
     float elapsed = 0f;
@@ -130,6 +152,36 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     }
 
     return hasBounds ? bounds.center : transform.position;
+  }
+
+  Vector3 GetEffectCenter()
+  {
+    bool hasBounds = false;
+    Bounds bounds = default;
+
+    if (colliders != null)
+    {
+      for (int i = 0; i < colliders.Length; i++)
+      {
+        Collider col = colliders[i];
+        if (col == null || !col.enabled || col.isTrigger)
+        {
+          continue;
+        }
+
+        if (!hasBounds)
+        {
+          bounds = col.bounds;
+          hasBounds = true;
+        }
+        else
+        {
+          bounds.Encapsulate(col.bounds);
+        }
+      }
+    }
+
+    return hasBounds ? bounds.center : GetMeshCenter();
   }
 
   IEnumerator FreezeRoutine(float duration)

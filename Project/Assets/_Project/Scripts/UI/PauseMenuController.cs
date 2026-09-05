@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
@@ -28,7 +30,13 @@ public class PauseMenuController : MonoBehaviour
   [Tooltip("Scene loaded when quitting to the main menu. Must be added to Build Settings.")]
   [SerializeField] string mainMenuSceneName = "MainMenu";
 
+  [Header("Transition")]
+  [SerializeField] AudioMixer mixer;
+  [SerializeField] ScreenFader screenFader;
+  [SerializeField, Min(0f)] float menuTransitionFadeDuration = 1f;
+
   AudioSource audioSource;
+  bool isTransitioning;
 
   public bool IsPaused { get; private set; }
 
@@ -101,10 +109,45 @@ public class PauseMenuController : MonoBehaviour
 
   public void QuitToMenu()
   {
+    if (isTransitioning) return;
+
+    isTransitioning = true;
     Time.timeScale = 1f;
     SetPlayerControlsEnabled(true);
     SetCursorLocked(false);
+    StartCoroutine(QuitToMenuRoutine());
+  }
+
+  IEnumerator QuitToMenuRoutine()
+  {
+    float savedMasterVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);
+
+    if (screenFader != null)
+    {
+      Coroutine screenFade = screenFader.FadeOutAndStart(menuTransitionFadeDuration);
+      yield return FadeAudio(savedMasterVolume, 0f, menuTransitionFadeDuration);
+      yield return screenFade;
+    }
+    else
+    {
+      yield return FadeAudio(savedMasterVolume, 0f, menuTransitionFadeDuration);
+    }
+
     SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
+  }
+
+  IEnumerator FadeAudio(float from, float to, float duration)
+  {
+    float elapsed = 0f;
+    while (elapsed < duration)
+    {
+      elapsed += Time.deltaTime;
+      float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+      AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, Mathf.Lerp(from, to, t));
+      yield return null;
+    }
+
+    AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, to);
   }
 
   void SetMenuVisible(bool visible)
