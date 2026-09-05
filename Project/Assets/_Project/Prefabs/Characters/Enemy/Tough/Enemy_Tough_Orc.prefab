@@ -2306,9 +2306,13 @@ PrefabInstance:
       propertyPath: m_Center.z
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 6635667293435761069, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: selectionChance
+      value: 0.75
+      objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 21.71292
+      value: 22.7
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2316,7 +2320,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -43.50019
+      value: -47.73
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2358,6 +2362,10 @@ PrefabInstance:
       propertyPath: 'attackClips.Array.data[0]'
       value: 
       objectReference: {fileID: 8300000, guid: ac1b7da17ba567e49a177319daea31bd, type: 3}
+    - target: {fileID: 8041900046043807537, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -2411,9 +2419,11 @@ MonoBehaviour:
   maxRange: 5
   minAngle: 0
   maxAngle: 180
-  priority: 0
-  selectionChance: 0.33
+  priority: 1
+  selectionChance: 0.25
   attackAnimationIndex: 1
   damage: 1
+  completionTimeout: 3
   hitCollider: {fileID: 4372885745799235994}
+  spinSfx: {fileID: 8300000, guid: 1aeabb385d4fa1d4cb9585cf6b148c4c, type: 3}
   tickInterval: 0.5

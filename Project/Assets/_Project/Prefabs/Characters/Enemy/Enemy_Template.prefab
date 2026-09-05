@@ -22,7 +22,9 @@ GameObject:
   - component: {fileID: 6801071094720885259}
   - component: {fileID: 6419137320099670886}
   - component: {fileID: 7576511953152076312}
+  - component: {fileID: 9917858756869720}
   - component: {fileID: 8041900046043807537}
+  - component: {fileID: 46511478618581336}
   m_Layer: 11
   m_Name: Enemy_Template
   m_TagString: Enemy
@@ -131,11 +133,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c82324d56652e4f44a0a3731767f0fdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyController
+  startIdle: 0
   roamRadius: 3
   roamWaitTime: 4
   rotationSpeed: 8
   aggroMemoryDuration: 5
   movingSpeedThreshold: 0.1
+  deathBaseOffsetSettleDuration: 0.5
 --- !u!114 &5408711672216210058
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationDriver
   getHitChance: 0.15
+  phase2Glow: {fileID: 0}
 --- !u!114 &6635667293435761069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,8 +189,11 @@ MonoBehaviour:
   minAngle: 0
   maxAngle: 120
   priority: 0
+  selectionChance: 1
   attackAnimationIndex: 0
   damage: 1
+  completionTimeout: 3
+  unlockStage: 1
   hitCollider: {fileID: 5262404797084814601}
 --- !u!114 &6131745160485989754
 MonoBehaviour:
@@ -259,8 +267,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDeathVFX
   deathVfxPrefab: {fileID: 1889919486439536, guid: cf23a1c097809cc4eaa6949a70f027c3, type: 3}
   frozenDeathVfxPrefab: {fileID: 3499135110014554675, guid: 3d894fa6675d98e44a706df62bbcf5c4, type: 3}
-  deathDelay: 1.5
   vfxLifetime: 3.5
+  dieStateDetectTimeout: 1
 --- !u!114 &7576511953152076312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,13 +281,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7eec85973ce8b834aad83345898698c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAudio
+  alertClips: []
   attackClips:
   - {fileID: 0}
   hitClips:
   - {fileID: 0}
   deathClips:
   - {fileID: 0}
-  flightLoopClip: {fileID: 0}
+  flyingAudioSource: {fileID: 0}
+  flyingOneShotClip: {fileID: 0}
+--- !u!114 &46511478618581336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401663342923943866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8e1757d66ac46639c081dff6f16a950, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAlert
+  alertVfxPrefab: {fileID: 8772671334693435309, guid: f6785a513f1b72b45b9c40e9b209c854, type: 3}
+  vfxLifetime: 2
+  alertRadius: 8
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 2048
+--- !u!114 &9917858756869720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401663342923943866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0918f4d24ec91647a38b6d12de372b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyLootDrop
+  healthItemPrefabs:
+  - {fileID: 8538519450748768500, guid: c466890a64103674c94597a1c9715efc, type: 3}
+  dropChance: 0.2
+  dieStateDetectTimeout: 1
 --- !u!82 &8041900046043807537
 AudioSource:
   m_ObjectHideFlags: 0
