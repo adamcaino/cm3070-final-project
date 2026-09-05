@@ -22,12 +22,12 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 9abadbfe5b394c948b732b28a6d4c8cb, type: 3}
   - {fileID: 919132149155446097, guid: 6982e7f852176f74bb509836d6dab988, type: 3}
   doorPrefabs:
-  - {fileID: 7856071335390764979, guid: bed52056240058f4b9db5208141dc2b0, type: 3}
   - {fileID: 4674481849839134612, guid: ccacc43c2f9b28740916cb7fcbc1d946, type: 3}
-  - {fileID: 5129409538344183020, guid: 238444d8377769c42a42be4cea114dd4, type: 3}
-  - {fileID: 5048731024626005412, guid: 888a77ba7ad979a47ac349deb9da938a, type: 3}
-  - {fileID: 4331457445730482812, guid: 66f7a7fb8649f8f4ebb2fbd41d183d23, type: 3}
-  - {fileID: 8949284513702050800, guid: df7aa3570c9aca14d86ae563de121ace, type: 3}
+  - {fileID: 3543825464669750973, guid: 24b0fde08ff61754c9ae68ef3bfb0b7a, type: 3}
+  - {fileID: 4628939089832297808, guid: 9a0de40f24bbef0469e919a136522d63, type: 3}
+  - {fileID: 3019209381111822473, guid: 4ffc48811dec85b48972fa2d917a25c0, type: 3}
+  - {fileID: 6294432647146672438, guid: 7810a3059d4b41a47ab3d69390d77419, type: 3}
+  - {fileID: 56594536684287436, guid: 493bebbfb48d35747817b52d7302cfd4, type: 3}
   floorColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   wallColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   doorColor: {r: 1, g: 0, b: 0, a: 1}
