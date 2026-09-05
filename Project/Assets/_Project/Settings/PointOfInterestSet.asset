@@ -13,11 +13,8 @@ MonoBehaviour:
   m_Name: PointOfInterestSet
   m_EditorClassIdentifier: Assembly-CSharp::PointOfInterestSet
   spawnPortalPrefab: {fileID: 115111439968768042, guid: 2c0faa1f9d2877645bed7a7e2d2bc103, type: 3}
-  spawnPortalColor: {r: 0.2, g: 0.6, b: 1, a: 1}
-  bossPortalPrefab: {fileID: 0}
-  bossPortalColor: {r: 0.6, g: 0, b: 0, a: 1}
-  normalChestPrefabs: []
-  normalChestColor: {r: 1, g: 0.85, b: 0, a: 1}
-  cursedChestPrefabs: []
-  cursedChestColor: {r: 0.45, g: 0, b: 0.55, a: 1}
-  cursedChestChance: 0.25
+  spawnPortalColour: {r: 0.2, g: 0.6, b: 1, a: 1}
+  lootPrefabs:
+  - {fileID: 100000, guid: 1dcc02f577a1b704e82f1574021d2a71, type: 3}
+  - {fileID: 100000, guid: 24fcf334dfcbfc34ebe2222e6b6564f3, type: 3}
+  lootColour: {r: 1, g: 0.85, b: 0, a: 1}
