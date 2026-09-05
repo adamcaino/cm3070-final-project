@@ -1,10 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// Sits on a standalone trigger collider GameObject and forwards player contact to a target's
-/// ITriggerable, decoupling collider placement (which may not want to inherit a rotating
-/// parent's transform) from the reaction logic.
-/// </summary>
+
+
+
+
+
 [RequireComponent(typeof(Collider))]
 public class TriggerRelay : MonoBehaviour
 {
@@ -22,6 +22,14 @@ public class TriggerRelay : MonoBehaviour
     }
   }
 
+
+
+  public void Configure(GameObject targetObject)
+  {
+    target = targetObject;
+    triggerable = target != null ? target.GetComponent<ITriggerable>() : null;
+  }
+
   void OnTriggerEnter(Collider other)
   {
     if (triggerable == null || !other.CompareTag(PLAYERTAG))
@@ -29,7 +37,7 @@ public class TriggerRelay : MonoBehaviour
       return;
     }
 
-    // Pass the player's position to the target's OnTriggered method, so it can determine which side of the trigger the player is on.
+
     triggerable.OnTriggered(other.transform.position);
   }
 }

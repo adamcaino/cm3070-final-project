@@ -42,6 +42,8 @@ public class SpinAttack : MeleeHitboxAttack
 
   public void EnableSpinHitbox()
   {
+    if (!IsExecuting) return;
+
     nextTickTime.Clear();
     isHitboxActive = true;
     ActivateHitbox();
@@ -49,6 +51,8 @@ public class SpinAttack : MeleeHitboxAttack
 
   public void DisableSpinHitbox()
   {
+    if (!isHitboxActive) return;
+
     isHitboxActive = false;
     DeactivateHitbox();
   }

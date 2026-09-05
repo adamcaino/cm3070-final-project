@@ -11,8 +11,10 @@ public class FlamethrowerAttack : AttackBase
   ParticleSystem flameParticles;
   Health health;
 
-  void Awake()
+  protected override void Awake()
   {
+    base.Awake();
+
     hitbox = flamethrowerVFX.GetComponent<FlameHitbox>();
     flameParticles = flamethrowerVFX.GetComponent<ParticleSystem>();
     health = GetComponent<Health>();
@@ -60,7 +62,7 @@ public class FlamethrowerAttack : AttackBase
     RaiseAttackComplete();
   }
 
-  // Deactivates the VFX GameObject once already-emitted particles have had time to fade out naturally.
+
   void DeactivateFlameVFX()
   {
     flamethrowerVFX.SetActive(false);

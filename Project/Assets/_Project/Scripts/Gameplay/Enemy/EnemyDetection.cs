@@ -1,12 +1,12 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// Standalone vision component - a cone (radius + angle) plus a line-of-sight raycast so an enemy
-/// can't see the player through a wall it's technically within radius of. Edge-triggered: fires
-/// OnPlayerSpotted/OnPlayerLost only on the transition, not every frame, so states can subscribe in
-/// Enter and unsubscribe in Exit without re-triggering themselves.
-/// </summary>
+
+
+
+
+
+
 public class EnemyDetection : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
@@ -60,7 +60,7 @@ public class EnemyDetection : MonoBehaviour
       return false;
     }
 
-    // Obstacle mask should exclude the player's own layer - a hit here means something is blocking the view.
+
     return !Physics.Raycast(eyePosition, toPlayer.normalized, toPlayer.magnitude, obstacleMask);
   }
 

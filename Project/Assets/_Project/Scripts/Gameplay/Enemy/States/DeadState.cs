@@ -1,36 +1,63 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
-/// <summary>
-/// Terminal state - reached directly from EnemyController on Health.OnDied regardless of which state was
-/// active. Stops the agent and disables colliders so a dead enemy no longer blocks pathing or takes hits;
-/// leaves the GameObject itself alone (destroy/pool/loot-drop is EnemyLootDrop's job via the same event).
-/// </summary>
+
+
 public class DeadState : IEnemyState
 {
   static readonly int DeadParam = Animator.StringToHash("dead");
 
   public void Enter(EnemyController enemy)
   {
-    enemy.Agent.isStopped = true;
-    enemy.Agent.enabled = false;
+    // A flying/hovering agent (baseOffset > 0) can die mid-transition, off the navmesh it's nominally
+    // tracking - isStopped throws if set on an agent that isn't currently active and placed on a mesh.
+    if (enemy.Agent.isActiveAndEnabled && enemy.Agent.isOnNavMesh)
+    {
+      enemy.Agent.isStopped = true;
+    }
 
     foreach (Collider enemyCollider in enemy.GetComponents<Collider>())
     {
       enemyCollider.enabled = false;
     }
 
-    // Frozen deaths swap straight to the Enemy_Death_Frozen prefab (EnemyDeathVFX) instead of playing
-    // the normal death animation - the Animator's paused (speed 0) while frozen anyway, so triggering
-    // it here would just queue an animation that never plays before the object is destroyed.
     bool diedFrozen = enemy.StatusEffects != null && enemy.StatusEffects.IsFrozen;
 
     if (!diedFrozen && enemy.Animator != null)
     {
       enemy.Animator.SetBool(DeadParam, true);
     }
+
+    if (enemy.Agent.baseOffset != 0f && enemy.DeathBaseOffsetSettleDuration > 0f)
+    {
+      enemy.StartCoroutine(SettleBaseOffsetRoutine(enemy));
+    }
+    else
+    {
+      enemy.Agent.enabled = false;
+    }
   }
 
   public void Tick(EnemyController enemy) { }
 
   public void Exit(EnemyController enemy) { }
+
+  IEnumerator SettleBaseOffsetRoutine(EnemyController enemy)
+  {
+    NavMeshAgent agent = enemy.Agent;
+    float startOffset = agent.baseOffset;
+    float duration = enemy.DeathBaseOffsetSettleDuration;
+    float elapsed = 0f;
+
+    while (elapsed < duration)
+    {
+      elapsed += Time.deltaTime;
+      agent.baseOffset = Mathf.Lerp(startOffset, 0f, elapsed / duration);
+      yield return null;
+    }
+
+    agent.baseOffset = 0f;
+    agent.enabled = false;
+  }
 }

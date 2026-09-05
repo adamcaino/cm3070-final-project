@@ -7,6 +7,7 @@ using UnityEngine;
 /// </summary>
 public struct DungeonRoomInfo
 {
+  public int RoomId;
   public RectInt Bounds;
   public Vector2Int Center;
   public RoomRole Role;

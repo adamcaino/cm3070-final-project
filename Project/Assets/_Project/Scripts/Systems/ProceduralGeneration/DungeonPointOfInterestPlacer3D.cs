@@ -2,14 +2,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Final placement pass. Reads the room roles BSPDungeonGenerator tagged (spawn/boss/loot) and drops the
+/// Final placement pass. Reads the room roles BSPDungeonGenerator tagged (spawn/loot) and drops the
 /// corresponding gameplay object into each tagged room: the spawn room gets a portal against a wall (the
-/// player's return point once the boss is dead) with the player placed at its authored spawn point; the
-/// boss room gets a single portal at its center facing the corridor that leads into it - that portal is
-/// what marks the room as a boss room at all, actual boss spawning/behaviour comes later and isn't
-/// handled here; each loot room gets a single chest at its center, randomly either a normal or cursed
-/// variant (the lock/enemy-wave behaviour a cursed chest implies isn't handled here either, this only
-/// decides placement). Any prefab left unassigned falls back to a colored placeholder primitive.
+/// player's return point once the boss is dead) with the player placed at its authored spawn point; each
+/// loot room gets a single chest at its center, randomly either a normal or cursed variant (the
+/// lock/enemy-wave behaviour a cursed chest implies isn't handled here either, this only decides
+/// placement). Boss rooms are DungeonBossPlacer3D's territory - not touched here. Any prefab left
+/// unassigned falls back to a colored placeholder primitive.
 /// </summary>
 public class DungeonPointOfInterestPlacer3D : MonoBehaviour
 {
@@ -56,9 +55,6 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
       {
         case RoomRole.Spawn:
           PlaceSpawn(room, metadata, gridWidth, gridHeight);
-          break;
-        case RoomRole.Boss:
-          PlaceBoss(room, metadata, gridWidth, gridHeight);
           break;
         case RoomRole.Loot:
           PlaceLoot(room, gridWidth, gridHeight);
@@ -115,36 +111,6 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return false;
   }
 
-  // The boss portal sits at the room's center rather than against a wall, so it needs the direction
-  // from the center toward the corridor instead of a wall's own facing. A door tile's DoorRoomSide
-  // points from the door back into the room, so the opposite of that points from the room out to the
-  // door - which is the direction the portal should face to look like it opens onto that corridor.
-  bool TryFindDoorFacing(RectInt bounds, TileMetadata[,] metadata, int gridWidth, int gridHeight, out Direction facing)
-  {
-    List<Vector2Int> candidates = GetRoomPerimeterCells(bounds);
-    ShuffleInPlace(candidates);
-
-    foreach (Vector2Int cell in candidates)
-    {
-      if (cell.x < 0 || cell.y < 0 || cell.x >= gridWidth || cell.y >= gridHeight)
-      {
-        continue;
-      }
-
-      TileMetadata tile = metadata[cell.x, cell.y];
-      if (tile.Type != TileType.Door)
-      {
-        continue;
-      }
-
-      facing = DirectionUtility.GetOpposite(tile.DoorRoomSide);
-      return true;
-    }
-
-    facing = Direction.None;
-    return false;
-  }
-
   static List<Vector2Int> GetRoomPerimeterCells(RectInt bounds)
   {
     List<Vector2Int> cells = new List<Vector2Int>();
@@ -177,45 +143,22 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
   {
     GameObject instance = poiSet.spawnPortalPrefab != null
       ? Instantiate(poiSet.spawnPortalPrefab, worldPosition, rotation)
-      : CreatePlaceholder(poiSet.spawnPortalColor, worldPosition);
+      : CreatePlaceholder(poiSet.spawnPortalColour, worldPosition);
 
     instance.name = "Spawn Portal";
     instance.transform.SetParent(generatedRoot, false);
     return instance;
   }
 
-  // Always at the room's center, facing whichever corridor connects to it - that's what makes this
-  // the boss room. Falls back to facing north if no bordering door is found (shouldn't normally happen,
-  // every non-spawn room is reachable through at least one door).
-  void PlaceBoss(DungeonRoomInfo room, TileMetadata[,] metadata, int gridWidth, int gridHeight)
-  {
-    Quaternion rotation = Quaternion.identity;
-
-    if (TryFindDoorFacing(room.Bounds, metadata, gridWidth, gridHeight, out Direction facing))
-    {
-      rotation = DirectionUtility.GetFacingRotation(facing);
-    }
-
-    Vector3 worldPosition = tilePlacer.GridToWorld(room.Center, gridWidth, gridHeight);
-    GameObject instance = poiSet.bossPortalPrefab != null
-      ? Instantiate(poiSet.bossPortalPrefab, worldPosition, rotation)
-      : CreatePlaceholder(poiSet.bossPortalColor, worldPosition);
-
-    instance.name = "Boss Portal";
-    instance.transform.SetParent(generatedRoot, false);
-  }
-
   // Always at the room's center. Which chest variant spawns is decided here (seeded, so still
   // reproducible per dungeon seed); the lock/enemy-wave behaviour a cursed chest implies is future work.
   void PlaceLoot(DungeonRoomInfo room, int gridWidth, int gridHeight)
   {
-    bool isCursed = poiRandom.NextDouble() < poiSet.cursedChestChance;
-    GameObject[] variants = isCursed ? poiSet.cursedChestPrefabs : poiSet.normalChestPrefabs;
-    Color placeholderColor = isCursed ? poiSet.cursedChestColor : poiSet.normalChestColor;
-    string label = isCursed ? "Loot Chest (Cursed)" : "Loot Chest (Normal)";
+    Color placeholderColor = poiSet.lootColour;
+    string label = "Loot";
 
     Vector3 worldPosition = tilePlacer.GridToWorld(room.Center, gridWidth, gridHeight);
-    SpawnFromSet(variants, placeholderColor, worldPosition, Quaternion.identity, label);
+    SpawnFromSet(poiSet.lootPrefabs, placeholderColor, worldPosition, Quaternion.identity, label);
   }
 
   // The player needs to land at the portal's own PlayerSpawnPos child (its authored "step out here"

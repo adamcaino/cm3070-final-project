@@ -3,29 +3,51 @@ using UnityEngine;
 
 public class Door : MonoBehaviour, ITriggerable
 {
+  [Header("References")]
+  [SerializeField] GameObject door;
+
   [Header("Rotation")]
   [SerializeField] float openAngle = 90f;
   [SerializeField, Min(0f)] float rotationSpeed = 180f;
-  [Tooltip("Flip this if the door swings towards the player instead of away - depends on which way the door's forward axis faces.")]
   [SerializeField] bool invertSwingDirection;
 
   [Header("SFX")]
   [SerializeField] AudioClip openSFX;
+  [SerializeField] AudioClip closeSFX;
 
   Quaternion closedRotation;
   Quaternion targetRotation;
+  AudioSource audioSource;
+  Coroutine rotateCoroutine;
 
   bool isOpen;
+  bool isLocked;
+
+  public bool IsLocked => isLocked;
 
   void Awake()
   {
-    closedRotation = transform.rotation;
+    audioSource = GetComponent<AudioSource>();
+
+    closedRotation = door.transform.rotation;
     targetRotation = closedRotation;
+  }
+
+  public void SetLocked(bool locked)
+  {
+    if (isLocked == locked) return;
+
+    isLocked = locked;
+
+    if (isLocked)
+    {
+      CloseDoor();
+    }
   }
 
   public void OnTriggered(Vector3 sourcePosition)
   {
-    if (isOpen) return; // Ensure the door doesn't open again while the player is still triggering it.
+    if (isOpen || isLocked) return;
 
     OpenDoor(sourcePosition);
   }
@@ -35,18 +57,37 @@ public class Door : MonoBehaviour, ITriggerable
     isOpen = true;
     targetRotation = closedRotation * Quaternion.Euler(0f, openAngle * GetSwingSign(playerPosition), 0f);
 
-    // Start the coroutine to smoothly rotate the door open
-    StartCoroutine(CoroutineRotateOpen());
+    Rotate();
+    PlaySFX(openSFX);
+  }
 
-    // Play the open sound effect if it is assigned
-    if (openSFX != null)
+  void CloseDoor()
+  {
+    isOpen = false;
+    targetRotation = closedRotation;
+
+    Rotate();
+    PlaySFX(closeSFX);
+  }
+
+  void Rotate()
+  {
+    if (rotateCoroutine != null)
     {
-      AudioSource.PlayClipAtPoint(openSFX, transform.position);
+      StopCoroutine(rotateCoroutine);
+    }
+
+    rotateCoroutine = StartCoroutine(CoroutineRotate());
+  }
+
+  void PlaySFX(AudioClip clip)
+  {
+    if (clip != null && audioSource != null)
+    {
+      audioSource.PlayOneShot(clip);
     }
   }
 
-  // Swings the door away from whichever side the player is standing on, using the door's
-  // closed-state forward axis as the dividing plane between "front" and "back".
   float GetSwingSign(Vector3 playerPosition)
   {
     Vector3 toPlayer = playerPosition - transform.position;
@@ -59,13 +100,14 @@ public class Door : MonoBehaviour, ITriggerable
     return invertSwingDirection ? -sign : sign;
   }
 
-  // Coroutine to smoothly rotate the door open
-  IEnumerator CoroutineRotateOpen()
+  IEnumerator CoroutineRotate()
   {
-    while (Quaternion.Angle(transform.rotation, targetRotation) > 0.01f)
+    while (Quaternion.Angle(door.transform.rotation, targetRotation) > 0.01f)
     {
-      transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+      door.transform.rotation = Quaternion.RotateTowards(door.transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
       yield return null;
     }
+
+    rotateCoroutine = null;
   }
 }
