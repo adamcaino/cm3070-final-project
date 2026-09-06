@@ -16,6 +16,7 @@ public class EnemyAnimationDriver : MonoBehaviour
   Health health;
   BossPhaseController bossPhase;
 
+  // Caches animation, health, controller, and optional boss phase components.
   void Awake()
   {
     animator = GetComponent<Animator>();
@@ -26,6 +27,7 @@ public class EnemyAnimationDriver : MonoBehaviour
     if (phase2Glow != null) phase2Glow.Stop();
   }
 
+  // Subscribes to damage and optional boss phase events.
   void OnEnable()
   {
     health.OnDamaged += HandleDamaged;
@@ -34,6 +36,7 @@ public class EnemyAnimationDriver : MonoBehaviour
     if (bossPhase != null) bossPhase.OnStageChanged += HandleStageChanged;
   }
 
+  // Removes damage and optional boss phase event subscriptions.
   void OnDisable()
   {
     health.OnDamaged -= HandleDamaged;
@@ -42,11 +45,13 @@ public class EnemyAnimationDriver : MonoBehaviour
     if (bossPhase != null) bossPhase.OnStageChanged -= HandleStageChanged;
   }
 
+  // Updates the animator movement parameter from the enemy controller.
   void Update()
   {
     animator.SetBool(IsMovingParam, enemy.IsMoving);
   }
 
+  // Plays a hit reaction chance or disables the phase glow when the enemy dies.
   void HandleDamaged(Vector3 hitPoint)
   {
     // If this hit kills the boss, stop the phase 2 glow and exit early.
@@ -64,6 +69,7 @@ public class EnemyAnimationDriver : MonoBehaviour
   }
 
   // Only ever called when the boss changes stage (i.e. Stage 1 > Stage 2)
+  // Plays a hit reaction and starts the phase glow when the boss changes stage.
   void HandleStageChanged(int stage)
   {
     animator.SetTrigger(GetHitParam);

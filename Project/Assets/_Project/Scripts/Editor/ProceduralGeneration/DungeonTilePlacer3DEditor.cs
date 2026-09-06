@@ -3,9 +3,10 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(DungeonTilePlacer3D))]
+// Adds generation controls to the DungeonTilePlacer3D inspector.
 public class DungeonTilePlacer3DEditor : Editor
 {
-  // Adds generation and cleanup controls to the custom inspector.
+  // Draws serialized placement settings and dispatches generation or cleanup actions.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();
@@ -14,12 +15,14 @@ public class DungeonTilePlacer3DEditor : Editor
 
     DungeonTilePlacer3D placer = (DungeonTilePlacer3D)target;
 
+    // Generates tiles from the current 2D metadata and marks the component dirty.
     if (GUILayout.Button("Generate"))
     {
       placer.Generate();
       EditorUtility.SetDirty(placer);
     }
 
+    // Removes generated tiles and marks the component dirty.
     if (GUILayout.Button("Clear"))
     {
       placer.Clear();

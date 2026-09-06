@@ -1,11 +1,13 @@
 using System.Linq;
 using UnityEngine;
 
+// Tracks the player, maintains attack distance, and selects an executable attack.
 public class PositionState : IEnemyState
 {
   EnemyController enemy;
   float memoryTimer;
 
+  // Stores the enemy reference, enables navigation, and initializes aggro memory.
   public void Enter(EnemyController enemy)
   {
     this.enemy = enemy;
@@ -17,6 +19,7 @@ public class PositionState : IEnemyState
     memoryTimer = enemy.AggroMemoryDuration;
   }
 
+  // Updates aggro memory, selects a valid attack, or moves to the required attack range.
   public void Tick(EnemyController enemy)
   {
     if (enemy.Player == null || enemy.Attacks.Count == 0)
@@ -102,6 +105,7 @@ public class PositionState : IEnemyState
     }
   }
 
+  // Restores agent-driven rotation when leaving the positioning state.
   public void Exit(EnemyController enemy)
   {
     enemy.Agent.updateRotation = true;

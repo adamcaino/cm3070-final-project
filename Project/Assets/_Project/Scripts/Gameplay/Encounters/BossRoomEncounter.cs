@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Starts the boss encounter, tracks its health, controls encounter music, and reports victory.
 public class BossRoomEncounter : RoomEncounter
 {
   [SerializeField] Health bossHealth;
@@ -12,11 +13,13 @@ public class BossRoomEncounter : RoomEncounter
   BossSet bossSet;
   bool hasClearedEncounter;
 
+  // Caches the enemy controller attached to the boss room.
   void Awake()
   {
     bossController = GetComponent<EnemyController>();
   }
 
+  // Subscribes to encounter and boss-health events when the room becomes active.
   void OnEnable()
   {
     OnEncounterStarted += HandleEncounterStarted;
@@ -28,6 +31,7 @@ public class BossRoomEncounter : RoomEncounter
     }
   }
 
+  // Removes encounter and boss-health event subscriptions when the room is disabled.
   void OnDisable()
   {
     OnEncounterStarted -= HandleEncounterStarted;
@@ -39,6 +43,7 @@ public class BossRoomEncounter : RoomEncounter
     }
   }
 
+  // Assigns the runtime boss, encounter doors, and music configuration.
   public void Configure(Health health, IReadOnlyList<Door> doors, BossSet configuredBossSet)
   {
     if (bossHealth != null)
@@ -52,8 +57,10 @@ public class BossRoomEncounter : RoomEncounter
     SetDoors(doors);
   }
 
+  // Completes the encounter when the configured boss dies.
   void HandleBossDied() => CompleteEncounter();
 
+  // Begins boss tracking, plays boss music, and wakes the boss controller.
   void HandleEncounterStarted()
   {
 
@@ -75,6 +82,7 @@ public class BossRoomEncounter : RoomEncounter
     bossController?.Wake();
   }
 
+  // Stops boss tracking, plays the victory ambience, and raises the victory signal once.
   void HandleEncounterCleared()
   {
     if (hasClearedEncounter) return;

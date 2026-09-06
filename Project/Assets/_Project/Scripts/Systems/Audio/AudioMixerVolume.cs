@@ -12,6 +12,7 @@ public static class AudioMixerVolume
   const float DefaultLinearVolume = 0.75f;
   const float MinLinearVolume = 0.0001f;
 
+  // Applies all persisted mixer parameter values to the supplied mixer.
   public static void ApplySaved(AudioMixer mixer)
   {
     if (mixer == null) return;
@@ -21,6 +22,7 @@ public static class AudioMixerVolume
     Apply(mixer, SFXParam);
   }
 
+  // Applies and persists one linear volume setting.
   public static void Set(AudioMixer mixer, string exposedParam, float linear01)
   {
     SetRuntime(mixer, exposedParam, linear01);
@@ -29,6 +31,7 @@ public static class AudioMixerVolume
     PlayerPrefs.Save();
   }
 
+  // Applies one linear volume setting without writing PlayerPrefs.
   public static void SetRuntime(AudioMixer mixer, string exposedParam, float linear01)
   {
     if (mixer != null)
@@ -37,16 +40,19 @@ public static class AudioMixerVolume
     }
   }
 
+  // Returns the saved linear volume or the default volume when no value exists.
   public static float GetSaved(string exposedParam)
   {
     return PlayerPrefs.GetFloat(exposedParam, DefaultLinearVolume);
   }
 
+  // Applies one persisted parameter to the mixer.
   static void Apply(AudioMixer mixer, string exposedParam)
   {
     mixer.SetFloat(exposedParam, LinearToDecibel(GetSaved(exposedParam)));
   }
 
+  // Converts a linear slider value into the mixer decibel scale.
   static float LinearToDecibel(float linear01)
   {
     return Mathf.Log10(Mathf.Max(linear01, MinLinearVolume)) * 20f;

@@ -1,15 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Final placement pass. Reads the room roles BSPDungeonGenerator tagged (spawn/loot) and drops the
-/// corresponding gameplay object into each tagged room: the spawn room gets a portal against a wall (the
-/// player's return point once the boss is dead) with the player placed at its authored spawn point; each
-/// loot room gets a single chest at its center, randomly either a normal or cursed variant (the
-/// lock/enemy-wave behaviour a cursed chest implies isn't handled here either, this only decides
-/// placement). Boss rooms are DungeonBossPlacer3D's territory - not touched here. Any prefab left
-/// unassigned falls back to a colored placeholder primitive.
-/// </summary>
+// Places the spawn portal and loot points selected from generated room roles.
+// The pass also detaches the player from the portal and refreshes runtime camera references.
 public class DungeonPointOfInterestPlacer3D : MonoBehaviour
 {
   const Direction CardinalDirections = Direction.North | Direction.East | Direction.South | Direction.West;
@@ -24,6 +17,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
   System.Random poiRandom;
 
   [ContextMenu("Generate")]
+  // Resolves runtime references, reads room roles, and places each supported point of interest.
   public void Generate()
   {
     ResolveRuntimeReferences();
@@ -64,6 +58,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     }
   }
 
+  // Finds the player and its camera orbit component when they were not assigned in the Inspector.
   void ResolveRuntimeReferences()
   {
     GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
@@ -83,8 +78,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     }
   }
 
-  // Placed against a wall (rather than the room center) so a large portal prefab doesn't loom over
-  // the middle of the room, and rotated to match that wall's facing so it reads as built into it.
+  // Places the spawn portal against a suitable room wall and relocates the player into it.
   void PlaceSpawn(DungeonRoomInfo room, TileMetadata[,] metadata, int gridWidth, int gridHeight)
   {
     Vector2Int cell = room.Center;
@@ -101,6 +95,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     PlacePlayer(portal);
   }
 
+  // Finds a shuffled eligible wall cell and returns the direction its room floor faces.
   bool TryFindWallAgainstRoom(RectInt bounds, TileMetadata[,] metadata, int gridWidth, int gridHeight, out Vector2Int wallCell, out Direction facing)
   {
     List<Vector2Int> candidates = GetRoomPerimeterCells(bounds);
@@ -131,6 +126,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return false;
   }
 
+  // Returns the cardinal cells immediately outside a room rectangle.
   static List<Vector2Int> GetRoomPerimeterCells(RectInt bounds)
   {
     List<Vector2Int> cells = new List<Vector2Int>();
@@ -150,6 +146,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return cells;
   }
 
+  // Shuffles perimeter candidates with the seeded point-of-interest random source.
   void ShuffleInPlace(List<Vector2Int> cells)
   {
     for (int i = cells.Count - 1; i > 0; i--)
@@ -159,6 +156,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     }
   }
 
+  // Instantiates the configured portal or a placeholder and parents it to generated output.
   GameObject SpawnPortal(Vector3 worldPosition, Quaternion rotation)
   {
     GameObject instance = poiSet.spawnPortalPrefab != null
@@ -170,8 +168,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return instance;
   }
 
-  // Always at the room's center. Which chest variant spawns is decided here (seeded, so still
-  // reproducible per dungeon seed); the lock/enemy-wave behaviour a cursed chest implies is future work.
+  // Places one seeded loot variant at the room centre.
   void PlaceLoot(DungeonRoomInfo room, int gridWidth, int gridHeight)
   {
     Color placeholderColor = poiSet.lootColour;
@@ -181,8 +178,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     SpawnFromSet(poiSet.lootPrefabs, placeholderColor, worldPosition, Quaternion.identity, label);
   }
 
-  // The Player is authored inside the generated portal and is detached after instantiation so it can
-  // run independently from the portal's transform during gameplay.
+  // Detaches and rebinds the player after the spawn portal has been instantiated.
   void PlacePlayer(GameObject portalInstance)
   {
     if (player == null)
@@ -210,6 +206,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     playerCameraOrbit?.SnapImmediatelyToTarget(player);
   }
 
+  // Searches the portal hierarchy for the player when no runtime player was already found.
   void ResolvePlayerFromPortal(GameObject portalInstance)
   {
     if (portalInstance == null)
@@ -233,6 +230,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     playerCameraOrbit = player.GetComponent<PlayerCameraOrbit>();
   }
 
+  // Refreshes movement, lock-on, and camera references after detaching the player.
   void RefreshPlayerRuntimeReferences()
   {
     if (player == null)
@@ -256,8 +254,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     deathCamera?.RefreshRuntimeReferences();
   }
 
-  // Transform.Find only checks direct children, but PlayerSpawnPos sits a level deeper (under a
-  // "Pivot" child), so it needs a recursive search rather than a plain Find.
+  // Recursively searches a hierarchy for a child with the requested name.
   static Transform FindDeepChild(Transform root, string name)
   {
     foreach (Transform child in root)
@@ -277,6 +274,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return null;
   }
 
+  // Recursively searches a hierarchy for a child with the requested tag.
   static Transform FindTaggedChild(Transform root, string tag)
   {
     if (root == null)
@@ -301,6 +299,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return null;
   }
 
+  // Selects and instantiates a seeded prefab variant or a placeholder point of interest.
   void SpawnFromSet(GameObject[] variants, Color placeholderColor, Vector3 worldPosition, Quaternion rotation, string label)
   {
     GameObject prefab = variants == null || variants.Length == 0 ? null : variants[poiRandom.Next(variants.Length)];
@@ -312,6 +311,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     instance.transform.SetParent(generatedRoot, false);
   }
 
+  // Creates a coloured sphere placeholder for an unassigned point-of-interest prefab.
   GameObject CreatePlaceholder(Color color, Vector3 position)
   {
     GameObject placeholder = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -321,6 +321,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
     return placeholder;
   }
 
+  // Finds or creates the parent transform for generated points of interest.
   void EnsureGeneratedRoot()
   {
     if (generatedRoot != null)
@@ -341,6 +342,7 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Removes generated points of interest from the scene.
   public void Clear()
   {
     if (generatedRoot == null)

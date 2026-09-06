@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "WeaponData", menuName = "Combat/Weapon")]
+// Stores the combat, visual, audio, and affliction settings used by a weapon.
 public class WeaponData : ScriptableObject
 {
   public string weaponName;
@@ -29,5 +30,6 @@ public class WeaponData : ScriptableObject
   [Min(0)] public int maxUses = 0;
   public Sprite icon;
 
+  // Reports whether the weapon has a finite number of successful uses.
   public bool IsSpecial => maxUses > 0;
 }

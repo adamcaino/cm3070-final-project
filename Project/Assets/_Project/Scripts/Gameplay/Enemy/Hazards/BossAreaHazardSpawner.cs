@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(BossRoomEncounter))]
+// Spawns timed area hazards at the player's position during a boss encounter.
 public class BossAreaHazardSpawner : MonoBehaviour
 {
   [SerializeField] GameObject hazardPrefab;
@@ -18,6 +19,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
   Coroutine spawnRoutine;
   readonly List<BossAreaHazardController> activeHazards = new List<BossAreaHazardController>();
 
+  // Caches encounter, phase, and enemy components and initializes the phase-one interval.
   void Awake()
   {
     roomEncounter = GetComponent<BossRoomEncounter>();
@@ -27,6 +29,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
     currentInterval = phaseOneInterval;
   }
 
+  // Subscribes to encounter and boss phase events.
   void OnEnable()
   {
     roomEncounter.OnEncounterStarted += HandleEncounterStarted;
@@ -38,6 +41,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
     }
   }
 
+  // Removes event subscriptions and stops all active hazard spawning.
   void OnDisable()
   {
     roomEncounter.OnEncounterStarted -= HandleEncounterStarted;
@@ -51,6 +55,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
     StopSpawning();
   }
 
+  // Starts the hazard spawn routine when the encounter begins.
   void HandleEncounterStarted()
   {
     if (spawnRoutine == null)
@@ -59,13 +64,16 @@ public class BossAreaHazardSpawner : MonoBehaviour
     }
   }
 
+  // Stops spawning and removes active hazards when the encounter is cleared.
   void HandleEncounterCleared() => StopSpawning();
 
+  // Selects the spawn interval associated with the current boss stage.
   void HandleStageChanged(int stage)
   {
     currentInterval = stage >= 2 ? phaseTwoInterval : phaseOneInterval;
   }
 
+  // Stops the spawn coroutine and removes every tracked active hazard.
   void StopSpawning()
   {
     if (spawnRoutine != null)
@@ -77,6 +85,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
     StopActiveHazards();
   }
 
+  // Waits between spawns while the encounter remains active.
   IEnumerator SpawnRoutine()
   {
     while (true)
@@ -86,6 +95,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
     }
   }
 
+  // Creates a hazard at the player's current position and configures its damage.
   void SpawnHazard()
   {
     if (hazardPrefab == null || enemyController == null || enemyController.Player == null) return;
@@ -108,6 +118,7 @@ public class BossAreaHazardSpawner : MonoBehaviour
     }
   }
 
+  // Stops and removes hazards tracked by this spawner.
   void StopActiveHazards()
   {
     for (int i = activeHazards.Count - 1; i >= 0; i--)

@@ -4,10 +4,12 @@ using UnityEngine.AI;
 
 
 
+// Disables enemy interaction and settles its navigation agent after death.
 public class DeadState : IEnemyState
 {
   static readonly int DeadParam = Animator.StringToHash("dead");
 
+  // Stops movement, disables colliders, plays the death animation, and settles the agent.
   public void Enter(EnemyController enemy)
   {
     // A flying/hovering agent (baseOffset > 0) can die mid-transition, off the navmesh it's nominally
@@ -39,10 +41,13 @@ public class DeadState : IEnemyState
     }
   }
 
+  // Keeps the enemy in its terminal state.
   public void Tick(EnemyController enemy) { }
 
+  // Provides the state-machine exit hook; dead enemies have no active state to restore.
   public void Exit(EnemyController enemy) { }
 
+  // Gradually lowers a hovering agent before disabling its navigation component.
   IEnumerator SettleBaseOffsetRoutine(EnemyController enemy)
   {
     NavMeshAgent agent = enemy.Agent;

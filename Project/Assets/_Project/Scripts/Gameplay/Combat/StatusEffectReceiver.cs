@@ -32,6 +32,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 
   public bool IsFrozen => isFrozen;
 
+  // Caches components and child renderers used by the affliction routines.
   void Awake()
   {
     health = GetComponent<Health>();
@@ -44,16 +45,19 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     propertyBlock = new MaterialPropertyBlock();
   }
 
+  // Subscribes to death so active effects can be cleaned up immediately.
   void OnEnable()
   {
     health.OnDied += HandleDied;
   }
 
+  // Removes the death subscription when the component is disabled.
   void OnDisable()
   {
     health.OnDied -= HandleDied;
   }
 
+  // Keeps the burning effect positioned at the current centre of the target.
   void LateUpdate()
   {
     if (activeBurningEffect == null)
@@ -64,9 +68,11 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     activeBurningEffect.transform.position = GetEffectCenter();
   }
 
+  // Ends the burning effect when the target dies.
   void HandleDied() => EndBurn();
 
   // Cancels any current effect and starts the matching affliction routine.
+  // Cancels the current effect and starts the routine matching the requested affliction.
   public void ApplyAffliction(AfflictionType type, float duration, int magnitude, GameObject source)
   {
     if (activeEffect != null)
@@ -88,6 +94,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     }
   }
 
+  // Creates the burn effect and applies periodic damage until its duration expires.
   IEnumerator BurnRoutine(float duration, int magnitude, GameObject source)
   {
     if (burningEffectPrefab != null)
@@ -123,6 +130,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     activeEffect = null;
   }
 
+  // Removes the active burning visual effect.
   void EndBurn()
   {
     if (activeBurningEffect == null) return;
@@ -131,6 +139,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     activeBurningEffect = null;
   }
 
+  // Calculates the centre of the target's visible renderer bounds.
   Vector3 GetMeshCenter()
   {
     bool hasBounds = false;
@@ -154,6 +163,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     return hasBounds ? bounds.center : transform.position;
   }
 
+  // Calculates the centre of the target's enabled non-trigger collider bounds.
   Vector3 GetEffectCenter()
   {
     bool hasBounds = false;
@@ -184,6 +194,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     return hasBounds ? bounds.center : GetMeshCenter();
   }
 
+  // Stops movement and animation, applies a freeze tint, and restores them after the duration.
   IEnumerator FreezeRoutine(float duration)
   {
     if (agent == null)
@@ -227,6 +238,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     activeEffect = null;
   }
 
+  // Applies the freeze colour to each child renderer and stores its previous colour.
   void ApplyFreezeTint()
   {
     if (renderers == null || renderers.Length == 0)
@@ -257,6 +269,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     }
   }
 
+  // Restores the renderer colours saved before the freeze tint was applied.
   void RestoreTint()
   {
     if (renderers == null || cachedColours == null)
@@ -281,6 +294,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     cachedColours = null;
   }
 
+  // Restores movement, animation, rendering, and enemy attack state after freezing.
   void EndFreeze()
   {
     if (!isFrozen)

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+// Displays player health and briefly scales the slider when damage is received.
 public class HealthBarUI : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
@@ -15,18 +16,21 @@ public class HealthBarUI : MonoBehaviour
   Vector3 baseScale;
   Coroutine activePunch;
 
+  // Caches the slider and its authored scale.
   void Awake()
   {
     slider = GetComponent<Slider>();
     baseScale = transform.localScale;
   }
 
+  // Subscribes to readiness and attempts to bind the player health component.
   void OnEnable()
   {
     DungeonReadySignal.Raised += HandleDungeonReady;
     RefreshHealthReference(false);
   }
 
+  // Removes readiness and health event subscriptions.
   void OnDisable()
   {
     DungeonReadySignal.Raised -= HandleDungeonReady;
@@ -38,11 +42,13 @@ public class HealthBarUI : MonoBehaviour
     health.OnDied -= HandleDied;
   }
 
+  // Rebinds to the generated player's health component.
   void HandleDungeonReady()
   {
     RefreshHealthReference(true);
   }
 
+  // Replaces old health subscriptions and synchronizes slider limits and value.
   void RefreshHealthReference(bool logIfMissing)
   {
     // Unsubscribe from old health if it exists
@@ -78,6 +84,7 @@ public class HealthBarUI : MonoBehaviour
     health.OnDied += HandleDied;
   }
 
+  // Removes health event subscriptions before the UI object is destroyed.
   void OnDestroy()
   {
     if (health == null) return;
@@ -87,6 +94,7 @@ public class HealthBarUI : MonoBehaviour
     health.OnDied -= HandleDied;
   }
 
+  // Updates health and starts the damage punch animation.
   void HandleDamaged(Vector3 _)
   {
     slider.value = health.CurrentHealth;
@@ -98,10 +106,13 @@ public class HealthBarUI : MonoBehaviour
     activePunch = StartCoroutine(PunchRoutine());
   }
 
+  // Updates the slider after healing.
   void HandleHealed(Vector3 _) => slider.value = health.CurrentHealth;
 
+  // Sets the slider to zero after death.
   void HandleDied() => slider.value = 0;
 
+  // Scales the slider briefly and restores its authored scale.
   IEnumerator PunchRoutine()
   {
     float elapsed = 0f;

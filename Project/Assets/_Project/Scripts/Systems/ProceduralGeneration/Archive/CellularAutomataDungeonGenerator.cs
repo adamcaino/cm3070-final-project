@@ -2,18 +2,23 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Archived cellular-automata generator retained as a comparison against the current BSP approach.
+// It creates a random wall field, smooths that field through neighbour counts, keeps the largest
+// connected floor region, and marks representative boundary cells as doors.
 public class CellularAutomataDungeonGenerator : DungeonGridGenerator2D
 {
   [Header("Cellular Automata Settings")]
   [SerializeField, Range(0, 100)] int initialWallChance = 45;
   [SerializeField, Min(1)] int smoothingPasses = 5;
 
+  // Clamps the smoothing pass count after applying the shared grid validation.
   protected override void OnValidate()
   {
     base.OnValidate();
     smoothingPasses = Mathf.Max(1, smoothingPasses);
   }
 
+  // Builds the seeded wall field, smooths it, keeps its main floor region, and marks doors.
   protected override TileType[,] BuildMap(int seed)
   {
     System.Random random = new System.Random(seed);
@@ -37,6 +42,7 @@ public class CellularAutomataDungeonGenerator : DungeonGridGenerator2D
     return map;
   }
 
+  // Applies one neighbour-count smoothing pass to the current wall and floor map.
   TileType[,] SmoothMap(TileType[,] currentMap)
   {
     TileType[,] nextMap = CreateFilledMap(TileType.Wall);
@@ -65,6 +71,7 @@ public class CellularAutomataDungeonGenerator : DungeonGridGenerator2D
     return nextMap;
   }
 
+  // Counts wall or out-of-bounds cells in the eight-cell neighbourhood.
   int CountWallNeighbours(TileType[,] map, int centerX, int centerY)
   {
     int wallCount = 0;
@@ -91,6 +98,7 @@ public class CellularAutomataDungeonGenerator : DungeonGridGenerator2D
     return wallCount;
   }
 
+  // Retains only the largest connected floor region and supplies a centre fallback when needed.
   List<Vector2Int> KeepLargestFloorRegion(TileType[,] map)
   {
     bool[,] visited = new bool[GridWidth, GridHeight];
@@ -142,6 +150,7 @@ public class CellularAutomataDungeonGenerator : DungeonGridGenerator2D
     return largest;
   }
 
+  // Collects one connected floor region using a four-direction breadth-first traversal.
   List<Vector2Int> FloodFillFloorRegion(TileType[,] map, Vector2Int start, bool[,] visited)
   {
     List<Vector2Int> region = new List<Vector2Int>();
@@ -178,6 +187,7 @@ public class CellularAutomataDungeonGenerator : DungeonGridGenerator2D
     return region;
   }
 
+  // Marks the horizontal extremes of the main region as representative door cells.
   void PlaceRepresentativeDoors(TileType[,] map, List<Vector2Int> mainRegion)
   {
     if (mainRegion == null || mainRegion.Count == 0)

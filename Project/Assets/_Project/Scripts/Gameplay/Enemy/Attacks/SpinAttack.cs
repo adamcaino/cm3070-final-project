@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Applies repeated damage ticks to targets inside the active spinning hitbox.
 public class SpinAttack : MeleeHitboxAttack
 {
   [SerializeField] AudioClip spinSfx;
@@ -11,14 +12,19 @@ public class SpinAttack : MeleeHitboxAttack
   readonly Dictionary<IDamageable, float> nextTickTime = new Dictionary<IDamageable, float>();
   bool isHitboxActive;
 
+  // Starts the configured spin animation.
   protected override void OnExecute(EnemyController enemy)
   {
     PlayAttackAnimation(enemy);
   }
 
+  // Attempts the first damage tick when a target enters the spin hitbox.
   void OnTriggerEnter(Collider other) => TryTick(other);
+
+  // Attempts subsequent damage ticks while a target remains in the spin hitbox.
   void OnTriggerStay(Collider other) => TryTick(other);
 
+  // Plays the configured spin sound through the attached audio source.
   public void PlaySpinSfx()
   {
     if (spinSfx != null)
@@ -27,6 +33,7 @@ public class SpinAttack : MeleeHitboxAttack
     }
   }
 
+  // Applies damage when the target's per-target tick interval has elapsed.
   void TryTick(Collider other)
   {
     if (!isHitboxActive) return;
@@ -40,6 +47,7 @@ public class SpinAttack : MeleeHitboxAttack
     DealDamage(damageable, other);
   }
 
+  // Clears target timers and activates the spin hitbox during execution.
   public void EnableSpinHitbox()
   {
     if (!IsExecuting) return;
@@ -49,6 +57,7 @@ public class SpinAttack : MeleeHitboxAttack
     ActivateHitbox();
   }
 
+  // Deactivates the spin hitbox and completes the attack.
   public void DisableSpinHitbox()
   {
     if (!isHitboxActive) return;

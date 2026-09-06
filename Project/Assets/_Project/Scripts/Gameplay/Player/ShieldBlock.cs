@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
+// Blocks incoming damage while the player defends within the configured front angle.
 public class ShieldBlock : MonoBehaviour, IDamageBlocker
 {
   [SerializeField] AudioClip blockSfxClip;
@@ -13,6 +14,7 @@ public class ShieldBlock : MonoBehaviour, IDamageBlocker
   PlayerAttack playerAttack;
   HitFlash shieldFlash;
 
+  // Caches audio, player attack, and shield flash components.
   void Awake()
   {
     audioSource = GetComponent<AudioSource>();
@@ -20,6 +22,7 @@ public class ShieldBlock : MonoBehaviour, IDamageBlocker
     shieldFlash = GetComponent<HitFlash>();
   }
 
+  // Returns true and plays feedback when the incoming hit is inside the block angle.
   public bool TryBlock(GameObject source, Vector3 hitPoint)
   {
     if (playerAttack == null || !playerAttack.IsDefending) return false;
@@ -37,6 +40,7 @@ public class ShieldBlock : MonoBehaviour, IDamageBlocker
     return true;
   }
 
+  // Plays the block sound and flashes the shield material.
   void PlayBlockFeedback()
   {
     if (blockSfxClip != null)

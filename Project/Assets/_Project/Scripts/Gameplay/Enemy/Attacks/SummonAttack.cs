@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+// Summons a configured number of minions while tracking active summoned enemies.
 public class SummonAttack : AttackBase
 {
   [Header("Summon Settings")]
@@ -17,6 +18,7 @@ public class SummonAttack : AttackBase
 
   public override bool CanExecute => PruneDeadMinions() <= 1;
 
+  // Starts the summon animation and plays its charge sound.
   protected override void OnExecute(EnemyController enemy)
   {
     PlayAttackAnimation(enemy);
@@ -29,6 +31,7 @@ public class SummonAttack : AttackBase
 
 
 
+  // Spawns available minions at sampled NavMesh positions and completes the attack.
   public void SummonMinions()
   {
     int spawnCount = minionCount - PruneDeadMinions();
@@ -59,6 +62,7 @@ public class SummonAttack : AttackBase
     RaiseAttackComplete();
   }
 
+  // Starts or stops the summon charge visual effect.
   public void PlaySummonAnimation(bool isPlaying)
   {
     if (isPlaying)
@@ -71,6 +75,7 @@ public class SummonAttack : AttackBase
     }
   }
 
+  // Removes destroyed minions from the active list and returns the remaining count.
   int PruneDeadMinions()
   {
     activeMinions.RemoveAll(minion => minion == null);

@@ -1,16 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// Single entry point for the full level-generation pipeline: 2D BSP layout, then 3D tile placement,
-/// then prop scattering, each stage reading the previous stage's output. Always regenerates on Start
-/// (using PendingSeed when set by a scene reload, otherwise a fresh random seed) so the NavMesh and
-/// level geometry are baked fresh for every play session rather than relying on an editor-time bake,
-/// which is not persisted and does not survive entering Play mode. The 2D layout and the 3D level are
-/// generated under their own generators' transforms, so keeping those two generators apart in the scene
-/// (e.g. the 2D one parked away from play space to double as a future minimap source) keeps their
-/// output apart too.
-/// </summary>
+// Runs the dungeon pipeline from seeded 2D layout through 3D placement, NavMesh baking, and combat setup.
+// Each stage consumes the output produced by the preceding stage.
 public class DungeonLevelGenerator : MonoBehaviour
 {
   [SerializeField] DungeonGridGenerator2D gridGenerator;
@@ -21,6 +13,7 @@ public class DungeonLevelGenerator : MonoBehaviour
   [SerializeField] DungeonBossPlacer3D bossPlacer;
   [SerializeField] DungeonEnemyPlacer3D enemyPlacer;
 
+  // Consumes a pending seed when present, otherwise starts a new random generation.
   void Start()
   {
     if (PendingSeed.Consume(out int seed))
@@ -34,6 +27,7 @@ public class DungeonLevelGenerator : MonoBehaviour
   }
 
   [ContextMenu("Generate")]
+  // Starts the asynchronous generation pipeline using the generator's normal seed rules.
   public void Generate()
   {
     if (!HasAllReferences())
@@ -44,6 +38,7 @@ public class DungeonLevelGenerator : MonoBehaviour
     StartCoroutine(GenerateSequence());
   }
 
+  // Starts the asynchronous generation pipeline with an explicit seed.
   public void Generate(int seed)
   {
     if (!HasAllReferences())
@@ -54,6 +49,7 @@ public class DungeonLevelGenerator : MonoBehaviour
     StartCoroutine(GenerateSequence(seed));
   }
 
+  // Runs the dependent generation stages in order and raises readiness after enemy placement.
   IEnumerator GenerateSequence(int? seed = null)
   {
     DungeonReadySignal.Reset();
@@ -84,6 +80,7 @@ public class DungeonLevelGenerator : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Stops active generation and clears generated output in reverse dependency order.
   public void Clear()
   {
     StopAllCoroutines();
@@ -96,6 +93,7 @@ public class DungeonLevelGenerator : MonoBehaviour
     gridGenerator?.Clear();
   }
 
+  // Verifies that every generation stage required by the pipeline is assigned.
   bool HasAllReferences()
   {
     if (gridGenerator != null && tilePlacer != null && propPlacer != null && navMeshBaker != null && poiPlacer != null && bossPlacer != null && enemyPlacer != null)

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 // fresh random seed if the field is empty or unparsable, same as GameOverScreen.LoadSeed. Confirming
 // hands off to MainMenuController's intro transition rather than loading the scene directly, so
 // both New Game and Load Seed share the same fade-out / scripted-walk sequence.
+// Validates an optional seed entry and passes the selected seed to the main-menu transition.
 public class SeedEntryPanelController : MonoBehaviour
 {
   const int MaxSeedLength = 8;
@@ -16,6 +17,7 @@ public class SeedEntryPanelController : MonoBehaviour
 
   Text validationText;
 
+  // Registers button and input callbacks, creates validation text, and validates the initial value.
   void Awake()
   {
     confirmButton.onClick.AddListener(OnConfirm);
@@ -26,11 +28,13 @@ public class SeedEntryPanelController : MonoBehaviour
     HandleSeedChanged(seedInputField.text);
   }
 
+  // Removes the seed input listener before the panel is destroyed.
   void OnDestroy()
   {
     if (seedInputField != null) seedInputField.onValueChanged.RemoveListener(HandleSeedChanged);
   }
 
+  // Stores the parsed or random seed and starts the gameplay transition.
   void OnConfirm()
   {
     if (!IsValidSeed(seedInputField.text)) return;
@@ -40,6 +44,7 @@ public class SeedEntryPanelController : MonoBehaviour
     mainMenu.BeginGameplayTransition();
   }
 
+  // Updates validation feedback and confirm-button interactability.
   void HandleSeedChanged(string value)
   {
     bool valid = IsValidSeed(value);
@@ -47,6 +52,7 @@ public class SeedEntryPanelController : MonoBehaviour
     confirmButton.interactable = valid;
   }
 
+  // Accepts an empty value or a non-negative numeric seed within the length limit.
   static bool IsValidSeed(string value)
   {
     if (string.IsNullOrEmpty(value)) return true;
@@ -60,6 +66,7 @@ public class SeedEntryPanelController : MonoBehaviour
     return true;
   }
 
+  // Creates and configures the validation message displayed below the input field.
   void CreateValidationText()
   {
     GameObject warningObject = new GameObject("SeedValidationWarning", typeof(RectTransform), typeof(Text));
@@ -81,6 +88,7 @@ public class SeedEntryPanelController : MonoBehaviour
     validationText.text = "Invalid seed number (use up to 8 digits).";
   }
 
+  // Returns to the main menu panel.
   void OnBack()
   {
     mainMenu.ShowMain();

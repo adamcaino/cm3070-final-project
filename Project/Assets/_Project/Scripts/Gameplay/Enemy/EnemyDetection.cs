@@ -7,6 +7,7 @@ using UnityEngine;
 
 
 
+// Detects the player using a radius, field of view, and obstacle raycast.
 public class EnemyDetection : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
@@ -23,12 +24,14 @@ public class EnemyDetection : MonoBehaviour
   public event Action OnPlayerSpotted;
   public event Action OnPlayerLost;
 
+  // Caches the player transform used for visibility checks.
   void Awake()
   {
     GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYERTAG);
     player = playerObject != null ? playerObject.transform : null;
   }
 
+  // Evaluates visibility and raises events when the player is spotted or lost.
   void Update()
   {
     bool canSeePlayerNow = player != null && EvaluateVisibility();
@@ -45,6 +48,7 @@ public class EnemyDetection : MonoBehaviour
     }
   }
 
+  // Returns whether the player is within range, inside the view cone, and unobstructed.
   bool EvaluateVisibility()
   {
     Vector3 eyePosition = transform.position + (Vector3.up * eyeHeight);
@@ -64,6 +68,7 @@ public class EnemyDetection : MonoBehaviour
     return !Physics.Raycast(eyePosition, toPlayer.normalized, toPlayer.magnitude, obstacleMask);
   }
 
+  // Draws the detection radius, view boundaries, and current line-of-sight result.
   void OnDrawGizmos()
   {
     Gizmos.color = Color.yellow;

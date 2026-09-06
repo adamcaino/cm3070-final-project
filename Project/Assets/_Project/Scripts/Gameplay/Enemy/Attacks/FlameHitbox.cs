@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(ParticleSystem))]
+// Applies periodic damage when the particle system overlaps the player.
 public class FlameHitbox : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
@@ -17,6 +18,7 @@ public class FlameHitbox : MonoBehaviour
   GameObject source;
   float nextTickTime;
 
+  // Configures particle trigger callbacks and attempts to find the player collider.
   void Awake()
   {
     particles = GetComponent<ParticleSystem>();
@@ -28,6 +30,7 @@ public class FlameHitbox : MonoBehaviour
     TryResolvePlayer();
   }
 
+  // Stores the damage and source used for subsequent particle hits.
   public void Configure(int attackDamage, GameObject attackSource)
   {
     damage = attackDamage;
@@ -36,13 +39,16 @@ public class FlameHitbox : MonoBehaviour
     TryResolvePlayer();
   }
 
+  // Allows the next particle overlap to apply damage immediately.
   public void Enable()
   {
     nextTickTime = 0f;
   }
 
+  // Provides the attack lifecycle hook for disabling the flame hitbox.
   public void Disable() { }
 
+  // Applies damage when particles overlap the player and the tick interval has elapsed.
   void OnParticleTrigger()
   {
     if (playerDamageable == null || Time.time < nextTickTime) return;
@@ -56,6 +62,7 @@ public class FlameHitbox : MonoBehaviour
     playerDamageable.TakeDamage(damage, source, hitPoint);
   }
 
+  // Finds the player damage contract and assigns its collider to the particle trigger module.
   void TryResolvePlayer()
   {
     if (playerDamageable != null) return;

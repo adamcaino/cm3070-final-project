@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
+// Plays footstep sounds after the player travels the configured distance while grounded.
 public class PlayerFootsteps : MonoBehaviour
 {
   [SerializeField] AudioClip[] footstepClips;
@@ -17,6 +18,7 @@ public class PlayerFootsteps : MonoBehaviour
   float distanceSinceLastStep;
   int lastClipIndex = -1;
 
+  // Caches movement, controller, and audio components used by the footstep system.
   void Awake()
   {
     controller = GetComponent<CharacterController>();
@@ -25,6 +27,7 @@ public class PlayerFootsteps : MonoBehaviour
     audioSource = GetComponent<AudioSource>();
   }
 
+  // Accumulates grounded movement distance and plays a step when the threshold is reached.
   void Update()
   {
     if (footstepClips == null || footstepClips.Length == 0)
@@ -50,6 +53,7 @@ public class PlayerFootsteps : MonoBehaviour
     }
   }
 
+  // Selects a clip, varies its pitch, and plays the footstep sound.
   void PlayFootstep()
   {
     int index = footstepClips.Length == 1 ? 0 : RandomIndexExcluding(lastClipIndex);
@@ -59,6 +63,7 @@ public class PlayerFootsteps : MonoBehaviour
     audioSource.PlayOneShot(footstepClips[index], volume);
   }
 
+  // Selects a random clip index different from the previous clip when possible.
   int RandomIndexExcluding(int excluded)
   {
     int index = Random.Range(0, footstepClips.Length);

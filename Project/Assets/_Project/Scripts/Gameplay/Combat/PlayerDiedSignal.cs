@@ -6,5 +6,6 @@ public static class PlayerDiedSignal
 {
   public static event Action Raised;
 
+  // Notifies subscribers that the player has died.
   public static void Raise() => Raised?.Invoke();
 }

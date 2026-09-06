@@ -3,6 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(Animator))]
+// Spawns the appropriate death effect after the enemy's death animation timing.
 public class EnemyDeathVFX : MonoBehaviour
 {
   [SerializeField] GameObject deathVfxPrefab;
@@ -16,6 +17,7 @@ public class EnemyDeathVFX : MonoBehaviour
   Renderer meshRenderer;
   Animator animator;
 
+  // Caches the health, status-effect, animator, and mesh components.
   void Awake()
   {
     health = GetComponent<Health>();
@@ -25,22 +27,26 @@ public class EnemyDeathVFX : MonoBehaviour
     meshRenderer = GetComponentInChildren<Renderer>();
   }
 
+  // Subscribes to the enemy death event.
   void OnEnable()
   {
     health.OnDied += HandleDied;
   }
 
+  // Removes the enemy death event subscription.
   void OnDisable()
   {
     health.OnDied -= HandleDied;
   }
 
+  // Starts the death effect routine and records whether the enemy died frozen.
   void HandleDied()
   {
     bool diedFrozen = statusEffects != null && statusEffects.IsFrozen;
     StartCoroutine(DeathRoutine(diedFrozen));
   }
 
+  // Waits for the death animation, spawns the effect, and destroys the enemy object.
   IEnumerator DeathRoutine(bool diedFrozen)
   {
     if (!diedFrozen)

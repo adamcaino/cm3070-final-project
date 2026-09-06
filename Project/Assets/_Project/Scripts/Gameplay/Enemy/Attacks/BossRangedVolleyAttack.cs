@@ -4,6 +4,7 @@ using UnityEngine;
 
 
 
+// Fires several projectiles toward the player across a configurable horizontal spread.
 public class BossRangedVolleyAttack : AttackBase
 {
   [SerializeField] Projectile projectilePrefab;
@@ -12,6 +13,7 @@ public class BossRangedVolleyAttack : AttackBase
   [SerializeField, Min(1)] int projectileCount = 3;
   [SerializeField, Min(0f)] float spreadAngle = 20f;
 
+  // Plays the attack animation, fires the projectile volley, and completes the attack.
   protected override void OnExecute(EnemyController enemy)
   {
     PlayAttackAnimation(enemy);
@@ -19,6 +21,7 @@ public class BossRangedVolleyAttack : AttackBase
     RaiseAttackComplete();
   }
 
+  // Creates projectiles at evenly spaced angles around the direction to the player.
   void FireVolley(EnemyController enemy)
   {
     if (projectilePrefab == null || enemy.Player == null) return;

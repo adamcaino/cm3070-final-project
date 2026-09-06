@@ -2,6 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(AudioSource))]
+// Hides, effects, and removes a prop after its health reaches zero.
 public class BreakableProp : MonoBehaviour
 {
   [Header("VFX")]
@@ -22,6 +23,7 @@ public class BreakableProp : MonoBehaviour
   Collider[] colliders;
   Renderer[] renderers;
 
+  // Caches the health, audio, collider, and renderer components used during destruction.
   void Awake()
   {
     health = GetComponent<Health>();
@@ -30,16 +32,19 @@ public class BreakableProp : MonoBehaviour
     renderers = GetComponentsInChildren<Renderer>();
   }
 
+  // Subscribes to the prop's death event when it becomes active.
   void OnEnable()
   {
     health.OnDied += HandleDied;
   }
 
+  // Removes the death subscription when the prop is disabled.
   void OnDisable()
   {
     health.OnDied -= HandleDied;
   }
 
+  // Spawns break effects, hides the prop, and delays destruction until its sound finishes.
   void HandleDied()
   {
     SpawnBreakVfx();
@@ -51,6 +56,7 @@ public class BreakableProp : MonoBehaviour
     Destroy(gameObject, PlayBreakSfx());
   }
 
+  // Spawns the configured break effect at the breakable mesh position.
   void SpawnBreakVfx()
   {
     if (breakVfxPrefab == null) return;
@@ -58,6 +64,7 @@ public class BreakableProp : MonoBehaviour
     Instantiate(breakVfxPrefab, breakableMesh.position, Quaternion.identity);
   }
 
+  // Plays the break sound at a random pitch and returns its adjusted playback duration.
   float PlayBreakSfx()
   {
     if (breakSfxClip == null) return 0f;
@@ -69,6 +76,7 @@ public class BreakableProp : MonoBehaviour
     return breakSfxClip.length / pitch;
   }
 
+  // Spawns a health potion when the prop is configured to drop one.
   void DropHealthPotion()
   {
     if (!dropsHealthPotion || healthPotionPrefab == null) return;
@@ -76,6 +84,7 @@ public class BreakableProp : MonoBehaviour
     Instantiate(healthPotionPrefab, breakableMesh.position, Quaternion.identity);
   }
 
+  // Enables or disables all child renderers and colliders.
   void SetVisible(bool visible)
   {
     foreach (Renderer r in renderers) r.enabled = visible;

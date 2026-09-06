@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Fades renderers that obstruct the camera's view of its target.
 public class CameraOcclusionFader : MonoBehaviour
 {
   [Header("Target")]
@@ -27,11 +28,13 @@ public class CameraOcclusionFader : MonoBehaviour
   readonly HashSet<Renderer> hitThisFrame = new();
   readonly RaycastHit[] hitBuffer = new RaycastHit[8];
 
+  // Caches the shader property identifier used for faded materials.
   void Awake()
   {
     colorPropertyId = Shader.PropertyToID(colorProperty);
   }
 
+  // Detects occluding renderers, fades them, and restores renderers no longer hit.
   void LateUpdate()
   {
     if (target == null || occlusionMaterial == null)
@@ -67,6 +70,7 @@ public class CameraOcclusionFader : MonoBehaviour
     RestoreRenderersNoLongerHit();
   }
 
+  // Restores renderers that are no longer between the camera and target.
   void RestoreRenderersNoLongerHit()
   {
     List<Renderer> finished = null;
@@ -98,6 +102,7 @@ public class CameraOcclusionFader : MonoBehaviour
     }
   }
 
+  // Replaces a renderer's materials with the occlusion material and stores the originals.
   void BeginFade(Renderer renderer)
   {
     if (states.ContainsKey(renderer))
@@ -116,6 +121,7 @@ public class CameraOcclusionFader : MonoBehaviour
     states[renderer] = new FadeState { originalMaterials = originals, alpha = 1f };
   }
 
+  // Moves a renderer toward the requested alpha using a material property block.
   float UpdateFade(Renderer renderer, float targetAlpha)
   {
     FadeState state = states[renderer];
@@ -131,6 +137,7 @@ public class CameraOcclusionFader : MonoBehaviour
     return state.alpha;
   }
 
+  // Restores the renderer's original materials and clears its property override.
   void EndFade(Renderer renderer)
   {
     FadeState state = states[renderer];

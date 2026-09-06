@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+// Adjusts the BattleBee navigation height while its critical-hit animation plays.
 public class BattleBeeCriticalHitBehaviour : StateMachineBehaviour
 {
-    // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
+    // Lowers the agent to the ground when the critical-hit state begins.
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         animator.GetComponent<NavMeshAgent>().baseOffset = 0f;
@@ -15,7 +16,7 @@ public class BattleBeeCriticalHitBehaviour : StateMachineBehaviour
     //    
     //}
 
-    // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
+    // Restores the flying offset when the critical-hit state ends.
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         animator.GetComponent<NavMeshAgent>().baseOffset = -0.5f;

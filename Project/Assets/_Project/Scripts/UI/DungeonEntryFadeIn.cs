@@ -5,6 +5,7 @@ using UnityEngine.Audio;
 // Dungeon stays hidden while it generates). Fades the screen in once DungeonReadySignal fires,
 // rather than on scene Start, so the player never sees the level being built mid-fade.
 [RequireComponent(typeof(ScreenFader))]
+// Reveals the generated dungeon and restores master volume after generation completes.
 public class DungeonEntryFadeIn : MonoBehaviour
 {
   [SerializeField] AudioMixer mixer;
@@ -13,6 +14,7 @@ public class DungeonEntryFadeIn : MonoBehaviour
   ScreenFader fader;
   bool hasStartedFadeIn;
 
+  // Caches the fader and starts the mixer at silence while generation runs.
   void Awake()
   {
     fader = GetComponent<ScreenFader>();
@@ -20,6 +22,7 @@ public class DungeonEntryFadeIn : MonoBehaviour
     AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, 0f);
   }
 
+  // Subscribes to readiness and handles a signal that arrived before this component enabled.
   void OnEnable()
   {
     DungeonReadySignal.Raised += HandleDungeonReady;
@@ -30,6 +33,7 @@ public class DungeonEntryFadeIn : MonoBehaviour
     }
   }
 
+  // Handles readiness that was raised during scene activation.
   void Start()
   {
     if (DungeonReadySignal.IsReady)
@@ -38,11 +42,13 @@ public class DungeonEntryFadeIn : MonoBehaviour
     }
   }
 
+  // Removes the dungeon readiness subscription.
   void OnDisable()
   {
     DungeonReadySignal.Raised -= HandleDungeonReady;
   }
 
+  // Starts the reveal once, after the generation pipeline reports readiness.
   void HandleDungeonReady()
   {
     if (hasStartedFadeIn)
@@ -54,6 +60,7 @@ public class DungeonEntryFadeIn : MonoBehaviour
     StartCoroutine(FadeInAudioAndScreen());
   }
 
+  // Fades the screen and master volume in together using the saved volume target.
   System.Collections.IEnumerator FadeInAudioAndScreen()
   {
     Coroutine screenFade = fader.FadeInAndStart(fadeInDuration);

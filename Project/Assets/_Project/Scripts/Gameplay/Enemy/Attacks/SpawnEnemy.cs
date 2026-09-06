@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 
+// Spawns one enemy on the local NavMesh and reports the spawned object.
 public class SpawnEnemy : MonoBehaviour
 {
     const float NavMeshSampleDistance = 2f;
@@ -13,6 +14,7 @@ public class SpawnEnemy : MonoBehaviour
 
     public event Action<GameObject> OnEnemySpawned;
 
+    // Samples a valid NavMesh position, spawns the enemy, raises the event, and plays the SFX.
     void Start()
     {
         if (enemyPrefab != null)

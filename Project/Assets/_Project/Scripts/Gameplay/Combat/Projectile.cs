@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
+// Moves a damage-carrying trigger projectile and resolves its first valid impact.
 public class Projectile : MonoBehaviour
 {
   [SerializeField, Min(0f)] float lifetime = 5f;
@@ -16,6 +17,7 @@ public class Projectile : MonoBehaviour
   }
 
   // Stores the projectile's state so it can move and resolve impact without needing a persistent owner.
+  // Configures the projectile's direction, speed, damage, source, and lifetime.
   public void Launch(Vector3 launchDirection, float launchSpeed, int launchDamage, GameObject launchSource)
   {
     direction = launchDirection.normalized;
@@ -31,11 +33,13 @@ public class Projectile : MonoBehaviour
     Destroy(gameObject, lifetime);
   }
 
+  // Advances the projectile along its configured direction.
   void Update()
   {
     transform.position += direction * speed * Time.deltaTime;
   }
 
+  // Ignores the source object, damages the first damageable target, and destroys the projectile.
   void OnTriggerEnter(Collider other)
   {
     if (source != null && other.gameObject == source)

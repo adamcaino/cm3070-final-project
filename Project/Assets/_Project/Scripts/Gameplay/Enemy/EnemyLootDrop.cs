@@ -2,6 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(Animator))]
+// Rolls for a health pickup when the enemy dies and delays its reveal until the death animation.
 public class EnemyLootDrop : MonoBehaviour
 {
   [SerializeField] GameObject healthItemPrefab;
@@ -13,6 +14,7 @@ public class EnemyLootDrop : MonoBehaviour
   StatusEffectReceiver statusEffects;
   Animator animator;
 
+  // Caches the health, status-effect, and animator components used by the drop flow.
   void Awake()
   {
     health = GetComponent<Health>();
@@ -20,16 +22,19 @@ public class EnemyLootDrop : MonoBehaviour
     animator = GetComponent<Animator>();
   }
 
+  // Subscribes to the enemy death event.
   void OnEnable()
   {
     health.OnDied += HandleDied;
   }
 
+  // Removes the enemy death event subscription.
   void OnDisable()
   {
     health.OnDied -= HandleDied;
   }
 
+  // Performs the drop roll and creates a delayed-reveal pickup when successful.
   void HandleDied()
   {
     if (healthItemPrefab == null || Random.value > dropChance)

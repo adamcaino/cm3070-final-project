@@ -1,4 +1,4 @@
-// Status effects supported by the combat system.
+// Identifies the status effects that combat actors can apply to one another.
 public enum AfflictionType
 {
   None,

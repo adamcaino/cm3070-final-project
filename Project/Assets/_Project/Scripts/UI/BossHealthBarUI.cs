@@ -2,11 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Boss equivalent of HealthBarUI - same slider-wiring/punch-scale pattern, but stays hidden until a boss
-/// encounter explicitly starts tracking a Health (see BossRoomEncounter), instead of finding the player by
-/// tag on Start. Sits on the BossHealthSlider prefab instance in the HUD canvas.
-/// </summary>
+// Displays boss health and remains hidden until a boss encounter starts tracking a Health component.
 public class BossHealthBarUI : MonoBehaviour
 {
   [SerializeField, Min(0f)] float punchStrength = 0.15f;
@@ -17,6 +13,7 @@ public class BossHealthBarUI : MonoBehaviour
   Vector3 baseScale;
   Coroutine activePunch;
 
+  // Caches the slider and hides the boss health bar until an encounter begins.
   void Awake()
   {
     slider = GetComponent<Slider>();
@@ -24,6 +21,7 @@ public class BossHealthBarUI : MonoBehaviour
     gameObject.SetActive(false);
   }
 
+  // Binds the bar to a boss health component and displays its current value.
   public void BeginTracking(Health bossHealth)
   {
     if (bossHealth == null) return;
@@ -39,6 +37,7 @@ public class BossHealthBarUI : MonoBehaviour
     gameObject.SetActive(true);
   }
 
+  // Removes boss health subscriptions and hides the bar.
   public void StopTracking()
   {
     if (health == null) return;
@@ -51,6 +50,7 @@ public class BossHealthBarUI : MonoBehaviour
     gameObject.SetActive(false);
   }
 
+  // Removes boss health subscriptions before the UI object is destroyed.
   void OnDestroy()
   {
     if (health == null) return;
@@ -60,6 +60,7 @@ public class BossHealthBarUI : MonoBehaviour
     health.OnDied -= HandleDied;
   }
 
+  // Updates the bar and starts its damage punch animation.
   void HandleDamaged(Vector3 _)
   {
     slider.value = health.CurrentHealth;
@@ -71,10 +72,13 @@ public class BossHealthBarUI : MonoBehaviour
     activePunch = StartCoroutine(PunchRoutine());
   }
 
+  // Updates the bar after the boss is healed.
   void HandleHealed(Vector3 _) => slider.value = health.CurrentHealth;
 
+  // Sets the bar to zero after the boss dies.
   void HandleDied() => slider.value = 0;
 
+  // Scales the bar briefly and restores its authored scale.
   IEnumerator PunchRoutine()
   {
     float elapsed = 0f;
