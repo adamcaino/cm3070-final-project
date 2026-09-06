@@ -11,4 +11,7 @@ public struct DungeonRoomInfo
   public RectInt Bounds;
   public Vector2Int Center;
   public RoomRole Role;
+  public int DistanceFromSpawn;
+  public int DistanceFromBoss;
+  public int SpawnToBossDistance;
 }
