@@ -16,7 +16,8 @@ public class PauseMenuController : MonoBehaviour
   [Header("Panels")]
   [SerializeField] GameObject background;
   [SerializeField] GameObject pausePanel;
-  [SerializeField] GameObject optionsPanel;
+  [SerializeField] GameObject audioPanel;
+  [SerializeField] GameObject controlsPanel;
 
   [Header("Audio")]
   [SerializeField] AudioClip menuOpenClip;
@@ -101,13 +102,29 @@ public class PauseMenuController : MonoBehaviour
   public void OpenOptions()
   {
     pausePanel.SetActive(false);
-    optionsPanel.SetActive(true);
+    audioPanel.SetActive(true);
   }
 
   // Replaces the options panel with the pause panel.
   public void CloseOptions()
   {
-    optionsPanel.SetActive(false);
+    audioPanel.SetActive(false);
+    pausePanel.SetActive(true);
+  }
+
+  public void OpenControls()
+  {
+    if (controlsPanel == null) return;
+
+    pausePanel.SetActive(false);
+    controlsPanel.SetActive(true);
+  }
+
+  public void CloseControls()
+  {
+    if (controlsPanel == null) return;
+
+    controlsPanel.SetActive(false);
     pausePanel.SetActive(true);
   }
 
@@ -118,8 +135,9 @@ public class PauseMenuController : MonoBehaviour
 
     isTransitioning = true;
     Time.timeScale = 1f;
-    SetPlayerControlsEnabled(true);
-    SetCursorLocked(false);
+    SetPlayerControlsEnabled(false);
+    SetMenuVisible(false);
+    SetCursorLocked(true);
     StartCoroutine(QuitToMenuRoutine());
   }
 
@@ -162,7 +180,8 @@ public class PauseMenuController : MonoBehaviour
   {
     background.SetActive(visible);
     pausePanel.SetActive(visible);
-    optionsPanel.SetActive(false);
+    audioPanel.SetActive(false);
+    if (controlsPanel != null) controlsPanel.SetActive(false);
   }
 
   // Enables or disables the configured player action map.

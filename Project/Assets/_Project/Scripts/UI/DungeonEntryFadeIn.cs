@@ -18,6 +18,7 @@ public class DungeonEntryFadeIn : MonoBehaviour
   void Awake()
   {
     fader = GetComponent<ScreenFader>();
+    fader.PrepareOpaque();
     AudioMixerVolume.ApplySaved(mixer);
     AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, 0f);
   }
@@ -63,6 +64,8 @@ public class DungeonEntryFadeIn : MonoBehaviour
   // Fades the screen and master volume in together using the saved volume target.
   System.Collections.IEnumerator FadeInAudioAndScreen()
   {
+    yield return null;
+
     Coroutine screenFade = fader.FadeInAndStart(fadeInDuration);
     float elapsed = 0f;
     float targetVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);

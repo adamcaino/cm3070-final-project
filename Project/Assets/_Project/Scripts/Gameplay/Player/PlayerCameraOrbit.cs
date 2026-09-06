@@ -6,7 +6,10 @@ using UnityEngine.InputSystem;
 public class PlayerCameraOrbit : MonoBehaviour
 {
   public const string SensitivityPlayerPrefsKey = "MouseSensitivity";
+  public const float MinSensitivity = 0.1f;
+  public const float MaxSensitivity = 1f;
   public const float DefaultSensitivity = 0.25f;
+  const float SensitivityExponent = 2f;
 
   [Header("Input")]
   [SerializeField] InputActionReference lookAction;
@@ -102,12 +105,13 @@ public class PlayerCameraOrbit : MonoBehaviour
 
     Vector2 lookInput = lookAction.action.ReadValue<Vector2>();
     float verticalSign = invertVertical ? 1f : -1f;
+    float effectiveSensitivity = GetEffectiveSensitivity();
 
     orbitalFollow.HorizontalAxis.Value = orbitalFollow.HorizontalAxis.ClampValue(
-      orbitalFollow.HorizontalAxis.Value + (lookInput.x * horizontalSpeed * GetSensitivity()));
+      orbitalFollow.HorizontalAxis.Value + (lookInput.x * horizontalSpeed * effectiveSensitivity));
 
     orbitalFollow.VerticalAxis.Value = orbitalFollow.VerticalAxis.ClampValue(
-      orbitalFollow.VerticalAxis.Value + (lookInput.y * verticalSpeed * verticalSign * GetSensitivity()));
+      orbitalFollow.VerticalAxis.Value + (lookInput.y * verticalSpeed * verticalSign * effectiveSensitivity));
   }
 
   // Disables camera input and the Cinemachine input controller after player death.
@@ -144,14 +148,21 @@ public class PlayerCameraOrbit : MonoBehaviour
   // Reads the saved mouse sensitivity or returns the default value.
   public static float GetSensitivity()
   {
-    return PlayerPrefs.GetFloat(SensitivityPlayerPrefsKey, DefaultSensitivity);
+    float saved = PlayerPrefs.GetFloat(SensitivityPlayerPrefsKey, DefaultSensitivity);
+    return Mathf.Clamp(saved, MinSensitivity, MaxSensitivity);
   }
 
   // Clamps and saves the mouse sensitivity value.
   public static void SetSensitivity(float value)
   {
-    PlayerPrefs.SetFloat(SensitivityPlayerPrefsKey, Mathf.Clamp(value, 0.1f, 2f));
+    PlayerPrefs.SetFloat(SensitivityPlayerPrefsKey, Mathf.Clamp(value, MinSensitivity, MaxSensitivity));
     PlayerPrefs.Save();
+  }
+
+  // Converts slider value to a nonlinear multiplier so low values reduce camera motion more aggressively.
+  static float GetEffectiveSensitivity()
+  {
+    return Mathf.Pow(GetSensitivity(), SensitivityExponent);
   }
 
   // Aligns the camera's horizontal axis with the target's yaw.

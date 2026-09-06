@@ -20,6 +20,13 @@ public class ScreenFader : MonoBehaviour
     image = GetComponent<Image>();
   }
 
+  // Sets the fader to its opaque, input-blocking resting state.
+  public void PrepareOpaque()
+  {
+    SetAlpha(1f);
+    SetRaycastBlocking(true);
+  }
+
   // Starts a fade to opaque and blocks UI raycasts during the fade.
   public Coroutine FadeOutAndStart(float duration)
   {

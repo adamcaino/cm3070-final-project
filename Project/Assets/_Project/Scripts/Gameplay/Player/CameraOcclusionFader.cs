@@ -37,6 +37,8 @@ public class CameraOcclusionFader : MonoBehaviour
   // Detects occluding renderers, fades them, and restores renderers no longer hit.
   void LateUpdate()
   {
+    ResolveTarget();
+
     if (target == null || occlusionMaterial == null)
     {
       return;
@@ -68,6 +70,18 @@ public class CameraOcclusionFader : MonoBehaviour
     }
 
     RestoreRenderersNoLongerHit();
+  }
+
+  // Resolves the runtime-spawned player when no target was assigned on the camera prefab.
+  void ResolveTarget()
+  {
+    if (target != null)
+    {
+      return;
+    }
+
+    PlayerLocomotion player = FindFirstObjectByType<PlayerLocomotion>();
+    target = player != null ? player.transform : null;
   }
 
   // Restores renderers that are no longer between the camera and target.

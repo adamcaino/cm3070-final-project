@@ -181,9 +181,12 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
   // Detaches and rebinds the player after the spawn portal has been instantiated.
   void PlacePlayer(GameObject portalInstance)
   {
+    // Prefer the player found under this spawned portal instance over any stale scene reference.
+    ResolvePlayerFromPortal(portalInstance);
+
     if (player == null)
     {
-      ResolvePlayerFromPortal(portalInstance);
+      ResolveRuntimeReferences();
     }
 
     if (player == null)
@@ -192,8 +195,8 @@ public class DungeonPointOfInterestPlacer3D : MonoBehaviour
       return;
     }
 
-    // Preserve the Player's authored world pose while removing it from the portal hierarchy.
-    if (player.parent != null)
+    // Preserve the player's authored world pose while removing it from the spawn portal hierarchy.
+    if (portalInstance != null && player.IsChildOf(portalInstance.transform))
     {
       player.SetParent(null, true);
     }
