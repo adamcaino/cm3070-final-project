@@ -49,6 +49,7 @@ public class MainMenuController : MonoBehaviour
   {
     audioSource = GetComponent<AudioSource>();
     AudioMixerVolume.ApplySaved(mixer);
+    SetCursorForMenu();
 
     if (screenFader == null)
     {
@@ -62,6 +63,13 @@ public class MainMenuController : MonoBehaviour
     exitButton.onClick.AddListener(OnExit);
 
     ShowMain(false);
+  }
+
+  // Ensures pointer-driven menu navigation always works after scene transitions.
+  void SetCursorForMenu()
+  {
+    Cursor.lockState = CursorLockMode.None;
+    Cursor.visible = true;
   }
 
   // Starts the menu audio and screen fade-in.

@@ -43,7 +43,7 @@ AnimatorStateTransition:
     m_ConditionEvent: attackIndex
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: 1102063001559692752}
+  m_DstState: {fileID: 1102632347954910030}
   m_Solo: 0
   m_Mute: 0
   m_IsExit: 0
