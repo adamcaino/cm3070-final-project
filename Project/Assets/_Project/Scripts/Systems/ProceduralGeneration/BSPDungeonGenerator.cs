@@ -599,9 +599,11 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
 
     int spawnIndex = random.Next(roomBounds.Count);
-    int[] distances = ComputeRoomDistances(spawnIndex);
-    int bossIndex = FindFarthestRoom(distances, spawnIndex);
-    List<int> lootIndices = ChooseLootRooms(distances, spawnIndex, bossIndex, random);
+    int[] distancesFromSpawn = ComputeRoomDistances(spawnIndex);
+    int bossIndex = FindFarthestRoom(distancesFromSpawn, spawnIndex);
+    int[] distancesFromBoss = ComputeRoomDistances(bossIndex);
+    int spawnToBossDistance = Mathf.Max(0, distancesFromSpawn[bossIndex]);
+    List<int> lootIndices = ChooseLootRooms(distancesFromSpawn, spawnIndex, bossIndex, random);
 
     List<DungeonRoomInfo> rooms = new List<DungeonRoomInfo>(roomBounds.Count);
 
@@ -622,7 +624,16 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
         role = RoomRole.Loot;
       }
 
-      rooms.Add(new DungeonRoomInfo { RoomId = i, Bounds = roomBounds[i], Center = GetRoomCenter(roomBounds[i]), Role = role });
+      rooms.Add(new DungeonRoomInfo
+      {
+        RoomId = i,
+        Bounds = roomBounds[i],
+        Center = GetRoomCenter(roomBounds[i]),
+        Role = role,
+        DistanceFromSpawn = distancesFromSpawn[i],
+        DistanceFromBoss = distancesFromBoss[i],
+        SpawnToBossDistance = spawnToBossDistance
+      });
     }
 
     LastRooms = rooms;

@@ -11,6 +11,7 @@ using UnityEngine.AI;
 public class DungeonEnemyPlacer3D : MonoBehaviour
 {
   const float NavMeshSampleDistance = 2f;
+  const int MaxToughEnemiesPerRoomCap = 2;
 
   [SerializeField] BSPDungeonGenerator sourceGenerator;
   [SerializeField] DungeonTilePlacer3D tilePlacer;
@@ -57,13 +58,65 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
 
   void PlaceEnemies(DungeonRoomInfo room, int gridWidth, int gridHeight)
   {
-    GameObject prefab = enemySet.enemyPrefabs == null || enemySet.enemyPrefabs.Length == 0
+    float difficulty = GetRoomDifficulty(room);
+    int area = room.Bounds.width * room.Bounds.height;
+    int targetByArea = Mathf.RoundToInt(area / enemySet.tilesPerEnemy);
+    int minCount = Mathf.RoundToInt(Mathf.Lerp(enemySet.minEnemiesNearSpawn, enemySet.minEnemiesNearBoss, difficulty));
+    int maxCount = Mathf.RoundToInt(Mathf.Lerp(enemySet.maxEnemiesNearSpawn, enemySet.maxEnemiesNearBoss, difficulty));
+    int roomMin = Mathf.Max(1, Mathf.Min(minCount, maxCount));
+    int roomMax = Mathf.Max(roomMin, maxCount);
+    int totalCount = Mathf.Clamp(targetByArea, roomMin, roomMax);
+
+    int toughCount = CalculateToughEnemyCount(difficulty, totalCount);
+    int regularCount = Mathf.Max(0, totalCount - toughCount);
+
+    GameObject regularPrefab = enemySet.enemyPrefabs == null || enemySet.enemyPrefabs.Length == 0
       ? null
       : enemySet.enemyPrefabs[enemyRandom.Next(enemySet.enemyPrefabs.Length)];
 
-    int area = room.Bounds.width * room.Bounds.height;
-    int count = Mathf.Clamp(Mathf.RoundToInt(area / enemySet.tilesPerEnemy), enemySet.minEnemiesPerRoom, enemySet.maxEnemiesPerRoom);
+    GameObject toughPrefab = enemySet.toughEnemyPrefabs == null || enemySet.toughEnemyPrefabs.Length == 0
+      ? null
+      : enemySet.toughEnemyPrefabs[enemyRandom.Next(enemySet.toughEnemyPrefabs.Length)];
 
+    SpawnEnemiesOfType(regularPrefab, regularCount, room, gridWidth, gridHeight, "Enemy");
+    SpawnEnemiesOfType(toughPrefab, toughCount, room, gridWidth, gridHeight, "Tough Enemy");
+  }
+
+  float GetRoomDifficulty(DungeonRoomInfo room)
+  {
+    if (room.SpawnToBossDistance <= 0 || room.DistanceFromSpawn <= 0)
+    {
+      return 0f;
+    }
+
+    return Mathf.Clamp01((float)room.DistanceFromSpawn / room.SpawnToBossDistance);
+  }
+
+  int CalculateToughEnemyCount(float difficulty, int totalCount)
+  {
+    if (totalCount <= 0 || enemySet.toughEnemyPrefabs == null || enemySet.toughEnemyPrefabs.Length == 0)
+    {
+      return 0;
+    }
+
+    int hardCap = Mathf.Min(MaxToughEnemiesPerRoomCap, enemySet.maxToughEnemiesPerRoom);
+    int countCap = Mathf.Min(hardCap, totalCount);
+    if (countCap <= 0)
+    {
+      return 0;
+    }
+
+    if (difficulty < enemySet.toughEnemyStartDistance)
+    {
+      return 0;
+    }
+
+    float toughRamp = Mathf.InverseLerp(enemySet.toughEnemyStartDistance, 1f, difficulty);
+    return Mathf.Clamp(Mathf.RoundToInt(toughRamp * countCap), 0, countCap);
+  }
+
+  void SpawnEnemiesOfType(GameObject prefab, int count, DungeonRoomInfo room, int gridWidth, int gridHeight, string label)
+  {
     for (int i = 0; i < count; i++)
     {
       Vector2Int cell = PickSpawnCell(room.Bounds);
@@ -80,7 +133,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
         ? Instantiate(prefab, navMeshHit.position, Quaternion.identity)
         : CreatePlaceholder(enemySet.placeholderColor, worldPosition);
 
-      instance.name = $"Enemy [{cell.x},{cell.y}]";
+      instance.name = $"{label} [{cell.x},{cell.y}]";
       instance.transform.SetParent(generatedRoot, false);
     }
   }
