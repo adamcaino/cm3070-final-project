@@ -2,17 +2,20 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
+// Plays looping music clips and provides an unscaled-time crossfade between tracks.
 public class MusicPlayer : MonoBehaviour
 {
   AudioSource source;
   Coroutine crossfadeRoutine;
 
+  // Caches the audio source and enables looping.
   void Awake()
   {
     source = GetComponent<AudioSource>();
     source.loop = true;
   }
 
+  // Immediately switches to the supplied clip or stops playback when it is null.
   public void Play(AudioClip clip)
   {
     if (crossfadeRoutine != null)
@@ -33,6 +36,7 @@ public class MusicPlayer : MonoBehaviour
     source.Play();
   }
 
+  // Starts a crossfade from the current clip to the supplied clip.
   public void PlayCrossfade(AudioClip clip, float duration)
   {
     if (crossfadeRoutine != null)
@@ -44,6 +48,7 @@ public class MusicPlayer : MonoBehaviour
     crossfadeRoutine = StartCoroutine(Crossfade(clip, duration));
   }
 
+  // Fades the current track out and the next track in without depending on time scale.
   IEnumerator Crossfade(AudioClip clip, float duration)
   {
     if (duration <= 0f)
@@ -97,6 +102,7 @@ public class MusicPlayer : MonoBehaviour
     crossfadeRoutine = null;
   }
 
+  // Stops playback and clears the current clip.
   public void Stop()
   {
     source.Stop();

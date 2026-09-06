@@ -44,6 +44,7 @@ public class MainMenuController : MonoBehaviour
 
   AudioSource audioSource;
 
+  // Caches audio, applies saved volume, registers buttons, and opens the main panel.
   void Awake()
   {
     audioSource = GetComponent<AudioSource>();
@@ -63,11 +64,13 @@ public class MainMenuController : MonoBehaviour
     ShowMain(false);
   }
 
+  // Starts the menu audio and screen fade-in.
   void Start()
   {
     StartCoroutine(FadeInAudioAndScreen());
   }
 
+  // Creates a screen-space fade overlay when none is assigned.
   ScreenFader CreateMenuFadeOverlay()
   {
     GameObject overlayObject = new GameObject("Main Menu Fade Overlay");
@@ -88,11 +91,13 @@ public class MainMenuController : MonoBehaviour
     return fader;
   }
 
+  // Shows the main menu and plays the return sound.
   public void ShowMain()
   {
     ShowMain(true);
   }
 
+  // Activates the main panel and hides all menu sub-panels.
   void ShowMain(bool playCloseSound)
   {
     mainPanel.SetActive(true);
@@ -105,12 +110,14 @@ public class MainMenuController : MonoBehaviour
     }
   }
 
+  // Stores a fresh seed and starts the gameplay transition.
   void OnNewGame()
   {
     PendingSeed.Set(System.Environment.TickCount);
     BeginGameplayTransition();
   }
 
+  // Opens the seed-entry panel.
   void OnLoadSeed()
   {
     OpenSubPanel(seedEntryPanel.gameObject);
@@ -118,22 +125,26 @@ public class MainMenuController : MonoBehaviour
 
   // Called here for New Game, and by SeedEntryPanelController once a seed has been confirmed -
   // both paths share the same fade-out / scripted-walk / scene-load sequence.
+  // Disables menu buttons and starts the intro fade and scene-load sequence.
   public void BeginGameplayTransition()
   {
     SetButtonsInteractable(false);
     StartCoroutine(GameplayTransitionRoutine());
   }
 
+  // Opens the options panel.
   void OnOptions()
   {
     OpenSubPanel(optionsPanel.gameObject);
   }
 
+  // Opens the controls panel.
   void OnControls()
   {
     OpenSubPanel(controlsPanel.gameObject);
   }
 
+  // Stops play mode in the editor or quits the application in a build.
   void OnExit()
   {
 #if UNITY_EDITOR
@@ -143,6 +154,7 @@ public class MainMenuController : MonoBehaviour
 #endif
   }
 
+  // Hides the main panel and opens a selected sub-panel.
   void OpenSubPanel(GameObject panel)
   {
     mainPanel.SetActive(false);
@@ -150,6 +162,7 @@ public class MainMenuController : MonoBehaviour
     PlayClip(menuOpenClip);
   }
 
+  // Plays a menu audio clip when one is configured.
   void PlayClip(AudioClip clip)
   {
     if (clip == null) return;
@@ -157,6 +170,7 @@ public class MainMenuController : MonoBehaviour
     audioSource.PlayOneShot(clip);
   }
 
+  // Enables or disables every top-level menu button.
   void SetButtonsInteractable(bool interactable)
   {
     newGameButton.interactable = interactable;
@@ -166,6 +180,7 @@ public class MainMenuController : MonoBehaviour
     exitButton.interactable = interactable;
   }
 
+  // Runs the intro walk, screen/audio fade, and gameplay scene load.
   IEnumerator GameplayTransitionRoutine()
   {
     float savedMasterVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);
@@ -189,6 +204,7 @@ public class MainMenuController : MonoBehaviour
     SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
   }
 
+  // Runs screen and audio fade-out operations together.
   IEnumerator FadeOutAudioAndScreen(float savedMasterVolume)
   {
     Coroutine screenFade = screenFader.FadeOutAndStart(introFadeDuration);
@@ -196,6 +212,7 @@ public class MainMenuController : MonoBehaviour
     yield return screenFade;
   }
 
+  // Interpolates master volume during a menu transition.
   IEnumerator FadeAudio(float from, float to, float duration)
   {
     float elapsed = 0f;
@@ -210,6 +227,7 @@ public class MainMenuController : MonoBehaviour
     AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, to);
   }
 
+  // Starts the menu from silence and transparency, then restores saved volume.
   IEnumerator FadeInAudioAndScreen()
   {
     AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, 0f);

@@ -3,9 +3,10 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(DungeonPropPlacer3D))]
+// Adds generation controls to the DungeonPropPlacer3D inspector.
 public class DungeonPropPlacer3DEditor : Editor
 {
-  // Adds generation and cleanup controls to the custom inspector.
+  // Draws serialized prop settings and dispatches generation or cleanup actions.
   public override void OnInspectorGUI()
   {
     DrawDefaultInspector();
@@ -14,12 +15,14 @@ public class DungeonPropPlacer3DEditor : Editor
 
     DungeonPropPlacer3D placer = (DungeonPropPlacer3D)target;
 
+    // Generates seeded wall props and marks the component dirty.
     if (GUILayout.Button("Generate"))
     {
       placer.Generate();
       EditorUtility.SetDirty(placer);
     }
 
+    // Removes generated props and marks the component dirty.
     if (GUILayout.Button("Clear"))
     {
       placer.Clear();

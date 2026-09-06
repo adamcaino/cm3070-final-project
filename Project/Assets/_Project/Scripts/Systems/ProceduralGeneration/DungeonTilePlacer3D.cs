@@ -1,19 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Placeholder 3D placement pass. Reads TileMetadata from a DungeonGridGenerator2D and instantiates a
-/// prefab variant (or a colored primitive stand-in, if the DungeonTileSet's variant array for that
-/// type is empty) per tile, positioned and rotated to match. Variant choice is randomized with a
-/// System.Random seeded from the source generator's LastUsedSeed, so it's reproducible per dungeon seed.
-///
-/// Conventions assumed here (revisit once real prefabs exist and can dictate their own pivot/facing):
-/// - Grid North (+Y in the 2D grid) maps to world +Z, East (+X) maps to world +X.
-/// - A prefab's forward (+Z) is treated as its decorated/front face.
-/// - Wall tiles rotate to face their open (Floors) direction.
-/// - Door tiles rotate to face their DoorRoomSide (the wide/room side, as opposed to the 1-tile-wide
-///   corridor side) so an asymmetric door prefab is oriented consistently on all four sides.
-/// </summary>
+// Converts generated tile metadata into seeded 3D tile instances. Grid north maps to world +Z,
+// wall tiles face their open side, and doors face the room side recorded in their metadata.
 public class DungeonTilePlacer3D : MonoBehaviour
 {
   [SerializeField] DungeonGridGenerator2D sourceGenerator;
@@ -27,15 +16,13 @@ public class DungeonTilePlacer3D : MonoBehaviour
 
   public float TileSize => tileSize;
 
-  // Lets later placement passes (boss/loot room locking) find the actual Door instance at a cell the
-  // 2D generator already knows is a doorway, without re-deriving it from world-space search.
+  // Returns the placed door associated with a generated grid cell.
   public bool TryGetDoorInstance(Vector2Int cell, out GameObject instance)
   {
     return placedDoors.TryGetValue(cell, out instance);
   }
 
-  // Shared with other placement passes (props, points of interest) so every stage maps a grid cell to
-  // the same world position this one used, without each duplicating the offset math.
+  // Converts a grid coordinate into the centred world-space tile position.
   public Vector3 GridToWorld(Vector2Int gridPosition, int gridWidth, int gridHeight)
   {
     float xOffset = (gridWidth - 1) * tileSize * 0.5f;
@@ -44,6 +31,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
   }
 
   [ContextMenu("Generate")]
+  // Validates source data, resets prior output, and instantiates every non-empty tile.
   public void Generate()
   {
     if (sourceGenerator == null || tileSet == null)
@@ -78,6 +66,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     }
   }
 
+  // Places one tile at its grid position and records door instances for later passes.
   void PlaceTile(TileMetadata tile, int x, int y, float xOffset, float zOffset)
   {
     if (tile.Type == TileType.Empty)
@@ -98,18 +87,21 @@ public class DungeonTilePlacer3D : MonoBehaviour
     }
   }
 
+  // Instantiates a selected prefab or creates a placeholder when no variant exists.
   GameObject InstantiateTile(TileType type, Vector3 position, Quaternion rotation)
   {
     GameObject prefab = GetPrefab(type);
     return prefab != null ? Instantiate(prefab, position, rotation) : CreatePlaceholder(type, position, rotation);
   }
 
+  // Selects a seeded prefab variant for the requested tile type.
   GameObject GetPrefab(TileType type)
   {
     GameObject[] variants = GetPrefabVariants(type);
     return variants == null || variants.Length == 0 ? null : variants[variantRandom.Next(variants.Length)];
   }
 
+  // Returns the configured variant array associated with a tile type.
   GameObject[] GetPrefabVariants(TileType type)
   {
     switch (type)
@@ -125,6 +117,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     }
   }
 
+  // Creates a primitive stand-in with the scale and colour for a tile type.
   GameObject CreatePlaceholder(TileType type, Vector3 position, Quaternion rotation)
   {
     GameObject placeholder = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -134,6 +127,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     return placeholder;
   }
 
+  // Returns the primitive dimensions used for an unassigned tile prefab.
   Vector3 GetPlaceholderScale(TileType type)
   {
     switch (type)
@@ -149,6 +143,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     }
   }
 
+  // Retrieves or creates the shared placeholder material for a tile type.
   Material GetOrCreatePlaceholderMaterial(TileType type)
   {
     if (placeholderMaterials.TryGetValue(type, out Material material) && material != null)
@@ -162,6 +157,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     return material;
   }
 
+  // Maps a tile type to its configured placeholder colour.
   Color GetPlaceholderColor(TileType type)
   {
     switch (type)
@@ -177,6 +173,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     }
   }
 
+  // Determines prefab rotation from the tile's exposed floor or room-side direction.
   Quaternion GetRotation(TileMetadata tile)
   {
     switch (tile.Type)
@@ -190,6 +187,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
     }
   }
 
+  // Finds or creates the parent transform for generated 3D tiles.
   void EnsureGeneratedRoot()
   {
     if (generatedRoot != null)
@@ -210,6 +208,7 @@ public class DungeonTilePlacer3D : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Removes generated tile objects and clears the placed-door lookup.
   public void Clear()
   {
     if (generatedRoot == null)

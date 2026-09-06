@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Coordinates encounter activation, door locking, and encounter completion events.
 public abstract class RoomEncounter : MonoBehaviour, ITriggerable
 {
   [Tooltip("Doors this encounter locks/unlocks. Assignable directly in the Inspector for a hand-built room, or set at runtime via SetDoors (e.g. DungeonBossPlacer3D).")]
@@ -12,6 +13,7 @@ public abstract class RoomEncounter : MonoBehaviour, ITriggerable
   public event Action OnEncounterStarted;
   public event Action OnEncounterCleared;
 
+  // Replaces the doors controlled by this encounter with the supplied collection.
   public void SetDoors(IReadOnlyList<Door> encounterDoors)
   {
     doors.Clear();
@@ -21,6 +23,7 @@ public abstract class RoomEncounter : MonoBehaviour, ITriggerable
     }
   }
 
+  // Starts the encounter once, locks its doors, and notifies subscribers.
   public void OnTriggered(Vector3 sourcePosition)
   {
     if (started) return;
@@ -30,6 +33,7 @@ public abstract class RoomEncounter : MonoBehaviour, ITriggerable
     OnEncounterStarted?.Invoke();
   }
 
+  // Unlocks the encounter doors and notifies subscribers that the encounter is cleared.
   protected void CompleteEncounter()
   {
     if (!started) return;
@@ -38,6 +42,7 @@ public abstract class RoomEncounter : MonoBehaviour, ITriggerable
     OnEncounterCleared?.Invoke();
   }
 
+  // Applies the requested lock state to every assigned door.
   void SetDoorsLocked(bool locked)
   {
     foreach (Door door in doors)

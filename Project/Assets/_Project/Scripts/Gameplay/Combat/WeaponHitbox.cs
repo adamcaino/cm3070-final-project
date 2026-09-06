@@ -13,6 +13,7 @@ public class WeaponHitbox : MonoBehaviour
 
   public event Action<Collider> OnHit;
 
+  // Configures the collider as a disabled kinematic trigger for hit detection.
   void Awake()
   {
     hitCollider = GetComponent<Collider>();
@@ -24,17 +25,20 @@ public class WeaponHitbox : MonoBehaviour
     rb.useGravity = false;
   }
 
+  // Clears the previous swing's targets and enables hit detection.
   public void EnableHitbox()
   {
     hitThisSwing.Clear();
     hitCollider.enabled = true;
   }
 
+  // Disables hit detection for the current swing.
   public void DisableHitbox()
   {
     hitCollider.enabled = false;
   }
 
+  // Reports the first hit on each damageable target during the active swing.
   void OnTriggerEnter(Collider other)
   {
     if (other.CompareTag("Player")) return;

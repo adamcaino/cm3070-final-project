@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Animator))]
+// Handles player attack and defend input and updates the corresponding animator parameters.
 public class PlayerAttack : MonoBehaviour
 {
   static readonly int AttackParam = Animator.StringToHash("attack");
@@ -17,11 +18,13 @@ public class PlayerAttack : MonoBehaviour
 
   public bool IsDefending => isDefending;
 
+  // Caches the animator used by attack and defence actions.
   void Awake()
   {
     animator = GetComponent<Animator>();
   }
 
+  // Subscribes to victory and input action events when the component is enabled.
   void OnEnable()
   {
     GameOverSignal.VictoryRaised += HandleVictoryRaised;
@@ -36,6 +39,7 @@ public class PlayerAttack : MonoBehaviour
     defendAction.action.Enable();
   }
 
+  // Removes victory and input action subscriptions when the component is disabled.
   void OnDisable()
   {
     GameOverSignal.VictoryRaised -= HandleVictoryRaised;
@@ -50,6 +54,7 @@ public class PlayerAttack : MonoBehaviour
     defendAction.action.Disable();
   }
 
+  // Triggers an attack unless input is locked or the player is defending.
   void OnAttackPerformed(InputAction.CallbackContext context)
   {
     if (isInputLocked || isDefending) return;
@@ -57,12 +62,14 @@ public class PlayerAttack : MonoBehaviour
     animator.SetTrigger(AttackParam);
   }
 
+  // Updates the defending state from the performed or cancelled input action.
   void OnDefendChanged(InputAction.CallbackContext context)
   {
     isDefending = context.performed;
     animator.SetBool(DefendParam, isDefending);
   }
 
+  // Locks combat input when victory belongs to this scene.
   void HandleVictoryRaised(string sceneName)
   {
     if (sceneName != gameObject.scene.name)

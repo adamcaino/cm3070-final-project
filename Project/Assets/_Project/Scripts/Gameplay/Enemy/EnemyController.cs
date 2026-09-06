@@ -57,6 +57,7 @@ public class EnemyController : MonoBehaviour
 
   public bool IsMoving => Agent.velocity.sqrMagnitude > movingSpeedThreshold * movingSpeedThreshold;
 
+  // Caches required components, finds the player, and identifies boss instances.
   void Awake()
   {
     Agent = GetComponent<NavMeshAgent>();
@@ -73,23 +74,27 @@ public class EnemyController : MonoBehaviour
     isBoss = TryGetComponent<BossRoomEncounter>(out _);
   }
 
+  // Subscribes to health and player-death events.
   void OnEnable()
   {
     Health.OnDied += HandleDied;
     PlayerDiedSignal.Raised += HandlePlayerDied;
   }
 
+  // Removes health and player-death event subscriptions.
   void OnDisable()
   {
     Health.OnDied -= HandleDied;
     PlayerDiedSignal.Raised -= HandlePlayerDied;
   }
 
+  // Selects the initial idle or roaming state.
   void Start()
   {
     ChangeState(startIdle ? (IEnemyState)new IdleState() : new RoamState());
   }
 
+  // Activates the enemy and moves it into the positioning state.
   public void Wake()
   {
     if (isBoss)
@@ -100,6 +105,7 @@ public class EnemyController : MonoBehaviour
     ChangeState(new PositionState());
   }
 
+  // Ticks the current state unless the enemy is frozen.
   void Update()
   {
     if (IsFrozen) return;
@@ -107,6 +113,7 @@ public class EnemyController : MonoBehaviour
     currentState?.Tick(this);
   }
 
+  // Exits the current state and enters the supplied state.
   public void ChangeState(IEnemyState newState)
   {
     currentState?.Exit(this);
@@ -115,6 +122,7 @@ public class EnemyController : MonoBehaviour
   }
 
 
+  // Smoothly rotates the enemy toward a world position on the horizontal plane.
   public void FaceTowards(Vector3 worldPosition)
   {
     Vector3 direction = worldPosition - transform.position;
@@ -129,11 +137,13 @@ public class EnemyController : MonoBehaviour
     transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, t);
   }
 
+  // Changes to the dead state when the enemy's health reaches zero.
   void HandleDied()
   {
     ChangeState(new DeadState());
   }
 
+  // Changes living enemies to the victory state when the player dies.
   void HandlePlayerDied()
   {
     if (Health.IsDead) return;

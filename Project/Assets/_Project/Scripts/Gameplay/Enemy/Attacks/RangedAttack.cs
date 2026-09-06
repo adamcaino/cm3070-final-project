@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Fires one projectile toward the player when the ranged attack executes.
 public class RangedAttack : AttackBase
 {
   [SerializeField] Projectile projectilePrefab;
@@ -7,6 +8,7 @@ public class RangedAttack : AttackBase
   [SerializeField, Min(0f)] float projectileSpeed = 12f;
   [SerializeField, Min(1)] int damage = 1;
 
+  // Plays the attack animation, launches the projectile, and completes the attack.
   protected override void OnExecute(EnemyController enemy)
   {
     PlayAttackAnimation(enemy);

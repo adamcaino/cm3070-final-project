@@ -16,6 +16,7 @@ public class Health : MonoBehaviour, IDamageable
 
   IDamageBlocker blocker;
 
+  // Initializes the actor at maximum health and caches an optional damage blocker.
   void Awake()
   {
     CurrentHealth = maxHealth;

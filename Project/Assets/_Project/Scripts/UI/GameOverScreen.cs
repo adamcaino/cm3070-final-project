@@ -40,18 +40,21 @@ public class GameOverScreen : MonoBehaviour
   Coroutine showVictoryRoutine;
   Text titleText;
 
+  // Resolves the title label and starts with the game-over panel hidden.
   void Awake()
   {
     titleText = ResolveTitleText();
     SetVisible(false);
   }
 
+  // Subscribes to defeat and victory signals from gameplay scenes.
   void OnEnable()
   {
     GameOverSignal.Raised += Show;
     GameOverSignal.VictoryRaised += ShowVictory;
   }
 
+  // Removes gameplay signal subscriptions and stops pending victory presentation.
   void OnDisable()
   {
     GameOverSignal.Raised -= Show;
@@ -64,6 +67,7 @@ public class GameOverScreen : MonoBehaviour
     }
   }
 
+  // Displays the game-over panel and disables player controls.
   void Show(string sceneName)
   {
     gameplaySceneName = sceneName;
@@ -73,6 +77,7 @@ public class GameOverScreen : MonoBehaviour
     SetCursorLocked(false);
   }
 
+  // Begins the delayed victory-panel presentation for the supplied gameplay scene.
   void ShowVictory(string sceneName)
   {
     gameplaySceneName = sceneName;
@@ -88,6 +93,7 @@ public class GameOverScreen : MonoBehaviour
     showVictoryRoutine = StartCoroutine(ShowVictoryRoutine());
   }
 
+  // Waits before displaying victory feedback, effects, and the victory-screen signal.
   IEnumerator ShowVictoryRoutine()
   {
     yield return new WaitForSeconds(victoryScreenDelay);
@@ -101,6 +107,7 @@ public class GameOverScreen : MonoBehaviour
     showVictoryRoutine = null;
   }
 
+  // Places victory effects near the upper corners of the visible victory panel.
   void SpawnVictoryVfx()
   {
     if (victoryVfxPrefab == null || panel == null) return;
@@ -120,6 +127,7 @@ public class GameOverScreen : MonoBehaviour
     SpawnVictoryVfxAtCorner(mainCamera, corners[2], playerYRotation + 90f);
   }
 
+  // Converts a panel corner into world space and instantiates one victory effect.
   void SpawnVictoryVfxAtCorner(Camera mainCamera, Vector3 corner, float yRotation)
   {
     Vector2 screenPosition = RectTransformUtility.WorldToScreenPoint(null, corner);
@@ -130,6 +138,7 @@ public class GameOverScreen : MonoBehaviour
     Instantiate(victoryVfxPrefab, position, rotation);
   }
 
+  // Plays the configured victory sound.
   void PlayVictorySfx()
   {
     if (victoryAudioPrefab == null) return;
@@ -137,12 +146,14 @@ public class GameOverScreen : MonoBehaviour
     GetComponent<AudioSource>()?.PlayOneShot(victoryAudioPrefab);
   }
 
+  // Stores a fresh seed and reloads the gameplay scene.
   public void NewGame()
   {
     PendingSeed.Set(System.Environment.TickCount);
     LoadGameplayScene();
   }
 
+  // Stores a parsed seed when available and reloads the gameplay scene.
   public void LoadSeed()
   {
     if (seedInputField != null && int.TryParse(seedInputField.text, out int seed))
@@ -153,6 +164,7 @@ public class GameOverScreen : MonoBehaviour
     LoadGameplayScene();
   }
 
+  // Starts the transition back to the main menu.
   public void Exit()
   {
     if (isTransitioning) return;
@@ -162,6 +174,7 @@ public class GameOverScreen : MonoBehaviour
     StartCoroutine(LoadMainMenuRoutine());
   }
 
+  // Fades screen and audio before loading the main menu.
   IEnumerator LoadMainMenuRoutine()
   {
     float savedMasterVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);
@@ -180,6 +193,7 @@ public class GameOverScreen : MonoBehaviour
     SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
   }
 
+  // Interpolates master volume during the menu transition.
   IEnumerator FadeAudio(float from, float to, float duration)
   {
     float elapsed = 0f;
@@ -194,6 +208,7 @@ public class GameOverScreen : MonoBehaviour
     AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, to);
   }
 
+  // Restores gameplay timing and loads the stored gameplay scene.
   void LoadGameplayScene()
   {
     if (string.IsNullOrEmpty(gameplaySceneName)) return;
@@ -203,12 +218,14 @@ public class GameOverScreen : MonoBehaviour
     SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
   }
 
+  // Shows or hides the game-over background and panel.
   void SetVisible(bool visible)
   {
     background.SetActive(visible);
     panel.SetActive(visible);
   }
 
+  // Enables or disables the configured player action map.
   void SetPlayerControlsEnabled(bool isEnabled)
   {
     InputActionMap map = playerControls != null ? playerControls.FindActionMap(playerActionMapName) : null;
@@ -224,12 +241,14 @@ public class GameOverScreen : MonoBehaviour
     }
   }
 
+  // Applies the cursor state used by gameplay or the UI.
   void SetCursorLocked(bool locked)
   {
     Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
     Cursor.visible = !locked;
   }
 
+  // Updates the title label after resolving it when necessary.
   void SetPanelTitle(string value)
   {
     if (titleText == null)
@@ -243,6 +262,7 @@ public class GameOverScreen : MonoBehaviour
     }
   }
 
+  // Finds the named title text or falls back to the first child Text component.
   Text ResolveTitleText()
   {
     if (panel == null) return null;

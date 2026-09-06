@@ -2,12 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-/// <summary>
-/// Enemy placement pass. Walks every RoomRole.Normal room (Spawn/Boss/Loot rooms are POI territory, not
-/// combat territory - see DungeonPointOfInterestPlacer3D), rolls one enemy type from EnemySet for the
-/// whole room, and scatters however many copies the room's floor area calls for across its interior,
-/// spacing them a cell apart so they don't stack on the same tile.
-/// </summary>
+// Places seeded regular and tough enemy groups in normal rooms according to room area and progression.
+// Spawn, boss, and loot rooms are handled by their dedicated placement passes.
 public class DungeonEnemyPlacer3D : MonoBehaviour
 {
   const float NavMeshSampleDistance = 2f;
@@ -22,6 +18,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
   readonly HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();
 
   [ContextMenu("Generate")]
+  // Reads generated rooms, resets prior enemies, and places enemies in normal rooms.
   public void Generate()
   {
     if (sourceGenerator == null || tilePlacer == null || enemySet == null)
@@ -56,6 +53,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     }
   }
 
+  // Calculates room density and difficulty, then spawns regular and tough enemy groups.
   void PlaceEnemies(DungeonRoomInfo room, int gridWidth, int gridHeight)
   {
     float difficulty = GetRoomDifficulty(room);
@@ -82,6 +80,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     SpawnEnemiesOfType(toughPrefab, toughCount, room, gridWidth, gridHeight, "Tough Enemy");
   }
 
+  // Converts the room's distance from spawn into normalized progression difficulty.
   float GetRoomDifficulty(DungeonRoomInfo room)
   {
     if (room.SpawnToBossDistance <= 0 || room.DistanceFromSpawn <= 0)
@@ -92,6 +91,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     return Mathf.Clamp01((float)room.DistanceFromSpawn / room.SpawnToBossDistance);
   }
 
+  // Calculates the capped tough-enemy count after its progression threshold is reached.
   int CalculateToughEnemyCount(float difficulty, int totalCount)
   {
     if (totalCount <= 0 || enemySet.toughEnemyPrefabs == null || enemySet.toughEnemyPrefabs.Length == 0)
@@ -115,6 +115,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     return Mathf.Clamp(Mathf.RoundToInt(toughRamp * countCap), 0, countCap);
   }
 
+  // Samples NavMesh positions and instantiates one group of the requested enemy type.
   void SpawnEnemiesOfType(GameObject prefab, int count, DungeonRoomInfo room, int gridWidth, int gridHeight, string label)
   {
     for (int i = 0; i < count; i++)
@@ -138,9 +139,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     }
   }
 
-  // Tries a handful of times to find a cell not touching an already-placed enemy so they don't stack
-  // shoulder-to-shoulder; falls back to whatever cell it last rolled rather than skipping the spawn -
-  // a slightly-too-close enemy beats one that's silently missing.
+  // Selects a room cell with local spacing from earlier enemy placements.
   Vector2Int PickSpawnCell(RectInt bounds)
   {
     Vector2Int cell = RandomCellIn(bounds);
@@ -154,11 +153,13 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     return cell;
   }
 
+  // Returns a seeded random cell inside the room bounds.
   Vector2Int RandomCellIn(RectInt bounds)
   {
     return new Vector2Int(enemyRandom.Next(bounds.xMin, bounds.xMax), enemyRandom.Next(bounds.yMin, bounds.yMax));
   }
 
+  // Tests the surrounding 3x3 neighbourhood for an occupied enemy cell.
   bool IsNearOccupiedCell(Vector2Int cell)
   {
     for (int dx = -1; dx <= 1; dx++)
@@ -175,6 +176,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     return false;
   }
 
+  // Creates a coloured capsule when no enemy prefab is configured.
   GameObject CreatePlaceholder(Color color, Vector3 position)
   {
     GameObject placeholder = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -184,6 +186,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
     return placeholder;
   }
 
+  // Finds or creates the parent transform for generated enemies.
   void EnsureGeneratedRoot()
   {
     if (generatedRoot != null)
@@ -204,6 +207,7 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Removes generated enemies from the scene.
   public void Clear()
   {
     if (generatedRoot == null)

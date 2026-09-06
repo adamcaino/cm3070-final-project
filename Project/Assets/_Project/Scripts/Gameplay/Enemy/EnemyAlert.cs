@@ -21,6 +21,7 @@ public class EnemyAlert : MonoBehaviour
   EnemyDetection detection;
   LayerMask enemyMask = 1 << 11;
 
+  // Caches the controller, health, and detection components used by the alert flow.
   void Awake()
   {
     controller = GetComponent<EnemyController>();
@@ -28,25 +29,31 @@ public class EnemyAlert : MonoBehaviour
     detection = GetComponent<EnemyDetection>();
   }
 
+  // Subscribes to damage and player-spotted events.
   void OnEnable()
   {
     health.OnDamaged += HandleDamaged;
     detection.OnPlayerSpotted += HandlePlayerSpotted;
   }
 
+  // Removes damage and player-spotted event subscriptions.
   void OnDisable()
   {
     health.OnDamaged -= HandleDamaged;
     detection.OnPlayerSpotted -= HandlePlayerSpotted;
   }
 
+  // Triggers the alert and relays it after the enemy takes damage.
   void HandleDamaged(Vector3 hitPoint) => Trigger(relayToNearby: true);
+
+  // Triggers the alert and relays it after the enemy spots the player.
   void HandlePlayerSpotted() => Trigger(relayToNearby: true);
 
   // Called on an ally by a neighbor's relay - reacts the same way but does not itself relay
   // further, so one alert spreads exactly one hop instead of cascading across the whole level.
   public void ReceiveAlert() => Trigger(relayToNearby: false);
 
+  // Plays the alert, wakes the enemy, optionally relays one hop, and disables this component.
   void Trigger(bool relayToNearby)
   {
     PlayAlertVfx();
@@ -65,6 +72,7 @@ public class EnemyAlert : MonoBehaviour
     enabled = false;
   }
 
+  // Spawns the configured alert effect above the enemy.
   void PlayAlertVfx()
   {
     if (alertVfxPrefab == null) return;
@@ -76,6 +84,7 @@ public class EnemyAlert : MonoBehaviour
     Instantiate(alertVfxPrefab, transform.position + spawnPosOffset, transform.rotation);
   }
 
+  // Notifies nearby living allies without allowing the alert to cascade further.
   void RelayToNearbyEnemies()
   {
     int count = Physics.OverlapSphereNonAlloc(transform.position, alertRadius, overlapBuffer, enemyMask, QueryTriggerInteraction.Ignore);

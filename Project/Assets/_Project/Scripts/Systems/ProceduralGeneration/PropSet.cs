@@ -1,10 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// Sparse/probabilistic prop library the prop placement pass reads from. Unlike DungeonTileSet (exactly
-/// one prefab per grid cell), props are optional - each eligible tile independently rolls a chance to
-/// spawn one, seeded so the same dungeon seed always produces the same result.
-/// </summary>
+// Stores wall prop variants and the seeded chance used by prop placement.
 [CreateAssetMenu(fileName = "PropSet", menuName = "Dungeon/Prop Set")]
 public class PropSet : ScriptableObject
 {

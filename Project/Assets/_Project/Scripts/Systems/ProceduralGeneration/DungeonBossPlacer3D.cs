@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+// Places the boss, configures its room doors, and creates the encounter trigger after NavMesh generation.
+// The boss is positioned toward the wall opposite the room entrance.
 public class DungeonBossPlacer3D : MonoBehaviour
 {
   const float TriggerZoneHeight = 4f;
@@ -16,6 +18,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
   Transform generatedRoot;
 
   [ContextMenu("Generate")]
+  // Reads generated boss-room metadata, clears prior output, and places each boss room encounter.
   public void Generate()
   {
     if (sourceGenerator == null || tilePlacer == null || bossSet == null)
@@ -47,6 +50,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     }
   }
 
+  // Resolves boss-room doors, samples the NavMesh, instantiates the boss, and creates its trigger zone.
   void PlaceBoss(DungeonRoomInfo room, TileMetadata[,] metadata, int gridWidth, int gridHeight)
   {
     List<Door> doors = FindRoomDoors(room.Bounds, metadata, gridWidth, gridHeight, room.RoomId, out Vector2Int entranceDirection);
@@ -86,8 +90,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     triggerZone.transform.SetParent(generatedRoot, false);
   }
 
-  // Every Door cell on the room's perimeter, resolved to its placed instance via the tile placer and
-  // tagged with which room it borders - the same lookup a future loot-room placer would reuse.
+  // Finds perimeter doors, resolves their placed instances, and tags them with boss-room metadata.
   List<Door> FindRoomDoors(RectInt bounds, TileMetadata[,] metadata, int gridWidth, int gridHeight, int roomId, out Vector2Int entranceDirection)
   {
     List<Door> doors = new List<Door>();
@@ -127,6 +130,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     return doors;
   }
 
+  // Converts a perimeter cell position into the cardinal direction of the room entrance.
   static Vector2Int GetRoomSideDirection(RectInt bounds, Vector2Int perimeterCell)
   {
     if (perimeterCell.x < bounds.xMin)
@@ -147,6 +151,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     return Vector2Int.up;
   }
 
+  // Selects a clamped boss cell several tiles behind the room entrance.
   static Vector2Int GetBackRoomCell(RectInt bounds, Vector2Int entranceDirection)
   {
     int x = bounds.xMin + (bounds.width / 2);
@@ -174,6 +179,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
       Mathf.Clamp(y, bounds.yMin, bounds.yMax - 1));
   }
 
+  // Returns the cardinal cells immediately outside the room floor rectangle.
   static List<Vector2Int> GetRoomPerimeterCells(RectInt bounds)
   {
     List<Vector2Int> cells = new List<Vector2Int>();
@@ -193,6 +199,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     return cells;
   }
 
+  // Creates the trigger volume that forwards player entry to the boss encounter.
   GameObject CreateEncounterTriggerZone(RectInt bounds, Vector3 roomCenterWorld, Vector2Int entranceDirection, RoomEncounter encounter)
   {
     GameObject zone = new GameObject("Boss Encounter Trigger");
@@ -223,6 +230,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     return zone;
   }
 
+  // Creates a coloured capsule when no boss prefab is configured.
   GameObject CreatePlaceholder(Color color, Vector3 position)
   {
     GameObject placeholder = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -233,6 +241,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
     return placeholder;
   }
 
+  // Finds or creates the parent transform for generated boss objects.
   void EnsureGeneratedRoot()
   {
     if (generatedRoot != null)
@@ -253,6 +262,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Removes generated bosses and encounter trigger zones from the scene.
   public void Clear()
   {
     if (generatedRoot == null)

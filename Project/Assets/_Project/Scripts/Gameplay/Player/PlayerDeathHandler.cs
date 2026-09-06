@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(Animator))]
+// Handles player death animation, input shutdown, immediate death notification, and game over delay.
 public class PlayerDeathHandler : MonoBehaviour
 {
   static readonly int DeathTrigger = Animator.StringToHash("death");
@@ -18,6 +19,7 @@ public class PlayerDeathHandler : MonoBehaviour
   Animator animator;
   PlayerLocomotion locomotion;
 
+  // Caches health, animation, and locomotion components.
   void Awake()
   {
     health = GetComponent<Health>();
@@ -25,16 +27,19 @@ public class PlayerDeathHandler : MonoBehaviour
     locomotion = GetComponent<PlayerLocomotion>();
   }
 
+  // Subscribes to the player's death event.
   void OnEnable()
   {
     health.OnDied += HandleDied;
   }
 
+  // Removes the player's death event subscription.
   void OnDisable()
   {
     health.OnDied -= HandleDied;
   }
 
+  // Starts the death sequence, disables movement and controls, and schedules game over.
   void HandleDied()
   {
     animator.SetTrigger(DeathTrigger);
@@ -49,12 +54,14 @@ public class PlayerDeathHandler : MonoBehaviour
     StartCoroutine(RaiseGameOverAfterDelay());
   }
 
+  // Waits for the configured delay before raising the game-over signal.
   IEnumerator RaiseGameOverAfterDelay()
   {
     yield return new WaitForSeconds(gameOverDelay);
     GameOverSignal.Raise(gameObject.scene.name);
   }
 
+  // Enables or disables the configured player input action map.
   void SetPlayerControlsEnabled(bool isEnabled)
   {
     InputActionMap map = playerControls != null ? playerControls.FindActionMap(playerActionMapName) : null;

@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+// Runs the warning, damage, particle cleanup, and destruction sequence for one area hazard.
 public class BossAreaHazardController : MonoBehaviour
 {
     [SerializeField] ParticleSystem hazardAreaPrefab;
@@ -14,11 +15,13 @@ public class BossAreaHazardController : MonoBehaviour
     Coroutine hazardRoutine;
     bool isStopping;
 
+    // Starts the hazard warning and effect sequence.
     void Start()
     {
         hazardRoutine = StartCoroutine(HazardSequence());
     }
 
+    // Stops hazard activity and waits for remaining particles before destruction.
     public void StopHazard()
     {
         if (isStopping)
@@ -52,6 +55,7 @@ public class BossAreaHazardController : MonoBehaviour
         StartCoroutine(DestroyWhenParticlesFinish());
     }
 
+    // Expands the warning area, enables damage for the effect duration, and begins cleanup.
     IEnumerator HazardSequence()
     {
         isStopping = false;
@@ -91,6 +95,7 @@ public class BossAreaHazardController : MonoBehaviour
         yield return DestroyWhenParticlesFinish();
     }
 
+    // Waits for both particle systems to finish before destroying the hazard object.
     IEnumerator DestroyWhenParticlesFinish()
     {
         while ((hazardAreaPrefab != null && hazardAreaPrefab.IsAlive(true))

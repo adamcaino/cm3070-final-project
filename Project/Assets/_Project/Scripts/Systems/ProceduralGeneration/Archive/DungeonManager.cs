@@ -1,11 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// Small orchestration component for comparing the procedural generation proof of concepts.
-/// It can run either algorithm independently or both using the same seed.
-/// </summary>
+// Small orchestration component for comparing the procedural generation proof of concepts.
+// It can run either algorithm independently or both using the same seed.
 public class DungeonManager : MonoBehaviour
 {
+  // Selects which archived generation algorithm the comparison controls invoke.
   public enum GenerationAlgorithm
   {
     BSP,
@@ -22,6 +21,7 @@ public class DungeonManager : MonoBehaviour
   [SerializeField] CellularAutomataDungeonGenerator cellularAutomataGenerator;
 
   [ContextMenu("Generate Selected Layout")]
+  // Generates the selected algorithm using either the shared or a fresh seed.
   public void GenerateSelectedLayout()
   {
     int seed = useSharedSeed ? comparisonSeed : System.Environment.TickCount;
@@ -45,6 +45,7 @@ public class DungeonManager : MonoBehaviour
   }
 
   [ContextMenu("Generate Both Layouts")]
+  // Generates both archived algorithms with the same comparison seed when configured.
   public void GenerateBothLayouts()
   {
     int seed = useSharedSeed ? comparisonSeed : System.Environment.TickCount;
@@ -61,6 +62,7 @@ public class DungeonManager : MonoBehaviour
   }
 
   [ContextMenu("Clear All Layouts")]
+  // Clears generated output from both archived algorithms.
   public void ClearAllLayouts()
   {
     if (bspGenerator != null)

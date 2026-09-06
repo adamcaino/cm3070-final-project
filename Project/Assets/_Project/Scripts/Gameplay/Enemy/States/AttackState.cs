@@ -7,16 +7,19 @@ using UnityEngine;
 
 
 
+// Stops the enemy movement while an attack runs and returns it to positioning afterward.
 public class AttackState : IEnemyState
 {
   readonly IAttack attack;
   bool attackComplete;
 
+  // Stores the attack selected by the enemy state machine.
   public AttackState(IAttack attack)
   {
     this.attack = attack;
   }
 
+  // Stops navigation, subscribes to attack completion, and starts the selected attack.
   public void Enter(EnemyController enemy)
   {
     if (enemy.Agent.isActiveAndEnabled && enemy.Agent.isOnNavMesh)
@@ -30,6 +33,7 @@ public class AttackState : IEnemyState
     attack.Execute(enemy);
   }
 
+  // Faces the player and changes to positioning once the attack completes.
   public void Tick(EnemyController enemy)
   {
     if (enemy.Player != null)
@@ -43,6 +47,7 @@ public class AttackState : IEnemyState
     }
   }
 
+  // Removes the completion subscription and restores normal agent rotation and movement.
   public void Exit(EnemyController enemy)
   {
     attack.OnAttackComplete -= HandleAttackComplete;
@@ -55,5 +60,6 @@ public class AttackState : IEnemyState
     enemy.Agent.updateRotation = true;
   }
 
+  // Records that the selected attack has finished executing.
   void HandleAttackComplete() => attackComplete = true;
 }

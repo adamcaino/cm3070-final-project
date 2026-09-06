@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
+// Equips weapons, controls their hitbox, plays swing effects, and applies hit effects.
 public class PlayerWeapon : MonoBehaviour
 {
   [SerializeField] WeaponData defaultWeapon;
@@ -28,6 +29,7 @@ public class PlayerWeapon : MonoBehaviour
   public event Action<WeaponData> OnWeaponChanged;
   public event Action<int, int> OnManaChanged;
 
+  // Caches the primary audio source and creates the looping ambient audio source.
   void Awake()
   {
     audioSource = GetComponent<AudioSource>();
@@ -37,6 +39,7 @@ public class PlayerWeapon : MonoBehaviour
     ambientAudioSource.playOnAwake = false;
   }
 
+  // Equips the configured default weapon after initialization.
   void Start()
   {
     if (defaultWeapon != null)
@@ -45,6 +48,7 @@ public class PlayerWeapon : MonoBehaviour
     }
   }
 
+  // Replaces the current weapon, subscribes its hitbox, updates uses, and raises UI events.
   public void Equip(WeaponData weapon)
   {
     if (weapon == null || weaponSocket == null)
@@ -88,6 +92,7 @@ public class PlayerWeapon : MonoBehaviour
     OnManaChanged?.Invoke(RemainingUses, weapon.maxUses);
   }
 
+  // Starts or stops the ambient audio configured by the weapon data.
   void UpdateAmbience(WeaponData weapon)
   {
     if (weapon.ambientSfxClip == null)
@@ -102,10 +107,13 @@ public class PlayerWeapon : MonoBehaviour
     ambientAudioSource.Play();
   }
 
+  // Enables the equipped weapon hitbox during an attack animation.
   public void EnableHitbox() => equippedHitbox?.EnableHitbox();
 
+  // Disables the equipped weapon hitbox after an attack animation.
   public void DisableHitbox() => equippedHitbox?.DisableHitbox();
 
+  // Spawns the swing visual effect and plays its sound using the requested mirror state.
   public void PlaySwingVFX(float mirror = 0f)
   {
     if (Current == null)
@@ -131,6 +139,7 @@ public class PlayerWeapon : MonoBehaviour
     }
   }
 
+  // Applies weapon damage, optional affliction, and use consumption to a hit target.
   void HandleHit(Collider other)
   {
     if (Current == null) return;
@@ -150,6 +159,7 @@ public class PlayerWeapon : MonoBehaviour
     ConsumeUse();
   }
 
+  // Decrements finite weapon uses and returns to the default weapon when exhausted.
   void ConsumeUse()
   {
     if (!Current.IsSpecial) return;

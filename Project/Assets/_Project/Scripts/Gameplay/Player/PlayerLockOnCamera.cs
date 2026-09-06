@@ -1,6 +1,7 @@
 using Unity.Cinemachine;
 using UnityEngine;
 
+// Switches Cinemachine camera priority and target assignment when lock-on changes.
 public class PlayerLockOnCamera : MonoBehaviour
 {
   [Header("References")]
@@ -16,11 +17,13 @@ public class PlayerLockOnCamera : MonoBehaviour
 
   int basePriority;
 
+  // Resolves camera and target-lock references during initialization.
   void Awake()
   {
     RefreshRuntimeReferences();
   }
 
+  // Refreshes references and subscribes to lock-on events.
   void OnEnable()
   {
     RefreshRuntimeReferences();
@@ -34,6 +37,7 @@ public class PlayerLockOnCamera : MonoBehaviour
     targetLock.OnLockOff += HandleLockOff;
   }
 
+  // Removes lock-on event subscriptions.
   void OnDisable()
   {
     if (targetLock == null)
@@ -45,6 +49,7 @@ public class PlayerLockOnCamera : MonoBehaviour
     targetLock.OnLockOff -= HandleLockOff;
   }
 
+  // Resolves the free and lock-on cameras and applies their initial priorities.
   public void RefreshRuntimeReferences()
   {
     targetLock = GetComponent<TargetLockController>();
@@ -99,6 +104,7 @@ public class PlayerLockOnCamera : MonoBehaviour
     }
   }
 
+  // Assigns the locked target and raises the lock-on camera priority.
   void HandleLockOn(Transform target)
   {
     if (lockOnVcam == null)
@@ -111,6 +117,7 @@ public class PlayerLockOnCamera : MonoBehaviour
     lockOnVcam.Priority = basePriority + lockedPriorityOffset;
   }
 
+  // Clears the lock-on target and returns the camera to its free priority.
   void HandleLockOff()
   {
     if (lockOnVcam == null)

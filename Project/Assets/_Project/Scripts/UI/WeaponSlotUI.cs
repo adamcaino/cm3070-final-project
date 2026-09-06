@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+// Displays the player's current weapon icon and remaining special-weapon uses.
 public class WeaponSlotUI : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
@@ -12,21 +13,25 @@ public class WeaponSlotUI : MonoBehaviour
 
   PlayerWeapon playerWeapon;
 
+  // Subscribes to dungeon readiness so the runtime player can be found after generation.
   void OnEnable()
   {
     DungeonReadySignal.Raised += HandleDungeonReady;
   }
 
+  // Removes the dungeon readiness subscription.
   void OnDisable()
   {
     DungeonReadySignal.Raised -= HandleDungeonReady;
   }
 
+  // Refreshes the player weapon reference after the dungeon has been generated.
   void HandleDungeonReady()
   {
     RefreshPlayerWeaponReference();
   }
 
+  // Rebinds weapon events to the current player and refreshes the displayed weapon.
   void RefreshPlayerWeaponReference()
   {
     // Unsubscribe from old weapon if it exists
@@ -56,6 +61,7 @@ public class WeaponSlotUI : MonoBehaviour
     HandleWeaponChanged(playerWeapon.Current);
   }
 
+  // Removes weapon event subscriptions before the UI object is destroyed.
   void OnDestroy()
   {
     if (playerWeapon == null) return;
@@ -64,6 +70,7 @@ public class WeaponSlotUI : MonoBehaviour
     playerWeapon.OnManaChanged -= HandleManaChanged;
   }
 
+  // Updates the icon and capacity slider when the equipped weapon changes.
   void HandleWeaponChanged(WeaponData weapon)
   {
     bool isSpecial = weapon != null && weapon.IsSpecial;
@@ -74,5 +81,6 @@ public class WeaponSlotUI : MonoBehaviour
     manaCapacitySlider.value = isSpecial ? playerWeapon.RemainingUses : 0;
   }
 
+  // Updates the remaining-use slider when a special weapon is consumed.
   void HandleManaChanged(int current, int max) => manaCapacitySlider.value = current;
 }

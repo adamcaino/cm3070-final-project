@@ -1,9 +1,5 @@
-/// <summary>
-/// Converts a raw TileType[,] grid into a TileMetadata[,] grid by inspecting each tile's neighbors.
-/// Works on any generator's output (BSP, etc.) since it only depends on TileType, not room geometry.
-/// Wall tiles with no floor tile within one step (including diagonals) are treated as void/empty rock
-/// rather than real walls, since nothing will ever render or need to be seen there in a top-down view.
-/// </summary>
+// Converts a tile grid into neighbour metadata used by rendering and placement passes.
+// Isolated walls become empty cells, while cardinal and diagonal neighbours remain available.
 public static class DungeonMetadataBuilder
 {
   struct NeighborOffset
@@ -42,6 +38,7 @@ public static class DungeonMetadataBuilder
     (0, -1), (-1, -1), (-1, 0), (-1, 1)
   };
 
+  // Builds neighbour metadata for every cell in the generated tile map.
   public static TileMetadata[,] Build(TileType[,] map)
   {
     int width = map.GetLength(0);
@@ -59,6 +56,7 @@ public static class DungeonMetadataBuilder
     return metadata;
   }
 
+  // Classifies one cell and records its cardinal, diagonal, wall, floor, and doorway neighbours.
   static TileMetadata BuildTileMetadata(TileType[,] map, int x, int y, int width, int height)
   {
     TileType type = map[x, y];
@@ -109,9 +107,7 @@ public static class DungeonMetadataBuilder
     return tile;
   }
 
-  // Rooms are wide rectangles and corridors are exactly 1 tile wide, so the "room" side of a door
-  // can be told apart from the "corridor" side by checking whether the floor tile past each of the
-  // door's cardinal floor neighbors has open floor beside it (room) or is pinched by walls (corridor).
+  // Identifies the side of a door that opens into the wider room rather than the corridor.
   static Direction FindDoorRoomSide(TileType[,] map, int x, int y, Direction floors, int width, int height)
   {
     foreach (NeighborOffset offset in CardinalOffsets)
@@ -138,6 +134,7 @@ public static class DungeonMetadataBuilder
     return Direction.None;
   }
 
+  // Returns grid offsets perpendicular to a cardinal direction.
   static (int Dx, int Dy)[] GetPerpendicularOffsets(Direction cardinalDirection)
   {
     if (cardinalDirection == Direction.North || cardinalDirection == Direction.South)
@@ -148,6 +145,7 @@ public static class DungeonMetadataBuilder
     return new[] { (0, 1), (0, -1) };
   }
 
+  // Tests the eight neighbouring cells for floor so isolated walls can become empty space.
   static bool IsNearFloor(TileType[,] map, int x, int y, int width, int height)
   {
     foreach ((int dx, int dy) in EightWayOffsets)
@@ -161,6 +159,7 @@ public static class DungeonMetadataBuilder
     return false;
   }
 
+  // Reads a neighbour and treats coordinates outside the grid as walls.
   static TileType GetNeighborTileType(TileType[,] map, int x, int y, int width, int height)
   {
     if (x < 0 || y < 0 || x >= width || y >= height)

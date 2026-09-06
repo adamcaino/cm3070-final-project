@@ -4,11 +4,7 @@ using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Owns pause state for the whole game: toggles Time.timeScale, disables the Player action map so
-/// gameplay input can't leak through while paused, and swaps between the pause and options panels.
-/// Lives on an always-active GameObject so its Pause input keeps firing while the menu itself is hidden.
-/// </summary>
+// Owns pause state, player input locking, panel switching, and the quit-to-menu transition.
 [RequireComponent(typeof(AudioSource))]
 public class PauseMenuController : MonoBehaviour
 {
@@ -40,6 +36,7 @@ public class PauseMenuController : MonoBehaviour
 
   public bool IsPaused { get; private set; }
 
+  // Caches audio and initializes the hidden menu and locked cursor state.
   void Awake()
   {
     audioSource = GetComponent<AudioSource>();
@@ -47,6 +44,7 @@ public class PauseMenuController : MonoBehaviour
     SetCursorLocked(true);
   }
 
+  // Enables the pause action and subscribes to its callback.
   void OnEnable()
   {
     if (pauseAction == null) return;
@@ -55,6 +53,7 @@ public class PauseMenuController : MonoBehaviour
     pauseAction.action.performed += HandlePausePressed;
   }
 
+  // Removes the pause callback and disables the pause action.
   void OnDisable()
   {
     if (pauseAction == null) return;
@@ -63,6 +62,7 @@ public class PauseMenuController : MonoBehaviour
     pauseAction.action.Disable();
   }
 
+  // Toggles between paused and resumed gameplay.
   void HandlePausePressed(InputAction.CallbackContext context)
   {
     if (IsPaused)
@@ -75,6 +75,7 @@ public class PauseMenuController : MonoBehaviour
     }
   }
 
+  // Stops time, disables player controls, opens the menu, and plays its sound.
   void Pause()
   {
     IsPaused = true;
@@ -85,6 +86,7 @@ public class PauseMenuController : MonoBehaviour
     PlayClip(menuOpenClip);
   }
 
+  // Restores time, player controls, cursor lock, and gameplay menu visibility.
   public void Resume()
   {
     IsPaused = false;
@@ -95,18 +97,21 @@ public class PauseMenuController : MonoBehaviour
     PlayClip(menuCloseClip);
   }
 
+  // Replaces the pause panel with the options panel.
   public void OpenOptions()
   {
     pausePanel.SetActive(false);
     optionsPanel.SetActive(true);
   }
 
+  // Replaces the options panel with the pause panel.
   public void CloseOptions()
   {
     optionsPanel.SetActive(false);
     pausePanel.SetActive(true);
   }
 
+  // Starts the audio, screen, and scene transition back to the main menu.
   public void QuitToMenu()
   {
     if (isTransitioning) return;
@@ -118,6 +123,7 @@ public class PauseMenuController : MonoBehaviour
     StartCoroutine(QuitToMenuRoutine());
   }
 
+  // Fades audio and screen before loading the main menu scene.
   IEnumerator QuitToMenuRoutine()
   {
     float savedMasterVolume = AudioMixerVolume.GetSaved(AudioMixerVolume.MasterParam);
@@ -136,6 +142,7 @@ public class PauseMenuController : MonoBehaviour
     SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
   }
 
+  // Interpolates the saved master volume without relying on game time scale.
   IEnumerator FadeAudio(float from, float to, float duration)
   {
     float elapsed = 0f;
@@ -150,6 +157,7 @@ public class PauseMenuController : MonoBehaviour
     AudioMixerVolume.SetRuntime(mixer, AudioMixerVolume.MasterParam, to);
   }
 
+  // Shows or hides the pause background and panels.
   void SetMenuVisible(bool visible)
   {
     background.SetActive(visible);
@@ -157,6 +165,7 @@ public class PauseMenuController : MonoBehaviour
     optionsPanel.SetActive(false);
   }
 
+  // Enables or disables the configured player action map.
   void SetPlayerControlsEnabled(bool isEnabled)
   {
     InputActionMap map = playerControls != null ? playerControls.FindActionMap(playerActionMapName) : null;
@@ -172,12 +181,14 @@ public class PauseMenuController : MonoBehaviour
     }
   }
 
+  // Applies the cursor lock and visibility state for gameplay or menus.
   void SetCursorLocked(bool locked)
   {
     Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
     Cursor.visible = !locked;
   }
 
+  // Plays a menu sound when a clip is configured.
   void PlayClip(AudioClip clip)
   {
     if (clip == null) return;

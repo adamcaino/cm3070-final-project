@@ -2,13 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Shows Alert_Dot_White above every enemy TargetLockController currently considers a lock-on
-/// candidate (in range, in the lock cone, unobstructed) and Alert_Dot_Red above the locked target.
-/// Lives in the UI scene as a screen-space overlay child; repositions icons every LateUpdate by
-/// projecting each candidate's world position through the main camera. White icons are pooled since
-/// the candidate set size changes frame to frame; the red icon is a single reused instance.
-/// </summary>
+// Displays pooled candidate icons and a single locked-target icon in the screen-space UI overlay.
 [RequireComponent(typeof(RectTransform))]
 public class TargetLockIconController : MonoBehaviour
 {
@@ -27,26 +21,31 @@ public class TargetLockIconController : MonoBehaviour
   readonly Queue<RectTransform> whitePool = new Queue<RectTransform>();
   readonly List<Health> staleHealth = new List<Health>();
 
+  // Caches the overlay RectTransform used to parent and position lock-on icons.
   void Awake()
   {
     selfRect = GetComponent<RectTransform>();
   }
 
+  // Subscribes to dungeon readiness so lock-on references are resolved after generation.
   void OnEnable()
   {
     DungeonReadySignal.Raised += HandleDungeonReady;
   }
 
+  // Removes the dungeon readiness subscription.
   void OnDisable()
   {
     DungeonReadySignal.Raised -= HandleDungeonReady;
   }
 
+  // Resolves the player lock controller and creates the reusable locked-target icon.
   void HandleDungeonReady()
   {
     RefreshPlayerLockController();
   }
 
+  // Finds the player controller, camera, and red locked-target icon.
   void RefreshPlayerLockController()
   {
     GameObject player = GameObject.FindGameObjectWithTag(PLAYERTAG);
@@ -74,6 +73,7 @@ public class TargetLockIconController : MonoBehaviour
     }
   }
 
+  // Updates the locked and candidate icon positions after camera movement.
   void LateUpdate()
   {
     if (mainCamera == null) return;
@@ -82,6 +82,7 @@ public class TargetLockIconController : MonoBehaviour
     UpdateWhiteIcons();
   }
 
+  // Shows and positions the red icon for the current locked target.
   void UpdateRedIcon()
   {
     if (!lockController.IsLocked)
@@ -96,6 +97,7 @@ public class TargetLockIconController : MonoBehaviour
     PositionIcon(redIcon, lockController.LockedTarget);
   }
 
+  // Synchronizes pooled white icons with the current range candidate set.
   void UpdateWhiteIcons()
   {
     Transform lockedTarget = lockController.LockedTarget;
@@ -135,6 +137,7 @@ public class TargetLockIconController : MonoBehaviour
     }
   }
 
+  // Projects a world target into overlay coordinates and hides it when behind the camera.
   void PositionIcon(RectTransform icon, Transform target)
   {
     Vector3 worldPosition = target.position + (Vector3.up * worldHeightOffset);
@@ -151,6 +154,7 @@ public class TargetLockIconController : MonoBehaviour
     icon.gameObject.SetActive(true);
   }
 
+  // Reuses a pooled icon or instantiates a new white candidate icon.
   RectTransform GetFromPool()
   {
     if (whitePool.Count > 0)
@@ -161,6 +165,7 @@ public class TargetLockIconController : MonoBehaviour
     return Instantiate(whiteIconPrefab, selfRect).GetComponent<RectTransform>();
   }
 
+  // Hides and stores a candidate icon for later reuse.
   void ReturnToPool(RectTransform icon)
   {
     icon.gameObject.SetActive(false);

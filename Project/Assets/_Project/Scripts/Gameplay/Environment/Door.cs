@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+// Opens and closes a rotating door in response to trigger events and lock state changes.
 public class Door : MonoBehaviour, ITriggerable
 {
   [Header("References")]
@@ -25,6 +26,7 @@ public class Door : MonoBehaviour, ITriggerable
 
   public bool IsLocked => isLocked;
 
+  // Caches the audio source and records the door's closed rotation.
   void Awake()
   {
     audioSource = GetComponent<AudioSource>();
@@ -33,6 +35,7 @@ public class Door : MonoBehaviour, ITriggerable
     targetRotation = closedRotation;
   }
 
+  // Updates the lock state and closes the door when locking it.
   public void SetLocked(bool locked)
   {
     if (isLocked == locked) return;
@@ -45,6 +48,7 @@ public class Door : MonoBehaviour, ITriggerable
     }
   }
 
+  // Opens the door when it is closed and unlocked.
   public void OnTriggered(Vector3 sourcePosition)
   {
     if (isOpen || isLocked) return;
@@ -52,6 +56,7 @@ public class Door : MonoBehaviour, ITriggerable
     OpenDoor(sourcePosition);
   }
 
+  // Calculates the swing direction from the player position and starts opening the door.
   void OpenDoor(Vector3 playerPosition)
   {
     isOpen = true;
@@ -61,6 +66,7 @@ public class Door : MonoBehaviour, ITriggerable
     PlaySFX(openSFX);
   }
 
+  // Sets the closed rotation as the target and starts closing the door.
   void CloseDoor()
   {
     isOpen = false;
@@ -70,6 +76,7 @@ public class Door : MonoBehaviour, ITriggerable
     PlaySFX(closeSFX);
   }
 
+  // Replaces any active rotation coroutine with a new one.
   void Rotate()
   {
     if (rotateCoroutine != null)
@@ -80,6 +87,7 @@ public class Door : MonoBehaviour, ITriggerable
     rotateCoroutine = StartCoroutine(CoroutineRotate());
   }
 
+  // Plays the supplied door sound when both the clip and audio source are available.
   void PlaySFX(AudioClip clip)
   {
     if (clip != null && audioSource != null)
@@ -88,6 +96,7 @@ public class Door : MonoBehaviour, ITriggerable
     }
   }
 
+  // Determines which side of the door should swing toward the player.
   float GetSwingSign(Vector3 playerPosition)
   {
     Vector3 toPlayer = playerPosition - transform.position;
@@ -100,6 +109,7 @@ public class Door : MonoBehaviour, ITriggerable
     return invertSwingDirection ? -sign : sign;
   }
 
+  // Rotates the door toward its target until the remaining angle is negligible.
   IEnumerator CoroutineRotate()
   {
     while (Quaternion.Angle(door.transform.rotation, targetRotation) > 0.01f)

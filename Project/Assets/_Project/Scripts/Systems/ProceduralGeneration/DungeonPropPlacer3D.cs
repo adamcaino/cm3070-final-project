@@ -1,13 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Sparse decoration pass. Run after DungeonTilePlacer3D has generated the tile layout: walks the same
-/// TileMetadata grid and, for eligible Wall tiles (a cardinal Floors direction), rolls a seeded chance
-/// to spawn a prop facing the same way the wall itself does, placed exactly on-grid to stay aligned
-/// with wall-mounted art. A cell adjacent to an already-placed prop is skipped, so props don't cluster
-/// shoulder-to-shoulder.
-/// </summary>
+// Places seeded wall props on eligible metadata cells after 3D tiles have been generated.
+// Adjacent occupied cells are skipped to keep props separated.
 public class DungeonPropPlacer3D : MonoBehaviour
 {
   const Direction CardinalDirections = Direction.North | Direction.East | Direction.South | Direction.West;
@@ -21,6 +16,7 @@ public class DungeonPropPlacer3D : MonoBehaviour
   readonly HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();
 
   [ContextMenu("Generate")]
+  // Reads generated metadata, resets prior props, and performs the seeded wall-prop pass.
   public void Generate()
   {
     if (sourceGenerator == null || tilePlacer == null || propSet == null)
@@ -57,6 +53,7 @@ public class DungeonPropPlacer3D : MonoBehaviour
     }
   }
 
+  // Places one eligible wall prop when the cell is not adjacent to an existing prop.
   void TryPlaceProp(TileMetadata tile, int x, int y, float tileSize, float xOffset, float zOffset)
   {
     Vector2Int cell = new Vector2Int(x, y);
@@ -77,6 +74,7 @@ public class DungeonPropPlacer3D : MonoBehaviour
     occupiedCells.Add(cell);
   }
 
+  // Applies wall eligibility and chance rules before selecting a seeded prop variant and rotation.
   GameObject TryGetWallProp(TileMetadata tile, out Quaternion rotation)
   {
     rotation = Quaternion.identity;
@@ -100,6 +98,7 @@ public class DungeonPropPlacer3D : MonoBehaviour
     return propSet.wallProps[propRandom.Next(propSet.wallProps.Length)];
   }
 
+  // Tests the surrounding 3x3 cell neighbourhood for an existing prop.
   bool IsNearOccupiedCell(Vector2Int cell)
   {
     for (int dx = -1; dx <= 1; dx++)
@@ -116,6 +115,7 @@ public class DungeonPropPlacer3D : MonoBehaviour
     return false;
   }
 
+  // Finds or creates the parent transform for generated props.
   void EnsureGeneratedRoot()
   {
     if (generatedRoot != null)
@@ -136,6 +136,7 @@ public class DungeonPropPlacer3D : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Removes generated props from the scene using editor-safe or runtime destruction.
   public void Clear()
   {
     if (generatedRoot == null)

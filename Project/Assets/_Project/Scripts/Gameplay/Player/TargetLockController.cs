@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 
 
 
+// Finds, selects, validates, and cycles targets within the player's lock-on view.
 public class TargetLockController : MonoBehaviour
 {
   [Header("Input")]
@@ -47,16 +48,19 @@ public class TargetLockController : MonoBehaviour
   public event Action<Transform> OnLockOn;
   public event Action OnLockOff;
 
+  // Resolves the camera reference used by target selection.
   void Awake()
   {
     RefreshRuntimeReferences();
   }
 
+  // Refreshes the camera reference after runtime player setup.
   public void RefreshRuntimeReferences()
   {
     cameraTransform = Camera.main != null ? Camera.main.transform : null;
   }
 
+  // Enables lock and cycle input actions and subscribes to their callbacks.
   void OnEnable()
   {
     if (lockTargetAction != null)
@@ -72,6 +76,7 @@ public class TargetLockController : MonoBehaviour
     }
   }
 
+  // Removes input callbacks and disables lock and cycle actions.
   void OnDisable()
   {
     if (lockTargetAction != null)
@@ -87,12 +92,14 @@ public class TargetLockController : MonoBehaviour
     }
   }
 
+  // Refreshes the soft target and validates the current locked target.
   void Update()
   {
     RefreshSoftTarget();
     ValidateLockedTarget();
   }
 
+  // Finds the nearest valid candidate and raises the soft-target event when it changes.
   void RefreshSoftTarget()
   {
     Health nearest = FindNearestCandidate();
@@ -106,6 +113,7 @@ public class TargetLockController : MonoBehaviour
     OnSoftTargetChanged?.Invoke(SoftTarget);
   }
 
+  // Unlocks when the target dies or moves beyond the configured unlock range.
   void ValidateLockedTarget()
   {
     if (!IsLocked)
@@ -126,6 +134,7 @@ public class TargetLockController : MonoBehaviour
     }
   }
 
+  // Returns the nearest valid target within the lock range.
   Health FindNearestCandidate()
   {
     CollectCandidates(candidateBuffer, lockRange);
@@ -148,6 +157,7 @@ public class TargetLockController : MonoBehaviour
     return nearest;
   }
 
+  // Fills a result set with living targets inside the range and line of sight.
   void CollectCandidates(HashSet<Health> results, float range)
   {
     results.Clear();
@@ -174,6 +184,7 @@ public class TargetLockController : MonoBehaviour
     }
   }
 
+  // Tests whether a candidate lies inside the camera-relative lock cone.
   bool IsWithinLockCone(Transform candidate)
   {
     Vector3 cameraForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
@@ -186,6 +197,7 @@ public class TargetLockController : MonoBehaviour
     return Vector3.Angle(cameraForward, toCandidate) <= maxLockAngle;
   }
 
+  // Tests whether an obstacle blocks the player's view of a candidate.
   bool HasLineOfSight(Transform candidate)
   {
     Vector3 eyePosition = transform.position + (Vector3.up * eyeHeight);
@@ -193,6 +205,7 @@ public class TargetLockController : MonoBehaviour
     return !Physics.Raycast(eyePosition, toCandidate.normalized, toCandidate.magnitude, obstacleMask, QueryTriggerInteraction.Ignore);
   }
 
+  // Toggles lock-on for the soft target when the lock action is pressed.
   void HandleLockPressed(InputAction.CallbackContext context)
   {
     if (IsLocked)
@@ -205,6 +218,7 @@ public class TargetLockController : MonoBehaviour
     }
   }
 
+  // Locks the soft target or cycles through candidates from the axis input.
   void HandleCyclePressed(InputAction.CallbackContext context)
   {
     if (!IsLocked)
@@ -226,6 +240,7 @@ public class TargetLockController : MonoBehaviour
     CycleTarget(direction > 0f ? 1 : -1);
   }
 
+  // Sorts candidates by signed camera angle and selects the next target.
   void CycleTarget(int direction)
   {
     CollectCandidates(cycleCandidateBuffer, unlockRange);
@@ -252,6 +267,7 @@ public class TargetLockController : MonoBehaviour
     LockOn(cycleBuffer[nextIndex].health);
   }
 
+  // Stores the selected target and raises the lock-on event.
   void LockOn(Health health)
   {
     lockedHealth = health;
@@ -259,6 +275,7 @@ public class TargetLockController : MonoBehaviour
     OnLockOn?.Invoke(LockedTarget);
   }
 
+  // Clears the selected target and raises the lock-off event.
   void Unlock()
   {
     lockedHealth = null;
@@ -266,6 +283,7 @@ public class TargetLockController : MonoBehaviour
     OnLockOff?.Invoke();
   }
 
+  // Draws the lock range and current soft and locked targets in the editor.
   void OnDrawGizmosSelected()
   {
     Gizmos.color = Color.cyan;

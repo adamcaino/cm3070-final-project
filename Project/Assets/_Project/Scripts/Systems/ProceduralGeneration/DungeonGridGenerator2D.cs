@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 
+// Defines the shared seeded grid lifecycle used by 2D dungeon generators.
+// Subclasses provide the tile algorithm; this class builds metadata and renders the result.
 public abstract class DungeonGridGenerator2D : MonoBehaviour
 {
   [Header("Grid Size")]
@@ -33,6 +35,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   public int LastUsedSeed { get; private set; }
   public TileMetadata[,] LastMetadata { get; private set; }
 
+  // Optionally runs the initial generation pass when the scene starts.
   protected virtual void Start()
   {
     if (generateOnStart)
@@ -41,6 +44,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     }
   }
 
+  // Keeps grid and visualisation values within the minimum ranges required by generation.
   protected virtual void OnValidate()
   {
     gridWidth = Mathf.Max(16, gridWidth);
@@ -49,12 +53,14 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   }
 
   [ContextMenu("Generate")]
+  // Selects either a fresh or fixed seed and starts a generation pass.
   public void Generate()
   {
     int seed = randomizeSeed ? Environment.TickCount : fixedSeed;
     Generate(seed);
   }
 
+  // Clears previous output, builds the tile map, derives metadata, and renders the 2D result.
   public void Generate(int seed)
   {
     Clear();
@@ -71,6 +77,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   }
 
   [ContextMenu("Regenerate Using Last Seed")]
+  // Rebuilds the map with the last generated seed, or the configured fixed seed if none exists.
   public void RegenerateUsingLastSeed()
   {
     int seed = hasGeneratedAtLeastOnce ? LastUsedSeed : fixedSeed;
@@ -78,6 +85,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
   }
 
   [ContextMenu("Clear")]
+  // Removes generated tile objects while preserving the generator component and settings.
   public void Clear()
   {
     if (generatedRoot == null)
@@ -110,8 +118,10 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     }
   }
 
+  // Produces the generator-specific tile map for the supplied seed.
   protected abstract TileType[,] BuildMap(int seed);
 
+  // Creates a grid initialized to one tile type for use as a generator's working map.
   protected TileType[,] CreateFilledMap(TileType fillValue)
   {
     TileType[,] map = new TileType[gridWidth, gridHeight];
@@ -127,6 +137,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     return map;
   }
 
+  // Assigns a tile only when the coordinate lies inside the configured grid.
   protected void SetTile(TileType[,] map, int x, int y, TileType tileType)
   {
     if (!IsInsideMap(x, y))
@@ -137,6 +148,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     map[x, y] = tileType;
   }
 
+  // Reads a tile and treats out-of-bounds coordinates as walls.
   protected TileType GetTile(TileType[,] map, int x, int y)
   {
     if (!IsInsideMap(x, y))
@@ -147,11 +159,13 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     return map[x, y];
   }
 
+  // Tests whether a coordinate belongs to the configured grid.
   protected bool IsInsideMap(int x, int y)
   {
     return x >= 0 && y >= 0 && x < gridWidth && y < gridHeight;
   }
 
+  // Finds or creates the transform that owns generated 2D tile objects.
   void EnsureGeneratedRoot()
   {
     if (generatedRoot != null)
@@ -172,6 +186,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     generatedRoot = root.transform;
   }
 
+  // Converts non-empty metadata cells into positioned and coloured SpriteRenderer objects.
   void RenderTileMap(TileMetadata[,] tileMap)
   {
     EnsureGeneratedRoot();
@@ -202,6 +217,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     }
   }
 
+  // Maps a tile type to its configured visualisation colour.
   Color GetColor(TileType tile)
   {
     switch (tile)
@@ -217,6 +233,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     }
   }
 
+  // Selects the draw order that keeps walls and doors visible over floor tiles.
   int GetSortingOrder(TileType tile)
   {
     switch (tile)
@@ -230,6 +247,7 @@ public abstract class DungeonGridGenerator2D : MonoBehaviour
     }
   }
 
+  // Creates the shared one-pixel sprite used to render every generated tile.
   static Sprite GetOrCreateTileSprite()
   {
     if (cachedTileSprite != null)

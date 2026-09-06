@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 2D proof-of-concept BSP dungeon generator for comparing room-based procedural generation.
-/// Grey tiles are floor, black tiles are walls, and red tiles indicate door positions.
-/// </summary>
+// 2D proof-of-concept BSP dungeon generator for comparing room-based procedural generation.
+// Grey tiles are floor, black tiles are walls, and red tiles indicate door positions.
 public class BSPDungeonGenerator : DungeonGridGenerator2D
 {
   [Header("BSP Settings")]
@@ -34,6 +32,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   // RoomPadding from minCorridorLength guarantees that stays >= minCorridorLength.
   int RoomPadding => Mathf.Max(1, Mathf.CeilToInt((minCorridorLength + 2) / 2f));
 
+  // Clamps BSP and corridor settings so recursive splitting and room placement remain valid.
   protected override void OnValidate()
   {
     base.OnValidate();
@@ -45,6 +44,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     corridorWidth = Mathf.Max(1, corridorWidth);
   }
 
+  // Builds the seeded BSP tree, carves rooms and corridors, seals unintended wall breaches, and assigns room roles.
   protected override TileType[,] BuildMap(int seed)
   {
     System.Random random = new System.Random(seed);
@@ -66,6 +66,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return map;
   }
 
+  // Recursively divides an area into BSP leaves until depth or minimum leaf dimensions stop splitting.
   BspNode SplitRecursively(RectInt area, int depth, System.Random random)
   {
     BspNode node = new BspNode(area);
@@ -107,6 +108,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return node;
   }
 
+  // Chooses a split axis from the available dimensions and the current area's aspect ratio.
   bool ChooseSplitOrientation(RectInt area, bool canSplitHorizontally, bool canSplitVertically, System.Random random)
   {
     if (!canSplitHorizontally)
@@ -133,6 +135,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return random.NextDouble() > 0.5;
   }
 
+  // Traverses BSP leaves, creates a padded random room in each leaf, and marks its floor tiles.
   void CreateRooms(BspNode node, System.Random random, TileType[,] map)
   {
     if (node == null)
@@ -196,6 +199,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
+  // Returns the wall-ring cells surrounding a room, including its four outside corners.
   static List<Vector2Int> GetRoomPerimeterCells(RectInt bounds)
   {
     List<Vector2Int> cells = new List<Vector2Int>();
@@ -242,6 +246,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
+  // Connects the closest room pair from each pair of sibling BSP branches.
   void ConnectSiblingRooms(BspNode node, System.Random random, TileType[,] map)
   {
     if (node == null || node.IsLeaf)
@@ -289,6 +294,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     TryPlaceDoorAtCorridorBoundary(rightRoom, corridorPath, false, map);
   }
 
+  // Tests whether a corridor path would cross a wall ring belonging to another room.
   bool IsPathBlocked(List<Vector2Int> path, int allowedRoomA, int allowedRoomB)
   {
     foreach (Vector2Int cell in path)
@@ -302,6 +308,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return false;
   }
 
+  // Finds the pair of rooms with the smallest Manhattan centre distance across two BSP branches.
   bool TryFindClosestRoomPair(BspNode leftNode, BspNode rightNode, out RectInt leftRoom, out int leftIndex, out RectInt rightRoom, out int rightIndex)
   {
     List<BspNode> leftRooms = new List<BspNode>();
@@ -346,6 +353,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return true;
   }
 
+  // Flattens all rooms below a BSP node into a collection used for pair selection.
   void CollectRooms(BspNode node, List<BspNode> rooms)
   {
     if (node == null)
@@ -373,6 +381,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   // common case), the clamp and the extra segment are no-ops and the path stays a simple 2-segment L.
   const int CorridorTurnClearance = 1;
 
+  // Creates a corridor path that travels horizontally first and vertically second, with a cleared elbow.
   List<Vector2Int> BuildHorizontalThenVerticalPath(Vector2Int start, Vector2Int end, RectInt sourceRoom, RectInt destRoom)
   {
     int elbowX = ChooseClearedElbow(start.x, end.x, sourceRoom.xMin, sourceRoom.xMax, destRoom.xMin, destRoom.xMax, GridWidth);
@@ -384,6 +393,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return path;
   }
 
+  // Creates a corridor path that travels vertically first and horizontally second, with a cleared elbow.
   List<Vector2Int> BuildVerticalThenHorizontalPath(Vector2Int start, Vector2Int end, RectInt sourceRoom, RectInt destRoom)
   {
     int elbowY = ChooseClearedElbow(start.y, end.y, sourceRoom.yMin, sourceRoom.yMax, destRoom.yMin, destRoom.yMax, GridHeight);
@@ -405,6 +415,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   // Finally clamped to the grid itself - a room near the map edge can have nowhere to push the clearance
   // into, and an elbow that lands outside the grid isn't just unclamped, it's silently uncarvable: every
   // cell beyond it gets dropped by the bounds check during carving, stranding the corridor at the door.
+  // Selects an elbow coordinate that clears the source wall and avoids entering the destination early.
   int ChooseClearedElbow(int startCoord, int endCoord, int sourceMin, int sourceMax, int destMin, int destMax, int gridLength)
   {
     if (endCoord > startCoord)
@@ -444,6 +455,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return endCoord;
   }
 
+  // Appends every grid cell on an axis-aligned segment without duplicating its join cell.
   void AddLineToPath(List<Vector2Int> path, Vector2Int from, Vector2Int to)
   {
     Vector2Int current = from;
@@ -464,6 +476,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
+  // Applies the corridor brush to every cell in the selected route.
   void CarveCorridorPath(List<Vector2Int> corridorPath, TileType[,] map, int allowedRoomA, int allowedRoomB)
   {
     foreach (Vector2Int cell in corridorPath)
@@ -472,6 +485,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
+  // Carves a square brush around a path cell while protecting unrelated room walls and doors.
   void CarveBrush(Vector2Int center, TileType[,] map, int allowedRoomA, int allowedRoomB)
   {
     int negativeOffset = corridorWidth / 2;
@@ -501,6 +515,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   // untouched, so a corridor can never open a gap into a room it isn't meant to connect to. A cell can
   // belong to more than one room's ring when rooms sit close together, so this blocks as soon as ANY
   // owner of the cell falls outside the allowed pair - not just when the sole owner does.
+  // Reports whether a cell belongs to any room perimeter outside the corridor's allowed pair.
   bool IsOtherRoomsWall(Vector2Int cell, int allowedRoomA, int allowedRoomB)
   {
     if (!roomPerimeterOwners.TryGetValue(cell, out List<int> owners))
@@ -519,6 +534,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return false;
   }
 
+  // Finds where a route crosses a room boundary and marks that crossing as its doorway.
   void TryPlaceDoorAtCorridorBoundary(RectInt room, List<Vector2Int> corridorPath, bool fromStart, TileType[,] map)
   {
     if (corridorPath == null || corridorPath.Count < 2)
@@ -561,6 +577,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   // had already been carved to Floor by that point, so suppressing the *marking* left a silent gap
   // (Floor, no door, no wall) instead of actually preventing anything. Two doors sitting side by side is
   // a much smaller problem than an invisible hole in a wall, so this always marks the real crossing.
+  // Converts a valid room-to-corridor crossing into a door tile.
   void PlaceDoorIfConnected(TileType[,] map, Vector2Int roomCell, Vector2Int corridorCell)
   {
     if (!IsInsideMap(roomCell.x, roomCell.y) || !IsInsideMap(corridorCell.x, corridorCell.y))
@@ -575,11 +592,13 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     }
   }
 
+  // Tests whether a grid cell lies within a room's floor rectangle.
   bool IsInsideRoom(RectInt room, Vector2Int cell)
   {
     return cell.x >= room.xMin && cell.x < room.xMax && cell.y >= room.yMin && cell.y < room.yMax;
   }
 
+  // Returns the integer grid centre used for room graph distances and placements.
   Vector2Int GetRoomCenter(RectInt room)
   {
     return new Vector2Int(room.xMin + (room.width / 2), room.yMin + (room.height / 2));
@@ -589,6 +608,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
   // straight-line distance), so it's guaranteed to be the most "out of the way" room reachable from the
   // start - which reads as "end of the level" regardless of the BSP tree's actual shape. Loot rooms are
   // picked from whatever's left over, so they never double up as the spawn or boss room.
+  // Selects spawn, graph-farthest boss, and seeded loot rooms and publishes their metadata.
   void AssignRoomRoles(System.Random random)
   {
     LastRooms = null;
@@ -639,6 +659,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     LastRooms = rooms;
   }
 
+  // Computes unweighted room-graph distances from one starting room using breadth-first search.
   int[] ComputeRoomDistances(int startIndex)
   {
     int[] distances = new int[roomBounds.Count];
@@ -670,6 +691,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return distances;
   }
 
+  // Returns the room with the greatest graph distance while excluding the starting room.
   int FindFarthestRoom(int[] distances, int excludeIndex)
   {
     int bestIndex = excludeIndex;
@@ -689,6 +711,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
     return bestIndex;
   }
 
+  // Selects distinct eligible rooms for loot without replacing spawn or boss roles.
   List<int> ChooseLootRooms(int[] distances, int spawnIndex, int bossIndex, System.Random random)
   {
     List<int> candidates = new List<int>();
@@ -727,6 +750,7 @@ public class BSPDungeonGenerator : DungeonGridGenerator2D
 
     public bool IsLeaf => Left == null && Right == null;
 
+    // Creates a leaf node representing one candidate BSP area.
     public BspNode(RectInt area)
     {
       Area = area;

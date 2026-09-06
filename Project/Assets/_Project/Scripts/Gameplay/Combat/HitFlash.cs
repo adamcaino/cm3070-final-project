@@ -22,6 +22,7 @@ public class HitFlash : MonoBehaviour
   Coroutine activeFlash;
   Dictionary<Color, Texture2D> flashTextures;
 
+  // Caches the health source, affected renderers, reusable property block, and texture cache.
   void Awake()
   {
     health = GetComponent<Health>();
@@ -32,6 +33,7 @@ public class HitFlash : MonoBehaviour
     flashTextures = new Dictionary<Color, Texture2D>();
   }
 
+  // Releases the temporary solid-colour textures created for flash effects.
   void OnDestroy()
   {
     foreach (Texture2D texture in flashTextures.Values)
@@ -40,6 +42,7 @@ public class HitFlash : MonoBehaviour
     }
   }
 
+  // Subscribes to health events when the component becomes active.
   void OnEnable()
   {
     if (health == null) return;
@@ -48,6 +51,7 @@ public class HitFlash : MonoBehaviour
     health.OnHealed += HandleHealed;
   }
 
+  // Removes the health event subscriptions when the component becomes inactive.
   void OnDisable()
   {
     if (health == null) return;
@@ -56,10 +60,13 @@ public class HitFlash : MonoBehaviour
     health.OnHealed -= HandleHealed;
   }
 
+  // Starts a damage-colour flash at the reported hit location.
   void HandleDamaged(Vector3 hitPoint) => Flash(damageColour);
 
+  // Starts a healing-colour flash at the reported healing location.
   void HandleHealed(Vector3 healPoint) => Flash(healColour);
 
+  // Replaces any active flash with a new flash using the supplied colour.
   public void Flash(Color colour)
   {
     if (activeFlash != null)
@@ -70,6 +77,7 @@ public class HitFlash : MonoBehaviour
     activeFlash = StartCoroutine(FlashAndFadeRoutine(colour, GetOrCreateTexture(colour)));
   }
 
+  // Stops the active flash and clears temporary renderer property overrides.
   public void Cancel()
   {
     if (activeFlash != null)
@@ -84,6 +92,7 @@ public class HitFlash : MonoBehaviour
     }
   }
 
+  // Retrieves a cached colour texture or creates one for a new flash colour.
   Texture2D GetOrCreateTexture(Color colour)
   {
     if (!flashTextures.TryGetValue(colour, out Texture2D texture))
@@ -95,6 +104,7 @@ public class HitFlash : MonoBehaviour
     return texture;
   }
 
+  // Creates a one-pixel texture filled with the supplied colour.
   static Texture2D CreateSolidTexture(Color colour)
   {
     Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false)
@@ -106,6 +116,7 @@ public class HitFlash : MonoBehaviour
     return texture;
   }
 
+  // Applies the flash texture, restores the original texture, and fades the flash colour.
   IEnumerator FlashAndFadeRoutine(Color flashColour, Texture2D flashTexture)
   {
     if (renderers == null || renderers.Length == 0)
@@ -176,11 +187,13 @@ public class HitFlash : MonoBehaviour
     activeFlash = null;
   }
 
+  // Selects the material colour property supported by the renderer's shader.
   static int ColourPropertyId(Material material)
   {
     return material != null && material.HasProperty(BaseColourId) ? BaseColourId : ColorId;
   }
 
+  // Selects the material texture property supported by the renderer's shader.
   static int TexturePropertyId(Material material)
   {
     return material != null && material.HasProperty(BaseMapId) ? BaseMapId : MainTexId;

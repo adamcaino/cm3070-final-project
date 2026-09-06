@@ -1,11 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// Enemy library the enemy placement pass reads from. Every RoomRole.Normal room picks a single prefab
-/// from this array for the whole room (one enemy type per room, no mixing) and spawns however many copies
-/// its floor area calls for. Leave the array empty to fall back to a placeholder primitive of the matching
-/// color, same convention as DungeonTileSet/PropSet/PointOfInterestSet.
-/// </summary>
+// Stores regular and tough enemy prefab variants and the density rules used by enemy placement.
 [CreateAssetMenu(fileName = "EnemySet", menuName = "Dungeon/Enemy Set")]
 public class EnemySet : ScriptableObject
 {

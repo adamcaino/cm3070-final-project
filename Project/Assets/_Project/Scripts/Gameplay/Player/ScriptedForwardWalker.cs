@@ -2,6 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
+// Moves the player forward at a fixed speed for scripted sequences.
 public class ScriptedForwardWalker : MonoBehaviour
 {
   static readonly int XPosParam = Animator.StringToHash("xPos");
@@ -20,6 +21,7 @@ public class ScriptedForwardWalker : MonoBehaviour
 
   public float CurrentSpeed => isWalking ? walkSpeed : 0f;
 
+  // Caches controller and animator components and normalizes the travel direction.
   void Awake()
   {
     controller = GetComponent<CharacterController>();
@@ -27,16 +29,19 @@ public class ScriptedForwardWalker : MonoBehaviour
     normalizedMoveDirection = moveDirection.sqrMagnitude > 0.0001f ? moveDirection.normalized : Vector3.back;
   }
 
+  // Resets vertical velocity when the scripted walker becomes active.
   void OnEnable()
   {
     verticalVelocity = 0f;
   }
 
+  // Enables forward movement for the scripted sequence.
   public void StartWalking()
   {
     isWalking = true;
   }
 
+  // Applies gravity, moves the character, and updates walking animation parameters.
   void Update()
   {
     if (controller.isGrounded && verticalVelocity < 0f)

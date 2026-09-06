@@ -3,12 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Sits on a full-screen Image in the UI scene. Flashes it to damageColour then fades back to
-/// transparent whenever the player takes damage - mirrors HitFlash's hold-then-fade timing, just
-/// driving an Image's alpha instead of a MaterialPropertyBlock.
-/// </summary>
+// Flashes a full-screen Image when the player takes damage, then fades it to transparent.
 [RequireComponent(typeof(Image))]
+// Flashes a full-screen damage colour when the player Health component reports damage.
 public class ScreenDamageFlash : MonoBehaviour
 {
   const string PLAYERTAG = "Player";
@@ -21,18 +18,21 @@ public class ScreenDamageFlash : MonoBehaviour
   Image image;
   Coroutine activeFlash;
 
+  // Caches the Image and starts it transparent.
   void Awake()
   {
     image = GetComponent<Image>();
     SetAlpha(0f);
   }
 
+  // Subscribes to dungeon readiness and attempts to bind the player health component.
   void OnEnable()
   {
     DungeonReadySignal.Raised += HandleDungeonReady;
     RefreshHealthReference(false);
   }
 
+  // Removes readiness and health event subscriptions.
   void OnDisable()
   {
     DungeonReadySignal.Raised -= HandleDungeonReady;
@@ -42,11 +42,13 @@ public class ScreenDamageFlash : MonoBehaviour
     health.OnDamaged -= HandleDamaged;
   }
 
+  // Rebinds the player health reference after the dungeon is generated.
   void HandleDungeonReady()
   {
     RefreshHealthReference(true);
   }
 
+  // Replaces the old health subscription with the current player's health component.
   void RefreshHealthReference(bool logIfMissing)
   {
     // Unsubscribe from old health if it exists
@@ -75,6 +77,7 @@ public class ScreenDamageFlash : MonoBehaviour
     health.OnDamaged += HandleDamaged;
   }
 
+  // Restarts the damage flash coroutine when the player is hit.
   void HandleDamaged(Vector3 _)
   {
     if (activeFlash != null)
@@ -84,6 +87,7 @@ public class ScreenDamageFlash : MonoBehaviour
     activeFlash = StartCoroutine(FlashAndFadeRoutine());
   }
 
+  // Holds the damage colour briefly, then fades the overlay to transparent.
   IEnumerator FlashAndFadeRoutine()
   {
     SetAlpha(damageColour.a);
@@ -106,6 +110,7 @@ public class ScreenDamageFlash : MonoBehaviour
     activeFlash = null;
   }
 
+  // Applies an alpha value to the configured damage colour.
   void SetAlpha(float alpha)
   {
     Color c = damageColour;

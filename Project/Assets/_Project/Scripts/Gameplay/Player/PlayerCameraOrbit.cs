@@ -2,6 +2,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// Applies look input to the gameplay camera and provides runtime target-snap utilities.
 public class PlayerCameraOrbit : MonoBehaviour
 {
   public const string SensitivityPlayerPrefsKey = "MouseSensitivity";
@@ -24,11 +25,13 @@ public class PlayerCameraOrbit : MonoBehaviour
   bool hasSpawnSnapDefaultPositionDamping;
   Coroutine restoreSpawnSnapDampingRoutine;
 
+  // Resolves the gameplay orbital follow during initialization.
   void Awake()
   {
     RefreshRuntimeReferences();
   }
 
+  // Resolves camera components, configures tracking, and refreshes camera targets.
   public void RefreshRuntimeReferences()
   {
     if (orbitalFollow == null)
@@ -58,6 +61,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     }
   }
 
+  // Finds the orbital follow that is not assigned to the player death camera.
   public static CinemachineOrbitalFollow ResolveGameplayOrbitalFollow()
   {
     CinemachineOrbitalFollow[] orbitalFollows = FindObjectsByType<CinemachineOrbitalFollow>(FindObjectsSortMode.None);
@@ -72,6 +76,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     return null;
   }
 
+  // Enables look input and subscribes to death and victory signals.
   void OnEnable()
   {
     lookAction?.action.Enable();
@@ -79,6 +84,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     GameOverSignal.VictoryRaised += HandleVictoryRaised;
   }
 
+  // Disables look input and removes death and victory subscriptions.
   void OnDisable()
   {
     lookAction?.action.Disable();
@@ -86,6 +92,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     GameOverSignal.VictoryRaised -= HandleVictoryRaised;
   }
 
+  // Applies horizontal and vertical look input to the orbital camera axes.
   void Update()
   {
     if (isDead || orbitalFollow == null || lookAction == null)
@@ -103,6 +110,7 @@ public class PlayerCameraOrbit : MonoBehaviour
       orbitalFollow.VerticalAxis.Value + (lookInput.y * verticalSpeed * verticalSign * GetSensitivity()));
   }
 
+  // Disables camera input and the Cinemachine input controller after player death.
   void HandlePlayerDied()
   {
     isDead = true;
@@ -115,6 +123,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     lookAction?.action.Disable();
   }
 
+  // Disables camera input when victory belongs to this scene.
   void HandleVictoryRaised(string sceneName)
   {
     if (sceneName != gameObject.scene.name)
@@ -132,17 +141,20 @@ public class PlayerCameraOrbit : MonoBehaviour
     lookAction?.action.Disable();
   }
 
+  // Reads the saved mouse sensitivity or returns the default value.
   public static float GetSensitivity()
   {
     return PlayerPrefs.GetFloat(SensitivityPlayerPrefsKey, DefaultSensitivity);
   }
 
+  // Clamps and saves the mouse sensitivity value.
   public static void SetSensitivity(float value)
   {
     PlayerPrefs.SetFloat(SensitivityPlayerPrefsKey, Mathf.Clamp(value, 0.1f, 2f));
     PlayerPrefs.Save();
   }
 
+  // Aligns the camera's horizontal axis with the target's yaw.
   public void SnapYawToTarget(Transform target)
   {
     if (orbitalFollow == null || target == null)
@@ -159,6 +171,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     orbitalFollow.HorizontalAxis.Value = orbitalFollow.HorizontalAxis.ClampValue(yaw);
   }
 
+  // Aligns horizontal and vertical camera axes with the target.
   public void SnapToTarget(Transform target)
   {
     if (orbitalFollow == null || target == null)
@@ -170,6 +183,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     orbitalFollow.VerticalAxis.Value = orbitalFollow.VerticalAxis.ClampValue(orbitalFollow.VerticalAxis.Center);
   }
 
+  // Snaps to a target and temporarily removes position damping to prevent camera drift.
   public void SnapImmediatelyToTarget(Transform target)
   {
     if (orbitalFollow == null || target == null)
@@ -203,6 +217,7 @@ public class PlayerCameraOrbit : MonoBehaviour
     restoreSpawnSnapDampingRoutine = StartCoroutine(RestoreSpawnSnapDampingNextFrame());
   }
 
+  // Restores the camera's authored position damping on the frame after a spawn snap.
   System.Collections.IEnumerator RestoreSpawnSnapDampingNextFrame()
   {
     yield return null;

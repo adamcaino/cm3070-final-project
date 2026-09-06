@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+// Provides shared range selection, animation, timeout, and completion behavior for enemy attacks.
 public abstract class AttackBase : MonoBehaviour, IAttack
 {
   static readonly int AttackParam = Animator.StringToHash("attack");
@@ -44,11 +45,13 @@ public abstract class AttackBase : MonoBehaviour, IAttack
   // on an event meant for whichever attack is actually playing.
   protected bool IsExecuting { get; private set; }
 
+  // Caches the optional boss phase controller used to gate the attack.
   protected virtual void Awake()
   {
     phase = GetComponent<BossPhaseController>();
   }
 
+  // Starts one attack execution and schedules a fallback completion if configured.
   public void Execute(EnemyController enemy)
   {
     completedThisExecution = false;
@@ -61,16 +64,20 @@ public abstract class AttackBase : MonoBehaviour, IAttack
     }
   }
 
+  // Implements the attack-specific execution sequence.
   protected abstract void OnExecute(EnemyController enemy);
 
+  // Provides an override point for attacks that need to stop active effects or hitboxes.
   public virtual void Interrupt() { }
 
+  // Completes the attack when its animation event has not arrived before the timeout.
   IEnumerator CompletionTimeoutRoutine()
   {
     yield return new WaitForSeconds(completionTimeout);
     RaiseAttackComplete();
   }
 
+  // Selects the configured animation variant and triggers the enemy attack animation.
   protected void PlayAttackAnimation(EnemyController enemy)
   {
     if (enemy.Animator == null)
@@ -82,6 +89,7 @@ public abstract class AttackBase : MonoBehaviour, IAttack
     enemy.Animator.SetTrigger(AttackParam);
   }
 
+  // Raises the completion event once and cancels the fallback timeout.
   protected void RaiseAttackComplete()
   {
     if (completedThisExecution) return;

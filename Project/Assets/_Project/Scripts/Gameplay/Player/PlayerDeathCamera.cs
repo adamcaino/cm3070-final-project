@@ -26,6 +26,7 @@ public class PlayerDeathCamera : MonoBehaviour
   CinemachineOrbitalFollow orbitalFollow;
   bool isActive;
 
+  // Caches the death camera components and resolves gameplay camera references.
   void Awake()
   {
     deathVcam = GetComponent<CinemachineCamera>();
@@ -33,6 +34,7 @@ public class PlayerDeathCamera : MonoBehaviour
     RefreshRuntimeReferences();
   }
 
+  // Finds the gameplay camera and brain, sets startup priorities, and synchronizes targets.
   public void RefreshRuntimeReferences()
   {
     if (gameplayVcam == null)
@@ -69,16 +71,19 @@ public class PlayerDeathCamera : MonoBehaviour
     SyncPlayerTargets();
   }
 
+  // Subscribes to the immediate player-death signal.
   void OnEnable()
   {
     PlayerDiedSignal.Raised += HandlePlayerDied;
   }
 
+  // Removes the immediate player-death subscription.
   void OnDisable()
   {
     PlayerDiedSignal.Raised -= HandlePlayerDied;
   }
 
+  // Takes camera priority, copies gameplay orbit values, and starts the death view.
   void HandlePlayerDied()
   {
     SyncPlayerTargets();
@@ -114,6 +119,7 @@ public class PlayerDeathCamera : MonoBehaviour
     isActive = true;
   }
 
+  // Assigns the player as the death camera's follow and look-at target.
   void SyncPlayerTargets()
   {
     if (deathVcam == null)
@@ -132,6 +138,7 @@ public class PlayerDeathCamera : MonoBehaviour
     deathVcam.LookAt = player.transform;
   }
 
+  // Advances the death camera's horizontal orbit while the death view is active.
   void Update()
   {
     if (!isActive) return;

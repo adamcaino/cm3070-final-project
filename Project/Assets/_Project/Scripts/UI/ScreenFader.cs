@@ -6,6 +6,7 @@ using UnityEngine.UI;
 // primitive - callers decide when to fade and own the resting state (e.g. authored fully opaque
 // in the Inspector so a scene stays hidden until something explicitly fades it in).
 [RequireComponent(typeof(Image))]
+// Controls a full-screen Image alpha and its raycast blocking state for scene transitions.
 public class ScreenFader : MonoBehaviour
 {
   [SerializeField] Color fadeColour = Color.black;
@@ -13,27 +14,32 @@ public class ScreenFader : MonoBehaviour
   Image image;
   Coroutine activeFade;
 
+  // Caches the Image driven by the fade routines.
   void Awake()
   {
     image = GetComponent<Image>();
   }
 
+  // Starts a fade to opaque and blocks UI raycasts during the fade.
   public Coroutine FadeOutAndStart(float duration)
   {
     return StartFade(FadeOut(duration));
   }
 
+  // Starts a fade to transparent and releases UI raycasts when complete.
   public Coroutine FadeInAndStart(float duration)
   {
     return StartFade(FadeIn(duration));
   }
 
+  // Fades from the current alpha to opaque.
   public IEnumerator FadeOut(float duration)
   {
     SetRaycastBlocking(true);
     yield return FadeAlpha(0f, 1f, duration);
   }
 
+  // Fades from opaque to transparent.
   public IEnumerator FadeIn(float duration)
   {
     SetAlpha(1f);
@@ -41,6 +47,7 @@ public class ScreenFader : MonoBehaviour
     SetRaycastBlocking(false);
   }
 
+  // Stops any previous fade and starts the supplied fade routine.
   Coroutine StartFade(IEnumerator routine)
   {
     if (activeFade != null)
@@ -52,6 +59,7 @@ public class ScreenFader : MonoBehaviour
     return activeFade;
   }
 
+  // Interpolates image alpha over the requested duration.
   IEnumerator FadeAlpha(float from, float to, float duration)
   {
     float elapsed = 0f;
@@ -67,6 +75,7 @@ public class ScreenFader : MonoBehaviour
     activeFade = null;
   }
 
+  // Applies an alpha value while preserving the configured fade colour.
   void SetAlpha(float alpha)
   {
     Color c = fadeColour;
@@ -74,6 +83,7 @@ public class ScreenFader : MonoBehaviour
     image.color = c;
   }
 
+  // Controls whether the fade Image intercepts UI pointer events.
   void SetRaycastBlocking(bool blocking)
   {
     image.raycastTarget = blocking;

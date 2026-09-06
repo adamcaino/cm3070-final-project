@@ -1,12 +1,7 @@
 using UnityEngine;
 
-/// <summary>
-/// Prefab/appearance library the 3D placement pass reads from. Each tile type holds an array of
-/// variants - the placer picks one at random per tile (seeded, so it's reproducible per dungeon seed).
-/// Leave an array empty to fall back to a placeholder primitive of the matching color until real art
-/// exists. All variants of a type are assumed to share the same footprint/pivot convention, since the
-/// pivot offset below is applied uniformly regardless of which variant gets picked.
-/// </summary>
+// Stores prefab variants and placeholder colours used by the 3D tile placement pass.
+// Variant selection is seeded by the generated dungeon seed.
 [CreateAssetMenu(fileName = "DungeonTileSet", menuName = "Dungeon/Tile Set")]
 public class DungeonTileSet : ScriptableObject
 {

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
+// Reads movement input, applies gravity, moves the player, and controls facing direction.
 public class PlayerLocomotion : MonoBehaviour
 {
   [Header("Input")]
@@ -32,18 +33,21 @@ public class PlayerLocomotion : MonoBehaviour
   public float LocalStrafe => effectiveMoveInput.x;
   public float LocalForward => effectiveMoveInput.y;
 
+  // Caches the character controller and resolves camera and target-lock references.
   void Awake()
   {
     controller = GetComponent<CharacterController>();
     RefreshRuntimeReferences();
   }
 
+  // Refreshes the camera and target-lock references after runtime player setup.
   public void RefreshRuntimeReferences()
   {
     cameraTransform = Camera.main != null ? Camera.main.transform : null;
     targetLock = GetComponent<TargetLockController>();
   }
 
+  // Enables movement input and subscribes to target-lock events.
   void OnEnable()
   {
     moveAction?.action.Enable();
@@ -54,6 +58,7 @@ public class PlayerLocomotion : MonoBehaviour
     }
   }
 
+  // Disables movement input and removes target-lock subscriptions.
   void OnDisable()
   {
     moveAction?.action.Disable();
@@ -64,12 +69,14 @@ public class PlayerLocomotion : MonoBehaviour
     }
   }
 
+  // Begins a timed rotation toward a newly selected lock-on target.
   void HandleLockOn(Transform target)
   {
     lockedTurnTimer = 0f;
     lockedTurnStartRotation = transform.rotation;
   }
 
+  // Reads input, calculates movement, applies gravity, and rotates the player.
   void Update()
   {
     moveInput = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
@@ -98,6 +105,7 @@ public class PlayerLocomotion : MonoBehaviour
     }
   }
 
+  // Converts input into camera-relative movement when the player is not locked on.
   Vector3 CalculateMoveDirection()
   {
     if (effectiveMoveInput.sqrMagnitude < 0.0001f)
@@ -124,6 +132,7 @@ public class PlayerLocomotion : MonoBehaviour
     return direction.sqrMagnitude > 1f ? direction.normalized : direction;
   }
 
+  // Converts input into movement relative to the locked target direction.
   Vector3 CalculateLockedMoveDirection(Transform target)
   {
     if (effectiveMoveInput.sqrMagnitude < 0.0001f)
@@ -142,6 +151,7 @@ public class PlayerLocomotion : MonoBehaviour
     return direction.sqrMagnitude > 1f ? direction.normalized : direction;
   }
 
+  // Rotates toward the locked target, smoothing the initial target switch.
   void RotateTowardsTarget(Transform target)
   {
     Vector3 forward = Vector3.ProjectOnPlane(target.position - transform.position, Vector3.up);
@@ -164,6 +174,7 @@ public class PlayerLocomotion : MonoBehaviour
     }
   }
 
+  // Rotates toward the camera's horizontal facing direction.
   void RotateTowardsCamera()
   {
     Transform reference = cameraTransform != null ? cameraTransform : Camera.main != null ? Camera.main.transform : null;
@@ -182,6 +193,7 @@ public class PlayerLocomotion : MonoBehaviour
     transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
   }
 
+  // Maintains grounded velocity or applies downward gravity while airborne.
   void ApplyGravity()
   {
     if (controller.isGrounded && verticalVelocity < 0f)

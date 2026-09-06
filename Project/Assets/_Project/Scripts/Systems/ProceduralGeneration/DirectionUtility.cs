@@ -1,11 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// Shared helpers for turning a Direction flag into world-space facing info, used by both the tile
-/// placer and the prop placer so their rotation conventions stay identical.
-/// </summary>
+// Shared helpers for turning a Direction flag into world-space facing info, used by both the tile
+// placer and the prop placer so their rotation conventions stay identical.
 public static class DirectionUtility
 {
+  // Converts the first supported cardinal flag into its world-space facing vector.
   public static Vector3 GetFacingDirection(Direction direction)
   {
     if ((direction & Direction.North) != Direction.None)
@@ -31,12 +30,14 @@ public static class DirectionUtility
     return Vector3.zero;
   }
 
+  // Converts a direction flag into a world rotation with the selected direction facing forward.
   public static Quaternion GetFacingRotation(Direction direction)
   {
     Vector3 facing = GetFacingDirection(direction);
     return facing == Vector3.zero ? Quaternion.identity : Quaternion.LookRotation(facing, Vector3.up);
   }
 
+  // Returns the first cardinal direction in the fixed North, East, South, West order.
   public static Direction GetFirstCardinal(Direction direction)
   {
     if ((direction & Direction.North) != Direction.None)
@@ -62,6 +63,7 @@ public static class DirectionUtility
     return Direction.None;
   }
 
+  // Returns the opposite direction for a cardinal input.
   public static Direction GetOpposite(Direction cardinalDirection)
   {
     switch (cardinalDirection)
@@ -79,6 +81,7 @@ public static class DirectionUtility
     }
   }
 
+  // Returns the two cardinal directions perpendicular to the supplied cardinal direction.
   public static (Direction PerpendicularA, Direction PerpendicularB) GetPerpendicularCardinals(Direction cardinalDirection)
   {
     return cardinalDirection == Direction.North || cardinalDirection == Direction.South
