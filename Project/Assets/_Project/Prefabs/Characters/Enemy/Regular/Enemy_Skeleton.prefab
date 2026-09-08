@@ -2120,7 +2120,7 @@ PrefabInstance:
       objectReference: {fileID: 8115462907296700936}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -34.86805
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2128,7 +2128,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -30.09301
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6774878380017024973, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2181,13 +2181,14 @@ PrefabInstance:
     - target: {fileID: 7576511953152076312, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: 'attackClips.Array.data[0]'
       value: 
-      objectReference: {fileID: 8300000, guid: 9716ddb0592edba49a2453a5f4374dff, type: 3}
+      objectReference: {fileID: 8300000, guid: 7b133e45492591044bd2d7e9e78f55ba, type: 3}
     - target: {fileID: 8041900046043807537, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: m_PlayOnAwake
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 348267976961546459, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+    - {fileID: 5954340770984124951, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
     m_RemovedGameObjects:
     - {fileID: 4097017796330852306, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
     m_AddedGameObjects:

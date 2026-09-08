@@ -2294,6 +2294,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 00f3b026d06248946815d3b87095c799, type: 2}
+    - target: {fileID: 1725580990138468961, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 2.25
+      objectReference: {fileID: 0}
     - target: {fileID: 3615046428811081116, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
       propertyPath: roamWaitTime
       value: 5
@@ -2370,7 +2374,8 @@ PrefabInstance:
       propertyPath: m_PlayOnAwake
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5954340770984124951, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3503377346613577585, guid: 2184c8f14af572c4f95e322fc80575d2, type: 3}

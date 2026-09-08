@@ -6,8 +6,6 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Health))]
 public class StatusEffectReceiver : MonoBehaviour, IAfflictable
 {
-  const float BurnTickInterval = 1f;
-
   [SerializeField] Color freezeColour = new Color(0.6f, 0.85f, 1f, 1f);
   [SerializeField] GameObject burningEffectPrefab;
   [SerializeField] Vector3 burningEffectScale = new Vector3(0.75f, 0.75f, 0.75f);
@@ -86,7 +84,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     switch (type)
     {
       case AfflictionType.Burn:
-        activeEffect = StartCoroutine(BurnRoutine(duration, magnitude, source));
+        activeEffect = StartCoroutine(BurnRoutine(duration));
         break;
       case AfflictionType.Freeze:
         activeEffect = StartCoroutine(FreezeRoutine(duration));
@@ -94,8 +92,8 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
     }
   }
 
-  // Creates the burn effect and applies periodic damage until its duration expires.
-  IEnumerator BurnRoutine(float duration, int magnitude, GameObject source)
+  // Creates the burn effect and keeps it active for the requested duration.
+  IEnumerator BurnRoutine(float duration)
   {
     if (burningEffectPrefab != null)
     {
@@ -111,20 +109,7 @@ public class StatusEffectReceiver : MonoBehaviour, IAfflictable
       activeBurningEffect.transform.position = GetEffectCenter();
     }
 
-    float elapsed = 0f;
-    while (elapsed < duration)
-    {
-      yield return new WaitForSeconds(BurnTickInterval);
-      elapsed += BurnTickInterval;
-
-      if (health.IsDead)
-      {
-        EndBurn();
-        yield break;
-      }
-
-      health.TakeDamage(magnitude, source, health.transform.position);
-    }
+    yield return new WaitForSeconds(duration);
 
     EndBurn();
     activeEffect = null;
