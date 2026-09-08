@@ -22,6 +22,7 @@ public class BreakableProp : MonoBehaviour
   AudioSource audioSource;
   Collider[] colliders;
   Renderer[] renderers;
+  Renderer[] breakableMeshRenderers;
 
   // Caches the health, audio, collider, and renderer components used during destruction.
   void Awake()
@@ -30,6 +31,9 @@ public class BreakableProp : MonoBehaviour
     audioSource = GetComponent<AudioSource>();
     colliders = GetComponentsInChildren<Collider>();
     renderers = GetComponentsInChildren<Renderer>();
+    breakableMeshRenderers = breakableMesh != null
+      ? breakableMesh.GetComponentsInChildren<Renderer>()
+      : System.Array.Empty<Renderer>();
   }
 
   // Subscribes to the prop's death event when it becomes active.
@@ -61,7 +65,22 @@ public class BreakableProp : MonoBehaviour
   {
     if (breakVfxPrefab == null) return;
 
-    Instantiate(breakVfxPrefab, breakableMesh.position, Quaternion.identity);
+    Instantiate(breakVfxPrefab, GetBreakableMeshCenter(), Quaternion.identity);
+  }
+
+  // Calculates the world-space center of the breakable mesh using renderer bounds.
+  Vector3 GetBreakableMeshCenter()
+  {
+    if (breakableMesh == null) return transform.position;
+    if (breakableMeshRenderers == null || breakableMeshRenderers.Length == 0) return breakableMesh.position;
+
+    Bounds bounds = breakableMeshRenderers[0].bounds;
+    for (int i = 1; i < breakableMeshRenderers.Length; i++)
+    {
+      bounds.Encapsulate(breakableMeshRenderers[i].bounds);
+    }
+
+    return bounds.center;
   }
 
   // Plays the break sound at a random pitch and returns its adjusted playback duration.

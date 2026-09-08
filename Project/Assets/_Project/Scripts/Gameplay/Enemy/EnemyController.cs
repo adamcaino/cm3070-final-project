@@ -48,6 +48,7 @@ public class EnemyController : MonoBehaviour
   public Transform Player { get; private set; }
   public IReadOnlyList<IAttack> Attacks { get; private set; }
   public bool IsBoss => isBoss;
+  public bool IsAlerted { get; private set; }
 
   public float RoamRadius => roamRadius;
   public float RoamWaitTime => roamWaitTime;
@@ -119,6 +120,13 @@ public class EnemyController : MonoBehaviour
     currentState?.Exit(this);
     currentState = newState;
     currentState?.Enter(this);
+    SyncAlertState(newState);
+  }
+
+  // Keeps the runtime alert state aligned to active combat states.
+  void SyncAlertState(IEnemyState state)
+  {
+    IsAlerted = state is PositionState || state is AttackState;
   }
 
 

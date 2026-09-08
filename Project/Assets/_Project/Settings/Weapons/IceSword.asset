@@ -12,17 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 287d190513687074d904f140aa71cfc0, type: 3}
   m_Name: IceSword
   m_EditorClassIdentifier: 
-  weaponName: Ice Sword
+  weaponName: Frozone
   weaponPrefab: {fileID: 919132149155446097, guid: d8bd52ff4e8715449bad982b7eaf2c46, type: 3}
   damage: 1
   afflictionType: 2
   afflictionMagnitude: 1
-  afflictionDuration: 3
+  afflictionDuration: 2
   swingVfxPrefab: {fileID: 124808, guid: 5ad93141620b0d247bdaf1a7a604199c, type: 3}
   swingSfxClip: {fileID: 8300000, guid: 97a93348ae9ec424a9b78f55944f74b0, type: 3}
   ambientSfxClip: {fileID: 8300000, guid: c9c8d55525fb6d946b5e375d189e7389, type: 3}
-  ambientVolume: 0.1
+  ambientVolume: 0.2
   pickupVFX: {fileID: 931352995334258111, guid: 15d22841c901a8c41b0e4c7dd40ef44f, type: 3}
-  pickupSFX: {fileID: 8300000, guid: 86531a186fdc1e446baf3902efbf7662, type: 3}
   maxUses: 10
   icon: {fileID: 21300000, guid: 0e79ffa182575d940b2b610f1396b6c1, type: 3}

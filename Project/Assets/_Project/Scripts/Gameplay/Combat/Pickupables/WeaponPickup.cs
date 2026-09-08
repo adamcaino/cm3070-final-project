@@ -12,6 +12,12 @@ public class WeaponPickup : PickupBase
     if (playerWeapon == null || weaponData == null) return false;
 
     playerWeapon.Equip(weaponData);
+
+    if (weaponData.IsSpecial)
+    {
+      SpecialWeaponTutorialPrompt.ShowForPickup(weaponData);
+    }
+
     return true;
   }
 

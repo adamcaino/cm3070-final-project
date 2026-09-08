@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 287d190513687074d904f140aa71cfc0, type: 3}
   m_Name: FireSword
   m_EditorClassIdentifier: 
-  weaponName: Fire Sword
+  weaponName: Jalapeñouch
   weaponPrefab: {fileID: 100000, guid: d39f79a77bf378b49bd33ed6ed1d6867, type: 3}
-  damage: 1
+  damage: 2
   afflictionType: 1
   afflictionMagnitude: 1
-  afflictionDuration: 3
+  afflictionDuration: 2
   swingVfxPrefab: {fileID: 171468, guid: b4a8dae8244450942a1486f2f1179595, type: 3}
   swingSfxClip: {fileID: 8300000, guid: 561b6a4e69f38a745939dfa7fd2befab, type: 3}
   ambientSfxClip: {fileID: 8300000, guid: ba7148990cef43c4e82e7527f32b1c04, type: 3}

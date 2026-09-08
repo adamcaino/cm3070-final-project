@@ -52,9 +52,8 @@ public class PositionState : IEnemyState
     // velocity can stall melee enemies that keep tiny navmesh drift.
     float distance = Vector3.Distance(enemy.transform.position, enemy.Player.position);
 
-    Vector3 toPlayer = enemy.Player.position - enemy.transform.position;
-    toPlayer.y = 0f;
-    float angle = toPlayer.sqrMagnitude > 0.0001f ? Vector3.Angle(enemy.transform.forward, toPlayer) : 0f;
+    BossPhaseController phase = enemy.GetComponent<BossPhaseController>();
+    int currentStage = phase != null ? phase.CurrentStage : 1;
 
     IAttack[] executableAttacks = enemy.Attacks
       .Where(a => a.CanExecute)
@@ -66,24 +65,24 @@ public class PositionState : IEnemyState
       return;
     }
 
-    IAttack matchingAttack = executableAttacks
-      .Where(a => distance >= a.MinRange && distance <= a.MaxRange
-        && angle >= a.MinAngle && angle <= a.MaxAngle)
-      .FirstOrDefault(a => Random.value <= a.SelectionChance);
+    IAttack[] inRangeAttacks = executableAttacks
+      .Where(a => distance >= a.MinRange && distance <= a.MaxRange)
+      .ToArray();
 
-    // If chance rolls skip every candidate this frame, still pick the top valid attack
-    // so phase 1 cannot stall forever behind unlucky RNG.
-    if (matchingAttack == null)
+    if (inRangeAttacks.Length > 0)
     {
-      matchingAttack = executableAttacks.FirstOrDefault(a =>
-        distance >= a.MinRange && distance <= a.MaxRange
-        && angle >= a.MinAngle && angle <= a.MaxAngle);
-    }
+      IAttack selectedAttack = inRangeAttacks[0];
 
-    if (matchingAttack != null)
-    {
+      if (currentStage >= 2 && inRangeAttacks.Length > 1)
+      {
+        IAttack attackOne = inRangeAttacks[0];
+        IAttack attackTwo = inRangeAttacks[1];
+        float attackTwoChance = Mathf.Clamp01(attackTwo.SelectionChance);
+        selectedAttack = Random.value <= attackTwoChance ? attackTwo : attackOne;
+      }
+
       enemy.Agent.ResetPath();
-      enemy.ChangeState(new AttackState(matchingAttack));
+      enemy.ChangeState(new AttackState(selectedAttack));
       return;
     }
 

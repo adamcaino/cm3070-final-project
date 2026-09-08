@@ -21,9 +21,12 @@ public class PlayerDeathCamera : MonoBehaviour
 
   [Header("Orbit")]
   [SerializeField, Min(0f)] float orbitSpeed = 6f;
+  [SerializeField] float orbitPivotWorldY = 1.5f;
 
   CinemachineCamera deathVcam;
   CinemachineOrbitalFollow orbitalFollow;
+  Transform playerTransform;
+  Transform orbitPivot;
   bool isActive;
 
   // Caches the death camera components and resolves gameplay camera references.
@@ -83,6 +86,16 @@ public class PlayerDeathCamera : MonoBehaviour
     PlayerDiedSignal.Raised -= HandlePlayerDied;
   }
 
+  // Cleans up the runtime pivot when this component is destroyed.
+  void OnDestroy()
+  {
+    if (orbitPivot != null)
+    {
+      Destroy(orbitPivot.gameObject);
+      orbitPivot = null;
+    }
+  }
+
   // Takes camera priority, copies gameplay orbit values, and starts the death view.
   void HandlePlayerDied()
   {
@@ -134,14 +147,44 @@ public class PlayerDeathCamera : MonoBehaviour
       return;
     }
 
-    deathVcam.Follow = player.transform;
-    deathVcam.LookAt = player.transform;
+    playerTransform = player.transform;
+    EnsureOrbitPivot();
+    UpdateOrbitPivotPosition();
+
+    deathVcam.Follow = orbitPivot;
+    deathVcam.LookAt = orbitPivot;
+  }
+
+  // Creates a world-space pivot used as the fixed-height orbit center.
+  void EnsureOrbitPivot()
+  {
+    if (orbitPivot != null)
+    {
+      return;
+    }
+
+    GameObject pivotObject = new("DeathCamOrbitPivot");
+    orbitPivot = pivotObject.transform;
+  }
+
+  // Keeps the pivot centered on the player XZ while locking to a fixed world-space Y.
+  void UpdateOrbitPivotPosition()
+  {
+    if (orbitPivot == null || playerTransform == null)
+    {
+      return;
+    }
+
+    Vector3 playerPosition = playerTransform.position;
+    orbitPivot.position = new Vector3(playerPosition.x, orbitPivotWorldY, playerPosition.z);
   }
 
   // Advances the death camera's horizontal orbit while the death view is active.
   void Update()
   {
     if (!isActive) return;
+
+    UpdateOrbitPivotPosition();
 
     orbitalFollow.HorizontalAxis.Value = orbitalFollow.HorizontalAxis.ClampValue(
       orbitalFollow.HorizontalAxis.Value + (orbitSpeed * Time.deltaTime));

@@ -56,6 +56,16 @@ public class EnemyAlert : MonoBehaviour
   // Plays the alert, wakes the enemy, optionally relays one hop, and disables this component.
   void Trigger(bool relayToNearby)
   {
+    if (controller == null || health == null || health.IsDead)
+    {
+      return;
+    }
+
+    if (controller.IsAlerted)
+    {
+      return;
+    }
+
     PlayAlertVfx();
 
     if (!controller.IsFrozen)
@@ -67,9 +77,6 @@ public class EnemyAlert : MonoBehaviour
     {
       RelayToNearbyEnemies();
     }
-
-    // Turn off this script to prevent re-alerting
-    enabled = false;
   }
 
   // Spawns the configured alert effect above the enemy.

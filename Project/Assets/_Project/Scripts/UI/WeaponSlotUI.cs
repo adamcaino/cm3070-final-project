@@ -9,7 +9,11 @@ public class WeaponSlotUI : MonoBehaviour
 
   [SerializeField] Slider manaCapacitySlider;
   [SerializeField] Image weaponIcon;
+  [SerializeField] Image manaFillImage;
   [SerializeField] Sprite defaultWeaponSprite;
+  [SerializeField] Color specialChargeColor = new Color(0.2f, 0.55f, 1f, 1f);
+
+  Color defaultChargeColor = Color.white;
 
   PlayerWeapon playerWeapon;
 
@@ -58,6 +62,8 @@ public class WeaponSlotUI : MonoBehaviour
     playerWeapon.OnWeaponChanged += HandleWeaponChanged;
     playerWeapon.OnManaChanged += HandleManaChanged;
 
+    ResolveChargeFillImage();
+
     HandleWeaponChanged(playerWeapon.Current);
   }
 
@@ -77,10 +83,29 @@ public class WeaponSlotUI : MonoBehaviour
 
     weaponIcon.sprite = isSpecial ? weapon.icon : defaultWeaponSprite;
 
+    if (manaFillImage != null)
+    {
+      manaFillImage.color = isSpecial ? specialChargeColor : defaultChargeColor;
+    }
+
     manaCapacitySlider.maxValue = isSpecial ? weapon.maxUses : 0;
     manaCapacitySlider.value = isSpecial ? playerWeapon.RemainingUses : 0;
   }
 
   // Updates the remaining-use slider when a special weapon is consumed.
   void HandleManaChanged(int current, int max) => manaCapacitySlider.value = current;
+
+  // Caches the current fill image and its baseline colour when one is available.
+  void ResolveChargeFillImage()
+  {
+    if (manaFillImage == null && manaCapacitySlider != null && manaCapacitySlider.fillRect != null)
+    {
+      manaFillImage = manaCapacitySlider.fillRect.GetComponent<Image>();
+    }
+
+    if (manaFillImage != null)
+    {
+      defaultChargeColor = manaFillImage.color;
+    }
+  }
 }

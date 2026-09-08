@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -7,6 +8,7 @@ public class PlayerWeapon : MonoBehaviour
 {
   [SerializeField] WeaponData defaultWeapon;
   [SerializeField] Transform weaponSocket;
+  [SerializeField] Collider meleeHitbox;
 
   [Header("Swing VFX placement")]
   [Tooltip("Distance in front of the player to spawn the swing VFX.")]
@@ -18,10 +20,13 @@ public class PlayerWeapon : MonoBehaviour
   [SerializeField] float swingVfxRotationZ;
 
   GameObject equippedInstance;
-  WeaponHitbox equippedHitbox;
   AudioSource audioSource;
   AudioSource ambientAudioSource;
+  PlayerMeleeHitboxRelay meleeHitboxRelay;
   bool socketCleared;
+  bool isHitboxActive;
+
+  readonly HashSet<IDamageable> hitThisSwing = new HashSet<IDamageable>();
 
   public WeaponData Current { get; private set; }
   public int RemainingUses { get; private set; }
@@ -33,6 +38,42 @@ public class PlayerWeapon : MonoBehaviour
   void Awake()
   {
     audioSource = GetComponent<AudioSource>();
+
+    if (meleeHitbox == null)
+    {
+      Transform meleeRoot = transform.Find("MeleeHitBox");
+      if (meleeRoot != null)
+      {
+        meleeHitbox = meleeRoot.GetComponentInChildren<Collider>(true);
+      }
+    }
+
+    if (meleeHitbox == null)
+    {
+      Debug.LogWarning($"{name}: PlayerWeapon could not find a melee hitbox collider.", this);
+    }
+    else
+    {
+      meleeHitbox.isTrigger = true;
+      meleeHitbox.enabled = false;
+
+      meleeHitboxRelay = meleeHitbox.GetComponent<PlayerMeleeHitboxRelay>();
+      if (meleeHitboxRelay == null)
+      {
+        meleeHitboxRelay = meleeHitbox.gameObject.AddComponent<PlayerMeleeHitboxRelay>();
+      }
+
+      meleeHitboxRelay.Initialize(this);
+
+      Rigidbody hitboxBody = meleeHitbox.attachedRigidbody;
+      if (hitboxBody == null)
+      {
+        hitboxBody = meleeHitbox.gameObject.AddComponent<Rigidbody>();
+      }
+
+      hitboxBody.isKinematic = true;
+      hitboxBody.useGravity = false;
+    }
 
     ambientAudioSource = gameObject.AddComponent<AudioSource>();
     ambientAudioSource.loop = true;
@@ -65,23 +106,12 @@ public class PlayerWeapon : MonoBehaviour
       socketCleared = true;
     }
 
-    if (equippedHitbox != null)
-    {
-      equippedHitbox.OnHit -= HandleHit;
-    }
-
     if (equippedInstance != null)
     {
       Destroy(equippedInstance);
     }
 
     equippedInstance = Instantiate(weapon.weaponPrefab, weaponSocket);
-    equippedHitbox = equippedInstance.GetComponentInChildren<WeaponHitbox>();
-
-    if (equippedHitbox != null)
-    {
-      equippedHitbox.OnHit += HandleHit;
-    }
 
     Current = weapon;
     RemainingUses = weapon.maxUses;
@@ -107,11 +137,30 @@ public class PlayerWeapon : MonoBehaviour
     ambientAudioSource.Play();
   }
 
-  // Enables the equipped weapon hitbox during an attack animation.
-  public void EnableHitbox() => equippedHitbox?.EnableHitbox();
+  // Enables the player's melee trigger hitbox during an attack animation.
+  public void EnableHitbox()
+  {
+    if (meleeHitbox == null)
+    {
+      return;
+    }
 
-  // Disables the equipped weapon hitbox after an attack animation.
-  public void DisableHitbox() => equippedHitbox?.DisableHitbox();
+    hitThisSwing.Clear();
+    isHitboxActive = true;
+    meleeHitbox.enabled = true;
+  }
+
+  // Disables the player's melee trigger hitbox after an attack animation.
+  public void DisableHitbox()
+  {
+    if (meleeHitbox == null)
+    {
+      return;
+    }
+
+    isHitboxActive = false;
+    meleeHitbox.enabled = false;
+  }
 
   // Spawns the swing visual effect and plays its sound using the requested mirror state.
   public void PlaySwingVFX(float mirror = 0f)
@@ -139,15 +188,30 @@ public class PlayerWeapon : MonoBehaviour
     }
   }
 
+  // Applies melee damage when a target first enters the active player hitbox.
+  public void HandleMeleeTriggerEnter(Collider other)
+  {
+    if (!isHitboxActive || Current == null)
+    {
+      return;
+    }
+
+    IDamageable damageable = other.GetComponentInParent<IDamageable>();
+    if (damageable == null || !hitThisSwing.Add(damageable))
+    {
+      return;
+    }
+
+    HandleHit(other, damageable);
+  }
+
   // Applies weapon damage, optional affliction, and use consumption to a hit target.
-  void HandleHit(Collider other)
+  void HandleHit(Collider other, IDamageable damageable)
   {
     if (Current == null) return;
 
-    IDamageable damageable = other.GetComponentInParent<IDamageable>();
-    if (damageable == null) return;
-
-    Vector3 hitPoint = other.ClosestPoint(equippedHitbox.transform.position);
+    Vector3 hitOrigin = meleeHitbox != null ? meleeHitbox.transform.position : transform.position;
+    Vector3 hitPoint = other.ClosestPoint(hitOrigin);
     damageable.TakeDamage(Current.damage, gameObject, hitPoint);
 
     if (Current.afflictionType != AfflictionType.None)
