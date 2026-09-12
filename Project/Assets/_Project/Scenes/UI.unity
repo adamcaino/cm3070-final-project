@@ -1605,7 +1605,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &786541862
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2150,6 +2150,7 @@ GameObject:
   - component: {fileID: 976301916}
   - component: {fileID: 976301915}
   - component: {fileID: 976301919}
+  - component: {fileID: 976301920}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -2258,8 +2259,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d9f9b977c884c65a7cc8d6dbd957f12, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SeedDisplayUI
+--- !u!114 &976301920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 976301914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70920a8957064508ab2c7f1050e520c6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NotificationBanner
 --- !u!1 &985805516
 GameObject:
   m_ObjectHideFlags: 0
