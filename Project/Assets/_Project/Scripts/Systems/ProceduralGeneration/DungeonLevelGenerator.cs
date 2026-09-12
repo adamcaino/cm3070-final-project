@@ -1,10 +1,21 @@
 using System.Collections;
+using System.Diagnostics;
+using Unity.Profiling;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 // Runs the dungeon pipeline from seeded 2D layout through 3D placement, NavMesh baking, and combat setup.
 // Each stage consumes the output produced by the preceding stage.
 public class DungeonLevelGenerator : MonoBehaviour
 {
+  static readonly ProfilerMarker GridGenerationMarker = new ProfilerMarker("Dungeon.Generation.Grid");
+  static readonly ProfilerMarker TilePlacementMarker = new ProfilerMarker("Dungeon.Generation.Tiles");
+  static readonly ProfilerMarker PropPlacementMarker = new ProfilerMarker("Dungeon.Generation.Props");
+  static readonly ProfilerMarker NavMeshBuildMarker = new ProfilerMarker("Dungeon.Generation.NavMesh");
+  static readonly ProfilerMarker PointOfInterestPlacementMarker = new ProfilerMarker("Dungeon.Generation.PointsOfInterest");
+  static readonly ProfilerMarker BossPlacementMarker = new ProfilerMarker("Dungeon.Generation.Boss");
+  static readonly ProfilerMarker EnemyPlacementMarker = new ProfilerMarker("Dungeon.Generation.Enemies");
+
   [SerializeField] DungeonGridGenerator2D gridGenerator;
   [SerializeField] DungeonTilePlacer3D tilePlacer;
   [SerializeField] DungeonPropPlacer3D propPlacer;
@@ -52,31 +63,63 @@ public class DungeonLevelGenerator : MonoBehaviour
   // Runs the dependent generation stages in order and raises readiness after enemy placement.
   IEnumerator GenerateSequence(int? seed = null)
   {
+    Stopwatch totalGenerationTime = Stopwatch.StartNew();
     DungeonReadySignal.Reset();
 
-    if (seed.HasValue)
+    using (GridGenerationMarker.Auto())
     {
-      gridGenerator.Generate(seed.Value);
-    }
-    else
-    {
-      gridGenerator.Generate();
+      if (seed.HasValue)
+      {
+        gridGenerator.Generate(seed.Value);
+      }
+      else
+      {
+        gridGenerator.Generate();
+      }
     }
 
     yield return null;
-    tilePlacer.Generate();
+    using (TilePlacementMarker.Auto())
+    {
+      tilePlacer.Generate();
+    }
+
     yield return null;
-    propPlacer.Generate();
+    using (PropPlacementMarker.Auto())
+    {
+      propPlacer.Generate();
+    }
+
     yield return null;
-    navMeshBaker.Generate();
+    using (NavMeshBuildMarker.Auto())
+    {
+      navMeshBaker.Generate();
+    }
+
     yield return null;
-    poiPlacer.Generate();
+    using (PointOfInterestPlacementMarker.Auto())
+    {
+      poiPlacer.Generate();
+    }
+
     yield return null;
-    bossPlacer.Generate();
+    using (BossPlacementMarker.Auto())
+    {
+      bossPlacer.Generate();
+    }
+
     yield return null;
-    enemyPlacer.Generate();
+    using (EnemyPlacementMarker.Auto())
+    {
+      enemyPlacer.Generate();
+    }
 
     DungeonReadySignal.Raise();
+    totalGenerationTime.Stop();
+    Debug.Log($"Dungeon generation completed in {totalGenerationTime.Elapsed.TotalMilliseconds:F2} ms.");
+
+    string roomCount = gridGenerator is BSPDungeonGenerator bspGenerator ? bspGenerator.LastRooms.Count.ToString() : "n/a";
+    Debug.Log($"Dungeon summary - Rooms: {roomCount}, Regular enemies: {enemyPlacer.RegularEnemyCount}, Tough enemies: {enemyPlacer.ToughEnemyCount}, Bosses: {bossPlacer.BossCount}.");
   }
 
   [ContextMenu("Clear")]

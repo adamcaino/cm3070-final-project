@@ -17,6 +17,9 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
   System.Random enemyRandom;
   readonly HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();
 
+  public int RegularEnemyCount { get; private set; }
+  public int ToughEnemyCount { get; private set; }
+
   [ContextMenu("Generate")]
   // Reads generated rooms, resets prior enemies, and places enemies in normal rooms.
   public void Generate()
@@ -40,6 +43,8 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
 
     enemyRandom = new System.Random(sourceGenerator.LastUsedSeed);
     occupiedCells.Clear();
+    RegularEnemyCount = 0;
+    ToughEnemyCount = 0;
 
     int gridWidth = metadata.GetLength(0);
     int gridHeight = metadata.GetLength(1);
@@ -51,6 +56,8 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
         PlaceEnemies(room, gridWidth, gridHeight);
       }
     }
+
+    Debug.Log($"{nameof(DungeonEnemyPlacer3D)} placed {RegularEnemyCount} regular and {ToughEnemyCount} tough enemies.");
   }
 
   // Calculates room density and difficulty, then spawns regular and tough enemy groups.
@@ -136,6 +143,15 @@ public class DungeonEnemyPlacer3D : MonoBehaviour
 
       instance.name = $"{label} [{cell.x},{cell.y}]";
       instance.transform.SetParent(generatedRoot, false);
+
+      if (label == "Tough Enemy")
+      {
+        ToughEnemyCount++;
+      }
+      else
+      {
+        RegularEnemyCount++;
+      }
     }
   }
 

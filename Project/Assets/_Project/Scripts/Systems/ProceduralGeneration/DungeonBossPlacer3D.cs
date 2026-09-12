@@ -17,6 +17,8 @@ public class DungeonBossPlacer3D : MonoBehaviour
 
   Transform generatedRoot;
 
+  public int BossCount { get; private set; }
+
   [ContextMenu("Generate")]
   // Reads generated boss-room metadata, clears prior output, and places each boss room encounter.
   public void Generate()
@@ -37,6 +39,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
 
     Clear();
     EnsureGeneratedRoot();
+    BossCount = 0;
 
     int gridWidth = metadata.GetLength(0);
     int gridHeight = metadata.GetLength(1);
@@ -48,6 +51,8 @@ public class DungeonBossPlacer3D : MonoBehaviour
         PlaceBoss(room, metadata, gridWidth, gridHeight);
       }
     }
+
+    Debug.Log($"{nameof(DungeonBossPlacer3D)} placed {BossCount} boss(es).");
   }
 
   // Resolves boss-room doors, samples the NavMesh, instantiates the boss, and creates its trigger zone.
@@ -77,6 +82,7 @@ public class DungeonBossPlacer3D : MonoBehaviour
 
     instance.name = "Boss";
     instance.transform.SetParent(generatedRoot, false);
+    BossCount++;
 
     if (!instance.TryGetComponent(out BossRoomEncounter encounter) || !instance.TryGetComponent(out Health health))
     {
