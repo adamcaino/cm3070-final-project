@@ -107,3 +107,6 @@ InitTestScene*.unity*
 # Ignore "Universal Sound FX"
 **/[Aa]ssets/Universal Sound FX/
 **/[Aa]ssets/Unlimited Game Music Bundle Vol 1/
+
+# Ignore profiler data
+**/[Pp]rofiler[Cc]aptures

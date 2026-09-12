@@ -70,6 +70,9 @@ MonoBehaviour:
   rotationSpeed: 90
   healAmount: 2
   pickupVfxPrefab: {fileID: 1857989084323932508, guid: 57e8cdf781ffd2842bcfa8162195cb1f, type: 3}
+  fullHealthMessage: Health full
+  fullHealthMessageColor: {r: 1, g: 1, b: 1, a: 1}
+  fullHealthMessageHeight: 0.2
 --- !u!1001 &2697819279064684764
 PrefabInstance:
   m_ObjectHideFlags: 0

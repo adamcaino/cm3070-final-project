@@ -27,7 +27,12 @@ public abstract class PickupBase : MonoBehaviour
   void OnTriggerEnter(Collider other)
   {
     if (!other.CompareTag("Player")) return;
-    if (!TryApplyEffect(other)) return;
+
+    if (!TryApplyEffect(other))
+    {
+      PlayRejectionFeedback(other);
+      return;
+    }
 
     PlayPickupVfx();
     Destroy(gameObject);
@@ -38,6 +43,9 @@ public abstract class PickupBase : MonoBehaviour
 
   // Provides a hook for pickup-specific visual effects after a successful collection.
   protected virtual void PlayPickupVfx() { }
+
+  // Provides a hook for feedback shown when the pickup-specific effect could not be applied.
+  protected virtual void PlayRejectionFeedback(Collider player) { }
 
   // Provides a hook for pickup-specific audio effects after a successful collection.
   protected virtual void PlayPickupSfx() { }
